@@ -1,0 +1,10 @@
+version: "3.1"
+
+services:
+  db:
+    image: mysql
+    restart: always
+    env_file:
+      - .env.dev
+    ports:
+      - "3306:3306"

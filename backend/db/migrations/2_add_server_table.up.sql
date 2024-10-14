@@ -1,0 +1,16 @@
+CREATE TABLE IF NOT EXISTS servers(
+   id serial PRIMARY KEY,
+   name VARCHAR(64) NOT NULL,
+   os_code VARCHAR(64) DEFAULT NULL,
+   os_version VARCHAR(64) DEFAULT NULL,
+   ipv4_address VARCHAR(64) DEFAULT NULL,
+   ipv6_address VARCHAR(256) DEFAULT NULL,
+   agent_version VARCHAR(64) DEFAULT NULL,
+   agent_port INTEGER DEFAULT NULL,
+   token VARCHAR(512) NOT NULL,
+   is_registered INTEGER NOT NULL DEFAULT 0,
+   is_active INTEGER NOT NULL DEFAULT 0,
+   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+   updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+   account_id INTEGER NOT NULL REFERENCES accounts
+);

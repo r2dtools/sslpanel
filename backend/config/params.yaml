@@ -1,0 +1,12 @@
+DatabaseURI: host=localhost port=5433 user=r2sm dbname=r2sm password=Alehandro1988 sslmode=disable
+SecretKey: UXzZ8PXZPWWfTfbpxm7JLFGmuNsw756f
+ServerAddress: 127.0.0.1:8080
+AgentPort: 60150
+LogLevel: 4
+AmsEmailAddress: support@r2dtools.com
+AmsEmailPassword: Alehandro1988
+SMTPHost: smtp.mail.ru
+SMTPPort: 465
+LogFile: "var/log/ams.log"
+AgentVersion: "0.3.0"
+InstallerVersion: "1.1.0"

@@ -1,0 +1,13 @@
+{{if .AboutToExpire}}
+Your certificates for the names listed below will expire in less then {{.AboutToExpireDaysEdge}} days. Please make sure to renew your certificates before then, or visitors to your website will encounter errors.
+{{range $url, $days := .AboutToExpire}}
+- {{$url}} ({{$days}} days)
+{{end}}
+{{end}}
+
+{{if .Expired}}
+Your certificates for the names listed below were expired. Please renew your certificates secure websites.
+{{range $url, $days := .Expired}}
+- {{$url}}
+{{end}}
+{{end}}

@@ -1,0 +1,6 @@
+Hi!
+
+Please confirm your email address before your password is reset. Here is the code to verify your email address.
+Code: {{.Code}}
+
+If you have problems, please do not hesitate to contact us at support@r2dtools.com.

@@ -1,100 +1,167 @@
 package config
 
 import (
+	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/viper"
 )
 
 const (
-	prodMode = false
-	logFile  = "var/log/ams.log"
-	logLevel = 4
+	developmentEnv = "developement"
+	productionEnv  = "production"
 )
 
 var config *Config
 
-// Config is main config of the application
 type Config struct {
-	DatabaseURI,
-	ServerAddress,
-	ExecutablePath,
-	LogFile,
-	SecretKey string
+	DatabaseURI      string
+	ServerAddress    string
+	ServerHost       string
+	LogFile          string
+	SecretKey        string
 	AgentPort        int
 	LogLevel         int
 	AmsEmailAddress  string
 	AmsEmailPassword string
 	SMTPHost         string
 	SMTPPort         int
-	AgentVersion     string
-	InstallerVersion string
+	DbName           string
+	DbHost           string
+	DbPort           string
+	DbUser           string
+	DbPassword       string
+	DbType           string
+	BaseDir          string
+	DbDsn            string
+	AllowedHosts     []string
+	Environment      string
+	IsDevMode        bool
 }
 
-// GetLoggerFileAbsPath returns absolute path to logger file
-func (c *Config) GetLoggerFileAbsPath() string {
-	return filepath.Join(c.ExecutablePath, c.LogFile)
-}
-
-// GetVarDirAbsPath returns absolute path to var directory
 func (c *Config) GetVarDirAbsPath() string {
-	return filepath.Join(c.ExecutablePath, "var")
+	return filepath.Join(c.BaseDir, "var")
 }
 
-// GetConfig returns application config
-func GetConfig() *Config {
+func GetConfig() (*Config, error) {
 	if config != nil {
-		return config
+		return config, nil
 	}
 
-	var executablePath string
-	var err error
-
-	if prodMode {
-		executable, err := os.Executable()
-
-		if err != nil {
-			panic(err)
-		}
-
-		executablePath = filepath.Dir(executable)
-	} else {
-		executablePath, err = os.Getwd()
-
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	configPath := filepath.Join(executablePath, "config")
-	vConfig := viper.New()
-	vConfig.SetDefault("LogFile", logFile)
-	vConfig.SetDefault("LogLevel", logLevel)
-	vConfig.SetConfigType("yaml")
-	vConfig.SetConfigName("params")
-	vConfig.AddConfigPath(configPath)
 	viper.AutomaticEnv()
+	environment := viper.GetString("CP_ENVIRONMENT")
 
-	if err := vConfig.ReadInConfig(); err != nil {
-		panic(err)
+	if environment == "" {
+		environment = developmentEnv
 	}
 
-	config = &Config{
-		DatabaseURI:      vConfig.GetString("DatabaseURI"),
-		SecretKey:        vConfig.GetString("SecretKey"),
-		ServerAddress:    vConfig.GetString("ServerAddress"),
-		AgentPort:        vConfig.GetInt("AgentPort"),
-		LogLevel:         vConfig.GetInt("LogLevel"),
-		LogFile:          vConfig.GetString("LogFile"),
-		AmsEmailAddress:  vConfig.GetString("AmsEmailAddress"),
-		AmsEmailPassword: vConfig.GetString("AmsEmailPassword"),
-		SMTPHost:         vConfig.GetString("SMTPHost"),
-		SMTPPort:         vConfig.GetInt("SMTPPort"),
-		AgentVersion:     vConfig.GetString("AgentVersion"),
-		InstallerVersion: vConfig.GetString("InstallerVersion"),
-		ExecutablePath:   executablePath,
+	fileBaseDir := viper.GetString("CP_FILE_BASE_DIR")
+
+	if _, err := os.Stat(fileBaseDir); os.IsNotExist(err) {
+		if err = os.MkdirAll(fileBaseDir, 0755); err != nil {
+			return nil, err
+		}
 	}
 
-	return config
+	conf := Config{
+		DbName:           viper.GetString("CP_DB_NAME"),
+		DbHost:           viper.GetString("CP_DB_HOST"),
+		DbPort:           viper.GetString("CP_DB_PORT"),
+		DbUser:           viper.GetString("CP_DB_USER"),
+		DbPassword:       viper.GetString("CP_DB_PASSWORD"),
+		DbType:           viper.GetString("CP_DB_TYPE"),
+		SecretKey:        viper.GetString("CP_SERVER_KEY"),
+		ServerAddress:    viper.GetString("CP_API_HOST"),
+		AgentPort:        viper.GetInt("CP_AGENT_PORT"),
+		LogLevel:         viper.GetInt("CP_LOG_LEVEL"),
+		LogFile:          viper.GetString("CP_LOG_FILE"),
+		AmsEmailAddress:  viper.GetString("CP_EMAIL_ADDRESS"),
+		AmsEmailPassword: viper.GetString("CP_EMAIL_PASSWORD"),
+		SMTPHost:         viper.GetString("CP_SMTP_HOST"),
+		SMTPPort:         viper.GetInt("CP_SMTP_PORT"),
+		AllowedHosts:     getAllowedHosts(),
+		Environment:      environment,
+		IsDevMode:        environment == developmentEnv,
+	}
+
+	path, err := getBasePath(environment)
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to get base path: %v", err)
+	}
+
+	conf.BaseDir = path
+
+	dbDsn := fmt.Sprintf(
+		"%s:%s@tcp(%s:%s)/%s?multiStatements=true&parseTime=true",
+		conf.DbUser,
+		conf.DbPassword,
+		conf.DbHost,
+		conf.DbPort,
+		conf.DbName,
+	)
+	conf.DbDsn = dbDsn
+
+	dbUri := fmt.Sprintf(
+		"host=%s port=%s user=%s dbname=%s password=%s sslmode=disable",
+		conf.DbHost,
+		conf.DbPort,
+		conf.DbUser,
+		conf.DbName,
+		conf.DbPassword,
+	)
+	conf.DatabaseURI = dbUri
+
+	pUrl, err := url.Parse(conf.ServerAddress)
+
+	if err != nil {
+		return nil, err
+	}
+
+	conf.ServerHost = pUrl.Host
+
+	config = &conf
+
+	return config, nil
+}
+
+func getBasePath(environment string) (string, error) {
+	var (
+		path string
+		err  error
+	)
+
+	if environment == productionEnv {
+		path, err = os.Executable()
+
+		if err != nil {
+			return "", err
+		}
+
+		return filepath.Clean(filepath.Dir(path)), nil
+	}
+
+	path, err = os.Getwd()
+
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Clean(fmt.Sprintf("%s/../../", path)), nil
+}
+
+func getAllowedHosts() []string {
+	hostsStr := viper.GetString("CP_API_ALLOWED_HOSTS")
+	hosts := strings.Split(hostsStr, ",")
+
+	result := []string{}
+
+	for _, host := range hosts {
+		result = append(result, strings.TrimSpace(host))
+	}
+
+	return result
 }

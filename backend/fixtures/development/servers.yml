@@ -1,0 +1,11 @@
+- id: 1
+  name: "Test server #1"
+  os_code: "ubuntu"
+  os_version: "19.10"
+  ipv4_address: "193.165.34.4"
+  ipv6_address: "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
+  agent_version: "1.0.0"
+  agent_port: 3000
+  token: "$2a$10$HL40V5ZYEMu4ajyusLQIg.OjeDdSqjk203jkYBhRIiwomovdPR34vvD2"
+  is_active: 1
+  account_id: 1

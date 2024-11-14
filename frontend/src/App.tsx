@@ -25,6 +25,7 @@ import useColorMode from './hooks/useColorMode';
 import { FetchStatus } from './app/types';
 import { ColorTheme } from './types/theme';
 import AuthLayout from './layout/AuthLayout';
+import ServerList from './pages/ServerList';
 
 interface RouteItem {
     path?: string;
@@ -123,6 +124,11 @@ function App() {
                     path: "/chart",
                     title: "Basic Chart | TailAdmin - Tailwind CSS Admin Dashboard Template",
                     component: <Chart />
+                },
+                {
+                    path: "/servers",
+                    title: "Servers | R2DTools Control Panel",
+                    component: <ServerList />
                 },
                 {
                     path: "/ui/alerts",

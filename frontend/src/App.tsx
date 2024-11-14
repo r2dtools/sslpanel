@@ -41,7 +41,8 @@ function App() {
 
     const currentUser = useAppSelector(selectCurrentUser);
     const currentUserLoadStatus = useAppSelector(selectCurrentUserFetchStatus);
-    const [authToken, setAuthToken] = useLocalStorage<string | null>("token", null);
+    const [authToken, setAuthToken] = useLocalStorage<string | null>("r2panel-token", null);
+    const [authTokenExpire, setAuthTokenExpire] = useLocalStorage<string | null>("r2panel-token-expire", null);
     const dispatch = useAppDispatch();
 
     const loading = currentUserLoadStatus === FetchStatus.Pending;
@@ -51,17 +52,29 @@ function App() {
     }, [pathname]);
 
     useEffect(() => {
-        if (authToken && currentUserLoadStatus !== FetchStatus.Pending) {
-            dispatch(fetchCurrentUser(authToken));
+        if (!authToken || currentUserLoadStatus === FetchStatus.Pending) {
+            return;
         }
-    }, [authToken]);
 
-    const handleSignIn = (token: string) => {
+        if (authTokenExpire) {
+            const expire = Date.parse(authTokenExpire);
+
+            if (expire <= Date.now()) {
+                return;
+            }
+        }
+
+        dispatch(fetchCurrentUser(authToken));
+    }, [authToken, authTokenExpire]);
+
+    const handleSignIn = (token: string, expire: string) => {
         setAuthToken(token);
+        setAuthTokenExpire(expire);
     };
 
     const handleSignOut = () => {
         setAuthToken(null);
+        setAuthTokenExpire(null);
     }
 
     const routes: { layout: React.FC<any>, props?: React.ComponentProps<any>, routes: RouteItem[] }[] = [

@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import Button from '../../components/Button/Button';
 
 interface SignInProps {
-    onSignIn: (token: string) => void;
+    onSignIn: (token: string, expire: string) => void;
 };
 
 const SignIn: React.FC<SignInProps> = ({ onSignIn }: SignInProps) => {
@@ -21,7 +21,7 @@ const SignIn: React.FC<SignInProps> = ({ onSignIn }: SignInProps) => {
         try {
             setLoading(true);
             const response = await login(email, password);
-            onSignIn(response.token);
+            onSignIn(response.token, response.expire);
         } catch (error) {
             toast.error((error as Error).message);
         } finally {

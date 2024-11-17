@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-import Loader from './common/Loader';
+import Loader from './components/Loader/GlobalLoader';
 import PageTitle from './components/PageTitle';
 import DefaultLayout from './layout/DefaultLayout';
 import AuthContext from './features/auth/context';
@@ -25,7 +25,8 @@ import useColorMode from './hooks/useColorMode';
 import { FetchStatus } from './app/types';
 import { ColorTheme } from './types/theme';
 import AuthLayout from './layout/AuthLayout';
-import ServerList from './pages/ServerList';
+import ServerList from './pages/ServerList/ServerList';
+import useAuthToken from './features/auth/hooks';
 
 interface RouteItem {
     path?: string;
@@ -42,11 +43,12 @@ function App() {
 
     const currentUser = useAppSelector(selectCurrentUser);
     const currentUserLoadStatus = useAppSelector(selectCurrentUserFetchStatus);
-    const [authToken, setAuthToken] = useLocalStorage<string | null>("r2panel-token", null);
+    const [authToken, setAuthToken] = useAuthToken();
     const [authTokenExpire, setAuthTokenExpire] = useLocalStorage<string | null>("r2panel-token-expire", null);
     const dispatch = useAppDispatch();
 
-    const loading = currentUserLoadStatus === FetchStatus.Pending;
+    const currentUserLoading = currentUserLoadStatus === FetchStatus.Pending;
+    const loading = currentUserLoading;
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -61,6 +63,8 @@ function App() {
             const expire = Date.parse(authTokenExpire);
 
             if (expire <= Date.now()) {
+                handleSignOut();
+
                 return;
             }
         }
@@ -170,7 +174,12 @@ function App() {
     useEffect(() => {
         const currentRoute = allRoutes.find((item: RouteItem) => item.path === pathname);
 
-        if (currentUser === null && !currentRoute?.public) {
+        if (
+            !authToken
+            && currentUserLoadStatus !== FetchStatus.Pending
+            && currentUser === null
+            && !currentRoute?.public
+        ) {
             navigate("/auth/signin");
 
             return;

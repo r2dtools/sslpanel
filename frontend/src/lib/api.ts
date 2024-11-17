@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios";
+import axios, { AxiosError, AxiosRequestConfig } from 'axios';
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_API_HOST,
@@ -20,5 +20,19 @@ export const getErrorMessage = (error: unknown) => {
 
     return String(error)
 }
+
+export const configWithAuth = (token: string, config?: AxiosRequestConfig): AxiosRequestConfig => {
+    config = config || {};
+    const headers = config.headers || {};
+
+    return {
+        ...config,
+        headers: {
+            ...headers,
+            Authorization: `Bearer ${token}`,
+        },
+    };
+};
+
 
 export default api;

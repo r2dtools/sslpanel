@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
+import Breadcrumb from '../../components/Breadcrumb';
 import LogoDark from '../../images/logo/logo-dark.png';
 import Logo from '../../images/logo/logo.png';
 

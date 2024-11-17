@@ -7,7 +7,9 @@
       "ESNext"
     ],
     "types": [
-      "vite/client"
+      "vite/client",
+      "node",
+      "vite-plugin-svgr/client"
     ],
     "module": "ESNext",
     "skipLibCheck": true,

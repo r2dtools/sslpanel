@@ -4,7 +4,7 @@ import LogoDark from '../../images/logo/logo-dark.png';
 import Logo from '../../images/logo/logo.png';
 import { login } from '../../features/auth/authApi';
 import { toast } from 'react-toastify';
-import Button from '../../components/Button/Button';
+import { Button, Spinner } from 'flowbite-react';
 
 interface SignInProps {
     onSignIn: (token: string, expire: string) => void;
@@ -251,7 +251,9 @@ const SignIn: React.FC<SignInProps> = ({ onSignIn }: SignInProps) => {
                                 </div>
 
                                 <div className="mb-5">
-                                    <Button loading={loading} disabled={submitDisabled} type='submit' rounded fullWidth>Sign In</Button>
+                                    <Button size='lg' className='w-full' disabled={submitDisabled} type='submit' color='blue'>
+                                        {loading ? <Spinner /> : 'Sign in'}
+                                    </Button>
                                 </div>
 
                                 <div className="mt-6 text-center">

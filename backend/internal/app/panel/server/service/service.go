@@ -27,7 +27,18 @@ type ServerService struct {
 }
 
 func (s ServerService) FindAccountServers(accountID int) ([]Server, error) {
-	return nil, nil
+	var servers []Server
+	serverModels, err := s.serverStorage.FindAllByAccountID(accountID)
+
+	if err != nil {
+		return servers, fmt.Errorf("could not get account %d servers", accountID)
+	}
+
+	for _, serverModel := range serverModels {
+		servers = append(servers, *createServer(&serverModel))
+	}
+
+	return servers, nil
 }
 
 func (s ServerService) FindServerByID(id int) (*Server, error) {

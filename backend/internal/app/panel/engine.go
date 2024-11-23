@@ -63,7 +63,7 @@ func newEngine(config *config.Config, logger logger.Logger) (*gin.Engine, error)
 		v1.POST("/login", authMiddleware.LoginHandler)
 		v1.POST("/register", authApi.CreateRegisterHandler(appAuthService))
 		v1.POST("/confirm-email", authApi.CreateConfirmEmailHandler(appAuthService))
-		v1.POST("/recover-password", authApi.CreateRecoverPAsswordHandler(appAuthService))
+		v1.POST("/recover-password", authApi.CreateRecoverPasswordHandler(appAuthService))
 		v1.POST("/reset-password", authApi.CreateResetPasswordHandler(appAuthService))
 
 		userGroup := v1.Group("users")

@@ -50,7 +50,11 @@ func CreateGetServerHandler(cAuth auth.Auth, appServerService serverService.Serv
 		server, err := appServerService.FindServerByID(id)
 
 		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError, err)
+			if errors.Is(err, serverService.ErrServerNotFound) {
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else {
+				c.AbortWithError(http.StatusInternalServerError, err)
+			}
 
 			return
 		}
@@ -73,7 +77,7 @@ func CreateRemoveServerHandler(cAuth auth.Auth, appServerService serverService.S
 			return
 		}
 
-		id, err := strconv.Atoi(c.Param("id"))
+		id, err := strconv.Atoi(c.Param("serverId"))
 
 		if err != nil {
 			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server ID"))
@@ -124,15 +128,27 @@ func CreateAddServerHandler(cAuth auth.Auth, appServerService serverService.Serv
 		err = appServerService.AddServer(request)
 
 		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError, err)
+			var errService serverService.ErrServerService
 
-			return
+			if errors.As(err, &errService) {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			} else {
+				c.AbortWithError(http.StatusInternalServerError, err)
+			}
 		}
 	}
 }
 
 func CreateUpdateServerHandler(appServerService serverService.ServerService) func(c *gin.Context) {
 	return func(c *gin.Context) {
+		serverID, err := strconv.Atoi(c.Param("serverId"))
+
+		if err != nil {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server ID"))
+
+			return
+		}
+
 		var request serverService.UpdateServerRequest
 
 		if err := c.ShouldBindJSON(&request); err != nil {
@@ -141,7 +157,8 @@ func CreateUpdateServerHandler(appServerService serverService.ServerService) fun
 			return
 		}
 
-		err := validator.Validate(request)
+		request.ID = serverID
+		err = validator.Validate(request)
 
 		if err != nil {
 			c.AbortWithError(http.StatusBadRequest, err)
@@ -152,9 +169,13 @@ func CreateUpdateServerHandler(appServerService serverService.ServerService) fun
 		err = appServerService.UpdateServer(request)
 
 		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError, err)
+			var errService serverService.ErrServerService
 
-			return
+			if errors.As(err, &errService) {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			} else {
+				c.AbortWithError(http.StatusInternalServerError, err)
+			}
 		}
 	}
 }

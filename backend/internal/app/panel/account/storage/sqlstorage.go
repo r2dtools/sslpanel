@@ -1,9 +1,10 @@
 package storage
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type sqlStorage struct {
@@ -15,7 +16,7 @@ func (s *sqlStorage) FindById(id uint) (*Account, error) {
 	err := s.db.First(&acc, id).Error
 
 	if err != nil {
-		if gorm.IsRecordNotFoundError(err) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 
@@ -26,7 +27,7 @@ func (s *sqlStorage) FindById(id uint) (*Account, error) {
 }
 
 func (s *sqlStorage) Save(a *Account) error {
-	if s.db.NewRecord(a) {
+	if a.ID == 0 {
 		return s.db.Create(a).Error
 	}
 

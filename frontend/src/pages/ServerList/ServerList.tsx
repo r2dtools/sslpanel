@@ -1,17 +1,30 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Breadcrumb from '../../components/Breadcrumb';
 import ServerItem from '../../features/server/components/ServerItem';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
-import { fetchServers, selectServers, selectServersFetchStatus } from '../../features/server/serverSlice';
+import {
+    addServer,
+    deleteServer,
+    editServer,
+    fetchServers,
+    selectServers,
+    selectServerSaveStatus,
+    selectServersFetchStatus,
+} from '../../features/server/serverSlice';
 import useAuthToken from '../../features/auth/hooks';
 import { FetchStatus } from '../../app/types';
 import Loader from '../../components/Loader/Loader';
 import { Button } from 'flowbite-react';
+import { Server, ServerSavePayload } from '../../features/server/types';
+import ServerEditDrawer from '../../features/server/components/ServerEditDrawer';
 
 const ServerList = () => {
+    const [serverFormOpen, setServerFormOpen] = useState(false);
+    const [editedServer, setEditedServer] = useState<Server | null>(null);
     const [authToken] = useAuthToken();
     const dispatch = useAppDispatch();
     const serversSelectStatus = useAppSelector(selectServersFetchStatus);
+    const serverSaveStatus = useAppSelector(selectServerSaveStatus);
     const servers = useAppSelector(selectServers);
 
     useEffect(() => {
@@ -20,11 +33,33 @@ const ServerList = () => {
         }
     }, [authToken]);
 
+    const handleServerFormClose = (): void => {
+        setServerFormOpen(false);
+        setEditedServer(null);
+    };
+
+    const handleServerFormOpen = (): void => {
+        setServerFormOpen(true);
+    };
+
+    const handleSubmit = async (server: ServerSavePayload) => {
+        server.id ? dispatch(editServer(server)) : dispatch(addServer(server));
+    };
+
+    const handleDeleteServer = (id: number) => {
+        return dispatch(deleteServer({ id, token: authToken || '' }));
+    };
+
+    const handleEditServer = (server: Server) => {
+        setEditedServer(server);
+        handleServerFormOpen();
+    };
+
     return (
         serversSelectStatus !== FetchStatus.Pending ?
             <>
                 <Breadcrumb pageName='Servers'>
-                    <Button color='blue'>Add</Button>
+                    <Button color='blue' onClick={handleServerFormOpen}>Add</Button>
                 </Breadcrumb>
                 <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                     <div className="border-b border-stroke px-4 py-5 dark:border-strokedark md:px-6 xl:px-7.5">
@@ -51,12 +86,25 @@ const ServerList = () => {
                         <div className="flex flex-col gap-7">
                             {
                                 servers.map(server => (
-                                    <ServerItem key={server.id} server={server} />
+                                    <ServerItem
+                                        key={server.id}
+                                        server={server}
+                                        onDelete={handleDeleteServer}
+                                        onEdit={handleEditServer}
+                                    />
                                 ))
                             }
                         </div>
                     </div>
                 </div>
+                <ServerEditDrawer
+                    open={serverFormOpen}
+                    token={authToken || ''}
+                    loading={serverSaveStatus === FetchStatus.Pending}
+                    onSubmit={handleSubmit}
+                    onClose={handleServerFormClose}
+                    server={editedServer}
+                />
             </> : <Loader />
     );
 }

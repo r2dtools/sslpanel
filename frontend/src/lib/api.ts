@@ -7,18 +7,25 @@ const api = axios.create({
     },
 });
 
-export const getErrorMessage = (error: unknown) => {
-    if (error instanceof AxiosError && error.response) {
-        const data = error.response.data as { code: number, message: string }
+interface AxiosErrorResponseData {
+    code: number;
+    message: string;
+};
 
-        return data.message;
+export const getErrorMessage = (error: unknown) => {
+    const defaultErrorMessage = 'Unknown error. Please try again later';
+
+    if (error instanceof AxiosError && error.response) {
+        const data: AxiosErrorResponseData | '' = error.response.data;
+
+        return data === '' ? defaultErrorMessage : data.message;
     }
 
     if (error instanceof Error) {
-        return error.message;
+        return error.message || defaultErrorMessage;
     }
 
-    return String(error)
+    return String(error || defaultErrorMessage);
 }
 
 export const configWithAuth = (token: string, config?: AxiosRequestConfig): AxiosRequestConfig => {

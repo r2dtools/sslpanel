@@ -9,7 +9,6 @@ require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-testfixtures/testfixtures/v3 v3.13.0
 	github.com/golang-migrate/migrate/v4 v4.14.1
-	github.com/jinzhu/gorm v1.9.16
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/r2dtools/agentintegration v1.2.0
 	github.com/spf13/cobra v1.1.3
@@ -19,6 +18,8 @@ require (
 	golang.org/x/net v0.30.0
 	gopkg.in/mail.v2 v2.3.1
 	gopkg.in/validator.v2 v2.0.1
+	gorm.io/driver/mysql v1.5.7
+	gorm.io/gorm v1.25.12
 )
 
 require (
@@ -61,6 +62,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/magiconair/properties v1.8.4 // indirect
@@ -87,9 +89,9 @@ require (
 	go.opentelemetry.io/otel/trace v1.29.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/oauth2 v0.23.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
+	golang.org/x/sync v0.9.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect
-	golang.org/x/text v0.19.0 // indirect
+	golang.org/x/text v0.20.0 // indirect
 	golang.org/x/time v0.7.0 // indirect
 	google.golang.org/api v0.201.0 // indirect
 	google.golang.org/genproto v0.0.0-20241015192408-796eee8c2d53 // indirect

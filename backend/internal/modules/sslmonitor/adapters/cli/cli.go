@@ -6,8 +6,8 @@ import (
 	domainStorage "backend/internal/modules/sslmonitor/storage"
 	"backend/internal/pkg/logger"
 
-	"github.com/jinzhu/gorm"
 	"github.com/spf13/cobra"
+	"gorm.io/gorm"
 )
 
 var rootCmd = &cobra.Command{

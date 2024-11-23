@@ -121,7 +121,7 @@ func CreateConfirmEmailHandler(appAuthService authService.AuthService) func(c *g
 	}
 }
 
-func CreateRecoverPAsswordHandler(appAuthService authService.AuthService) func(c *gin.Context) {
+func CreateRecoverPasswordHandler(appAuthService authService.AuthService) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		recoverData := struct{ Email string }{}
 

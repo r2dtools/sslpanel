@@ -6,7 +6,7 @@ import (
 	"backend/internal/pkg/logger"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type App struct {

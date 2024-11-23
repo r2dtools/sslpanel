@@ -19,3 +19,20 @@ export enum OsCode {
     Censos = 'centos',
     Debian = 'debian',
 }
+
+export interface SaveServerRequest {
+    name: string;
+    ipv4_address: string;
+    ipv6_address: string;
+    agent_port: number;
+}
+
+export interface ServerSavePayload extends SaveServerRequest {
+    token: string;
+    id?: number;
+}
+
+export interface ServerDeletePayload {
+    id: number;
+    token: string;
+}

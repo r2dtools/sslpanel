@@ -1,9 +1,10 @@
 package storage
 
 import (
+	"errors"
 	"fmt"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type sqlStorage struct {
@@ -15,7 +16,7 @@ func (s *sqlStorage) FindById(id int) (*User, error) {
 	err := s.db.Preload("Account").First(&user, id).Error
 
 	if err != nil {
-		if gorm.IsRecordNotFoundError(err) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 
@@ -30,7 +31,7 @@ func (s *sqlStorage) FindByEmail(email string) (*User, error) {
 	err := s.db.First(&user, "email = ?", email).Error
 
 	if err != nil {
-		if gorm.IsRecordNotFoundError(err) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 
@@ -50,12 +51,12 @@ func (s *sqlStorage) FindAll() ([]*User, error) {
 	return users, nil
 }
 
-func (s *sqlStorage) Save(a *User) error {
-	if s.db.NewRecord(a) {
-		return s.db.Create(a).Error
+func (s *sqlStorage) Save(u *User) error {
+	if u.ID == 0 {
+		return s.db.Create(u).Error
 	}
 
-	return s.db.Save(a).Error
+	return s.db.Save(u).Error
 }
 
 func NewUserSqlStorage(db *gorm.DB) UserStorage {

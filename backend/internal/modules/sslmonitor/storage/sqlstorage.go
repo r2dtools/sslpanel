@@ -2,9 +2,10 @@ package storage
 
 import (
 	"encoding/json"
+	"errors"
 
-	"github.com/jinzhu/gorm"
 	"github.com/r2dtools/agentintegration"
+	"gorm.io/gorm"
 )
 
 type sqlStorage struct {
@@ -37,7 +38,7 @@ func (s sqlStorage) FindByID(id int) (*Domain, error) {
 	var domain Domain
 
 	if err := s.db.Preload("User").First(&domain, id).Error; err != nil {
-		if gorm.IsRecordNotFoundError(err) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 
@@ -48,7 +49,7 @@ func (s sqlStorage) FindByID(id int) (*Domain, error) {
 }
 
 func (s sqlStorage) Save(domain *Domain) error {
-	if s.db.NewRecord(domain) {
+	if domain.ID == 0 {
 		return s.db.Create(domain).Error
 	}
 

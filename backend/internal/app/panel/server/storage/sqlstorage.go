@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 const guidPrefix = "server_guid_prefix"
@@ -27,7 +27,7 @@ func (s sqlStorage) FindByID(id int) (*Server, error) {
 	err := s.db.First(&server, id).Error
 
 	if err != nil {
-		if gorm.IsRecordNotFoundError(err) {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 
@@ -49,15 +49,15 @@ func (s sqlStorage) FindAllByAccountID(accountID int) ([]Server, error) {
 }
 
 func (s sqlStorage) Save(server *Server) error {
-	if s.db.NewRecord(s) {
-		return s.db.Create(s).Error
+	if server.ID == 0 {
+		return s.db.Create(server).Error
 	}
 
-	return s.db.Save(s).Error
+	return s.db.Save(server).Error
 }
 
 func (s sqlStorage) Remove(server *Server) error {
-	err := s.db.Delete(s).Error
+	err := s.db.Delete(server).Error
 
 	if err != nil {
 		return fmt.Errorf("failed to delete server with ID %d: %v", server.ID, err)
@@ -67,10 +67,10 @@ func (s sqlStorage) Remove(server *Server) error {
 }
 
 func (s sqlStorage) FindCountByIP(ipv4, ipv6 string, excludeIds []int) (int, error) {
-	var count int
+	var count int64
 
 	if ipv4 == "" && ipv6 == "" {
-		return count, errors.New("ipv4 or ipv6 must be specified")
+		return 0, errors.New("ipv4 or ipv6 must be specified")
 	}
 
 	db := s.db
@@ -83,21 +83,23 @@ func (s sqlStorage) FindCountByIP(ipv4, ipv6 string, excludeIds []int) (int, err
 		db = db.Or("ipv6_address = ?", ipv6)
 	}
 
+	db = s.db.Where(db)
+
 	if len(excludeIds) != 0 {
 		db = db.Where("id NOT IN ?", excludeIds)
 	}
 
 	err := db.Table("servers").Count(&count).Error
 
-	if err != nil {
-		return count, err
-	}
-
-	return count, nil
+	return int(count), err
 }
 
 func NewServerSqlStorage(db *gorm.DB) ServerStorage {
 	return sqlStorage{
 		db: db,
 	}
+}
+
+func (*Server) TableName() string {
+	return "servers"
 }

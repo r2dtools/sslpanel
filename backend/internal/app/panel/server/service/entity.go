@@ -27,15 +27,9 @@ type NewServerRequest struct {
 }
 
 type UpdateServerRequest struct {
-	ID           int    `json:"id" validate:nonzero`
-	Guid         string `json:"guid" validate:"nonzero"`
-	Name         string `json:"name" validate:nonzero`
-	OsCode       string `json:"os_code" validate:nonzero`
-	OsVersion    string `json:"os_version" validate:nonzero`
-	Ipv4Address  string `json:"ipv4_address"`
-	Ipv6Address  string `json:"ipv6_address"`
-	AgentVersion string `json:"agent_version" validate:nonzero`
-	AgentPort    int    `json:"agent_port" validate:nonzero`
-	IsActive     int    `json:"is_active" validate:nonzero`
-	IsRegistered int    `json:"is_registered" validate:nonzero`
+	ID          int    `json:"id" validate:nonzero`
+	Name        string `json:"name" validate:nonzero`
+	Ipv4Address string `json:"ipv4_address"`
+	Ipv6Address string `json:"ipv6_address"`
+	AgentPort   int    `json:"agent_port" validate:nonzero`
 }

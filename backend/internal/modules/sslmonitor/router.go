@@ -7,7 +7,7 @@ import (
 	domainStorage "backend/internal/modules/sslmonitor/storage"
 
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 func InitRouter(

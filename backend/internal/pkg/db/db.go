@@ -3,9 +3,9 @@ package db
 import (
 	"backend/config"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 
-	_ "github.com/jinzhu/gorm/dialects/mysql"
+	"gorm.io/driver/mysql"
 )
 
 var db *gorm.DB
@@ -14,7 +14,7 @@ func GetDB(config *config.Config) (*gorm.DB, error) {
 	var err error
 
 	if db == nil {
-		db, err = gorm.Open(config.DbType, config.DbDsn)
+		db, err = gorm.Open(mysql.Open(config.DbDsn), &gorm.Config{})
 
 		if err != nil {
 			return nil, err

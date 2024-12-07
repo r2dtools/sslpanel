@@ -22,19 +22,13 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useAppDispatch, useAppSelector } from './app/hooks';
 import { fetchCurrentUser, selectCurrentUser, selectCurrentUserFetchStatus } from './features/auth/authSlice';
 import useColorMode from './hooks/useColorMode';
-import { FetchStatus } from './app/types';
+import { FetchStatus, RouteItem } from './app/types';
 import { ColorTheme } from './types/theme';
 import AuthLayout from './layout/AuthLayout';
 import ServerList from './pages/ServerList/ServerList';
+import Server from './pages/Server/Server';
 import useAuthToken from './features/auth/hooks';
-
-interface RouteItem {
-    path?: string;
-    index?: boolean;
-    public?: boolean;
-    title: string;
-    component: React.ReactNode | null;
-};
+import RoutesContext from './app/context';
 
 function App() {
     const { pathname } = useLocation();
@@ -132,7 +126,13 @@ function App() {
                 {
                     path: "/servers",
                     title: "Servers | R2DTools Control Panel",
+                    name: "Servers",
                     component: <ServerList />
+                },
+                {
+                    path: "/servers/:guid",
+                    title: "Server | R2DTools Control Panel",
+                    component: <Server />
                 },
                 {
                     path: "/ui/alerts",
@@ -192,36 +192,40 @@ function App() {
         }
     }, [currentUser, routes, authRoutes]);
 
+    const filterRoutes = (item: RouteItem) => (currentUser !== null && !authRoutes.includes(item.path || "")) || (currentUser === null && item.public);
+
     return loading ? (
         <Loader />
     ) : (
         <AuthContext.Provider value={currentUser}>
-            <Routes>
-                {
-                    routes.map(({ layout: Layout, routes, props }) => (
-                        <Route element={<Layout {...props} />} key={Layout.name}>
-                            {
-                                routes
-                                    .filter((item: RouteItem) => (currentUser !== null && !authRoutes.includes(item.path || "")) || (currentUser === null && item.public))
-                                    .map((item: RouteItem) => (
-                                        <Route
-                                            key={item.path}
-                                            index={item.index}
-                                            path={item.path}
-                                            element={
-                                                <>
-                                                    <PageTitle title={item.title} />
-                                                    {item.component}
-                                                </>
-                                            }
-                                        />
-                                    ))
-                            }
-                        </Route>
-                    ))
-                }
-            </Routes>
-            <ToastContainer theme={colorMode === ColorTheme.Dark ? 'dark' : 'light'} />
+            <RoutesContext.Provider value={allRoutes.filter(filterRoutes)}>
+                <Routes>
+                    {
+                        routes.map(({ layout: Layout, routes, props }) => (
+                            <Route element={<Layout {...props} />} key={Layout.name}>
+                                {
+                                    routes
+                                        .filter(filterRoutes)
+                                        .map(({ path, index, title, component }: RouteItem) => (
+                                            <Route
+                                                key={path}
+                                                index={index}
+                                                path={path}
+                                                element={
+                                                    <>
+                                                        <PageTitle title={title} />
+                                                        {component}
+                                                    </>
+                                                }
+                                            />
+                                        ))
+                                }
+                            </Route>
+                        ))
+                    }
+                </Routes>
+                <ToastContainer theme={colorMode === ColorTheme.Dark ? 'dark' : 'light'} />
+            </RoutesContext.Provider>
         </AuthContext.Provider>
     );
 }

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
-import React from 'react';
+import React, { useContext } from 'react';
+import RoutesContext from '../app/context';
 
 interface BreadcrumbProps {
     pageName: string;
@@ -7,6 +8,9 @@ interface BreadcrumbProps {
 }
 
 const Breadcrumb = ({ pageName, children }: BreadcrumbProps) => {
+    const routes = useContext(RoutesContext);
+    console.log(routes);
+
     return (
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className='flex flex-row gap-5 items-center justify-between sm:justify-start'>

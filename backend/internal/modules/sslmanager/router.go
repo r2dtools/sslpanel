@@ -5,6 +5,7 @@ import (
 	serverStorage "backend/internal/app/panel/server/storage"
 	certApi "backend/internal/modules/sslmanager/adapters/api"
 	"backend/internal/modules/sslmanager/service"
+	"backend/internal/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,8 +14,9 @@ func InitRouter(
 	group *gin.RouterGroup,
 	cAuth auth.Auth,
 	appServerStorage serverStorage.ServerStorage,
+	logger logger.Logger,
 ) {
-	appCertificateService := service.NewCertificateService(appServerStorage)
+	appCertificateService := service.NewCertificateService(appServerStorage, logger)
 
 	group.POST("/:serverId/issue/:serverName", certApi.CreateIssueCertificateHandler(cAuth, appCertificateService))
 	group.POST("/:serverId/domain/assign", certApi.CreateAssignCertificateHandler(cAuth, appCertificateService))

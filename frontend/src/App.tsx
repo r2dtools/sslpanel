@@ -29,6 +29,7 @@ import ServerList from './pages/ServerList/ServerList';
 import Server from './pages/Server/Server';
 import useAuthToken from './features/auth/hooks';
 import RoutesContext from './app/context';
+import Error404 from './pages/Error404';
 
 function App() {
     const { pathname } = useLocation();
@@ -84,6 +85,16 @@ function App() {
             },
             routes: [
                 {
+                    path: '*',
+                    title: 'Page not found',
+                    component: <Error404 />
+                },
+                {
+                    path: '/auth/*',
+                    title: "eCommerce Dashboard | TailAdmin - Tailwind CSS Admin Dashboard Template",
+                    component: <ECommerce />
+                },
+                {
                     index: true,
                     title: "eCommerce Dashboard | TailAdmin - Tailwind CSS Admin Dashboard Template",
                     component: <ECommerce />
@@ -132,7 +143,8 @@ function App() {
                 {
                     path: "/servers/:guid",
                     title: "Server | R2DTools Control Panel",
-                    component: <Server />
+                    name: 'Server',
+                    component: <Server />,
                 },
                 {
                     path: "/ui/alerts",

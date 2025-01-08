@@ -8,6 +8,7 @@ import (
 
 	serverAgent "backend/internal/pkg/agent"
 	"backend/internal/pkg/certificate"
+	"backend/internal/pkg/logger"
 
 	"github.com/r2dtools/agentintegration"
 )
@@ -16,6 +17,7 @@ var ErrServerNotFound = errors.New("server not found")
 
 type CertificateService struct {
 	serverStorage serverStorage.ServerStorage
+	logger        logger.Logger
 }
 
 func (s CertificateService) IssueCertificate(
@@ -156,6 +158,7 @@ func (s CertificateService) getCertificateAgent(serverID int) (*agent.Certificat
 		server.Ipv6Address,
 		server.Token,
 		server.AgentPort,
+		s.logger,
 	)
 
 	if err != nil {
@@ -165,8 +168,9 @@ func (s CertificateService) getCertificateAgent(serverID int) (*agent.Certificat
 	return agent.NewCertificateAgent(sAgent), nil
 }
 
-func NewCertificateService(serverStorage serverStorage.ServerStorage) CertificateService {
+func NewCertificateService(serverStorage serverStorage.ServerStorage, logger logger.Logger) CertificateService {
 	return CertificateService{
 		serverStorage: serverStorage,
+		logger:        logger,
 	}
 }

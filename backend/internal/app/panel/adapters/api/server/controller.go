@@ -31,7 +31,7 @@ func CreateFindAccounServersHandler(cAuth auth.Auth, appServerService serverServ
 	}
 }
 
-func CreateGetServerHandler(cAuth auth.Auth, appServerService serverService.ServerService) func(c *gin.Context) {
+func CreateGetServerByGuidHandler(cAuth auth.Auth, appServerService serverService.ServerService) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		user := cAuth.GetCurrentUser(c)
 
@@ -39,19 +39,59 @@ func CreateGetServerHandler(cAuth auth.Auth, appServerService serverService.Serv
 			return
 		}
 
-		id, err := strconv.Atoi(c.Param("id"))
+		guid := c.Param("serverId")
 
-		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server ID"))
+		if guid == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
 
 			return
 		}
 
-		server, err := appServerService.FindServerByID(id)
+		server, err := appServerService.FindServerByGuid(guid)
 
 		if err != nil {
 			if errors.Is(err, serverService.ErrServerNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else {
+				c.AbortWithError(http.StatusInternalServerError, err)
+			}
+
+			return
+		}
+
+		if server == nil {
+			c.AbortWithError(http.StatusNotFound, err)
+
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"server": server})
+	}
+}
+
+func CreateGetServerDetailsByGuidHandler(cAuth auth.Auth, appServerService serverService.ServerService) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		user := cAuth.GetCurrentUser(c)
+
+		if user == nil {
+			return
+		}
+
+		guid := c.Param("serverId")
+
+		if guid == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
+
+			return
+		}
+
+		server, err := appServerService.GetServerDetailsByGuid(guid)
+
+		if err != nil {
+			if errors.Is(err, serverService.ErrServerNotFound) {
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else if errors.Is(err, serverService.ErrAgentConnection) {
+				c.AbortWithStatusJSON(http.StatusGatewayTimeout, gin.H{"message": err.Error()})
 			} else {
 				c.AbortWithError(http.StatusInternalServerError, err)
 			}
@@ -177,54 +217,6 @@ func CreateUpdateServerHandler(appServerService serverService.ServerService) fun
 				c.AbortWithError(http.StatusInternalServerError, err)
 			}
 		}
-	}
-}
-
-func CreateRefreshServerHandler(appServerService serverService.ServerService) func(c *gin.Context) {
-	return func(c *gin.Context) {
-		serverID, err := strconv.Atoi(c.Param("serverId"))
-
-		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server ID"))
-
-			return
-		}
-
-		server, serverData, err := appServerService.RefreshServer(serverID)
-
-		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError, err)
-
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"server": server, "serverData": serverData})
-	}
-}
-
-func CreateGetServerVhostsHandler(appServerService serverService.ServerService) func(c *gin.Context) {
-	return func(c *gin.Context) {
-		serverID, err := strconv.Atoi(c.Param("serverId"))
-
-		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server ID"))
-
-			return
-		}
-
-		vhosts, err := appServerService.FindServerVhosts(serverID)
-
-		if err != nil {
-			if errors.Is(err, serverService.ErrServerNotFound) {
-				c.AbortWithError(http.StatusNotFound, err)
-			} else {
-				c.AbortWithError(http.StatusInternalServerError, err)
-			}
-
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"vhosts": vhosts})
 	}
 }
 

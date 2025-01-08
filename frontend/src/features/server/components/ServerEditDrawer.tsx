@@ -7,7 +7,7 @@ const defaultPort = 60150
 
 type ServerEditProps = {
     server?: Server | null;
-    token: string;
+    authToken: string;
     open: boolean;
     loading: boolean;
     onSubmit: (server: ServerSavePayload) => void;
@@ -16,7 +16,7 @@ type ServerEditProps = {
 
 const ServerEditDrawer: React.FC<ServerEditProps> = ({
     server,
-    token,
+    authToken,
     open,
     loading,
     onSubmit,
@@ -25,23 +25,19 @@ const ServerEditDrawer: React.FC<ServerEditProps> = ({
     const [name, setName] = useState<string>(server?.name || '');
     const [ipv4, setIpv4] = useState<string>(server?.ipv4_address || '');
     const [ipv6, setIpv6] = useState<string>(server?.ipv6_address || '');
+    const [token, setToken] = useState<string>(server?.token || '');
     const [port, setPort] = useState<number>(server?.agent_port || defaultPort);
     const [ipError, setIpError] = useState<string>('');
 
     useEffect(() => {
-        setName(server?.name || '');
-        setIpv4(server?.ipv4_address || '');
-        setIpv6(server?.ipv6_address || '');
-        setPort(server?.agent_port || defaultPort);
-    }, [server]);
+        setName(open ? server?.name || '' : '');
+        setIpv4(open ? server?.ipv4_address || '' : '');
+        setIpv6(open ? server?.ipv6_address || '' : '');
+        setPort(open ? server?.agent_port || defaultPort : defaultPort);
+        setToken(open ? server?.token || '' : '');
+    }, [server, open]);
 
     const handleFormClose = (): void => {
-        setName('');
-        setIpv4('');
-        setIpv6('');
-        setPort(defaultPort);
-        setIpError('');
-
         onClose();
     };
 
@@ -55,12 +51,14 @@ const ServerEditDrawer: React.FC<ServerEditProps> = ({
         }
 
         const saveServerPayload: ServerSavePayload = {
-            token,
-            name: name,
+            authToken,
+            name,
             ipv4_address: ipv4,
             ipv6_address: ipv6,
             agent_port: port,
             id: server?.id,
+            token,
+            guid: server?.guid,
         };
 
         onSubmit(saveServerPayload);
@@ -69,7 +67,7 @@ const ServerEditDrawer: React.FC<ServerEditProps> = ({
 
     return (
         <Drawer className='z-[999]' open={open} onClose={handleFormClose} position='right'>
-            <Drawer.Header title="Add new server" titleIcon={HiMiniServer} />
+            <Drawer.Header title={server?.id ? 'Edit server' : 'Add new server'} titleIcon={HiMiniServer} />
             <Drawer.Items>
                 <form onSubmit={handleSubmit}>
                     <div className="mb-6 mt-3">
@@ -125,6 +123,19 @@ const ServerEditDrawer: React.FC<ServerEditProps> = ({
                             required
                             value={port}
                             onChange={(event: React.ChangeEvent<HTMLInputElement>) => setPort(parseInt(event.target.value))}
+                        />
+                    </div>
+                    <div className="mb-6 mt-3">
+                        <Label htmlFor="token" className="mb-2 block">
+                            Token
+                        </Label>
+                        <TextInput
+                            id="token"
+                            name="token"
+                            placeholder="Server agent token"
+                            required
+                            value={token}
+                            onChange={(event: React.ChangeEvent<HTMLInputElement>) => setToken(event.target.value)}
                         />
                     </div>
                     <Button className="w-full" color='blue' type='submit'>

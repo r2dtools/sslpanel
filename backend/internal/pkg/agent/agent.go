@@ -12,7 +12,7 @@ import (
 
 const (
 	refreshCommand             = "refresh"
-	getVhodstsCommand          = "getVhostsCommand"
+	getVhostsCommand           = "getVhosts"
 	getVhostCertificateCommand = "getVhostCertificate"
 )
 
@@ -52,7 +52,7 @@ func (a *Agent) Refresh() (*agentintegration.ServerData, error) {
 }
 
 func (a *Agent) GetVhosts() ([]agentintegration.VirtualHost, error) {
-	data, err := a.Request(getVhodstsCommand, nil)
+	data, err := a.Request(getVhostsCommand, nil)
 
 	if err != nil {
 		return nil, err
@@ -130,7 +130,7 @@ func (a *Agent) Request(command string, data interface{}) (interface{}, error) {
 	return resp.Data, nil
 }
 
-func NewAgent(ipv4, ipv6, token string, port int) (*Agent, error) {
+func NewAgent(ipv4, ipv6, token string, port int, logger logger.Logger) (*Agent, error) {
 	if ipv4 == "" && ipv6 == "" {
 		return nil, errors.New("ipv4 or ipv6 address must be specified")
 	}
@@ -158,5 +158,6 @@ func NewAgent(ipv4, ipv6, token string, port int) (*Agent, error) {
 	return &Agent{
 		token:  token,
 		client: &tcpClient,
+		logger: logger,
 	}, nil
 }

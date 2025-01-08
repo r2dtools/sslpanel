@@ -88,13 +88,12 @@ func newEngine(config *config.Config, logger logger.Logger) (*gin.Engine, error)
 		{
 			serverGroup.Use(authMiddleware.MiddlewareFunc())
 			serverGroup.GET("", serverApi.CreateFindAccounServersHandler(appAuth, appServerSevice))
-			serverGroup.GET("/:serverId", serverApi.CreateGetServerHandler(appAuth, appServerSevice))
 			serverGroup.POST("", serverApi.CreateAddServerHandler(appAuth, appServerSevice))
 			serverGroup.POST("/:serverId", serverApi.CreateUpdateServerHandler(appServerSevice))
 			serverGroup.DELETE("/:serverId", serverApi.CreateRemoveServerHandler(appAuth, appServerSevice))
-			serverGroup.POST("/:serverId/refresh", serverApi.CreateRefreshServerHandler(appServerSevice))
-			serverGroup.GET("/:serverId/vhosts", serverApi.CreateGetServerVhostsHandler(appServerSevice))
 			serverGroup.GET("/:serverId/vhost-certificate", serverApi.CreateGetVhostCertificateHandler(appServerSevice))
+			serverGroup.GET("/:serverId", serverApi.CreateGetServerByGuidHandler(appAuth, appServerSevice))
+			serverGroup.GET("/:serverId/details", serverApi.CreateGetServerDetailsByGuidHandler(appAuth, appServerSevice))
 		}
 
 		settingGroup := v1.Group("settings")
@@ -105,7 +104,7 @@ func newEngine(config *config.Config, logger logger.Logger) (*gin.Engine, error)
 
 		modulesGroup := v1.Group("modules")
 		{
-			modules.InitModulesRouter(modulesGroup, database, authMiddleware, appAuth, appServerStorage)
+			modules.InitModulesRouter(modulesGroup, database, authMiddleware, appAuth, appServerStorage, logger)
 		}
 	}
 

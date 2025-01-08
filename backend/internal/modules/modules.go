@@ -21,11 +21,12 @@ func InitModulesRouter(
 	authMiddleware *jwt.GinJWTMiddleware,
 	cAuth auth.Auth,
 	appServerStorage serverStorage.ServerStorage,
+	logger logger.Logger,
 ) {
 	certificatesGroup := group.Group("certificates")
 	{
 		certificatesGroup.Use(authMiddleware.MiddlewareFunc())
-		sslManagerModule.InitRouter(certificatesGroup, cAuth, appServerStorage)
+		sslManagerModule.InitRouter(certificatesGroup, cAuth, appServerStorage, logger)
 	}
 
 	sslMonitorGroup := group.Group("certificate-monitor")

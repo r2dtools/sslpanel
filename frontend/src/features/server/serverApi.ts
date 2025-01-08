@@ -1,5 +1,5 @@
 import api, { configWithAuth, getErrorMessage } from '../../lib/api';
-import { SaveServerRequest, Server } from './types';
+import { ServerSaveRequest, Server, ServerDetails } from './types';
 
 export const getServersApi = async (token: string) => {
     try {
@@ -11,7 +11,27 @@ export const getServersApi = async (token: string) => {
     }
 };
 
-export const addServerApi = async (server: SaveServerRequest, token: string) => {
+export const getServerApi = async (guid: string, token: string) => {
+    try {
+        const response = await api.get(`/v1/servers/${guid}`, configWithAuth(token));
+
+        return response.data.server as Server;
+    } catch (error) {
+        throw new Error(getErrorMessage(error))
+    }
+};
+
+export const getServerDetailsApi = async (guid: string, token: string) => {
+    try {
+        const response = await api.get(`/v1/servers/${guid}/details`, configWithAuth(token));
+
+        return response.data.server as ServerDetails;
+    } catch (error) {
+        throw new Error(getErrorMessage(error))
+    }
+};
+
+export const addServerApi = async (server: ServerSaveRequest, token: string) => {
     try {
         await api.post('/v1/servers', server, configWithAuth(token));
     } catch (error) {
@@ -19,7 +39,7 @@ export const addServerApi = async (server: SaveServerRequest, token: string) => 
     }
 };
 
-export const editServerApi = async (id: number, server: SaveServerRequest, token: string) => {
+export const editServerApi = async (id: number, server: ServerSaveRequest, token: string) => {
     try {
         await api.post(`/v1/servers/${id}`, server, configWithAuth(token));
     } catch (error) {

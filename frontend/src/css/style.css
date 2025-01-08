@@ -32,6 +32,13 @@
 
 /* third-party libraries CSS */
 
+.Toastify {
+    --toastify-color-success: theme('colors.success');
+    --toastify-icon-color-success: theme('colors.success');
+    --toastify-color-progress-success: theme('colors.success');
+    --toastify-color-dark: theme('colors.boxdark-2');
+}
+
 .tableCheckbox:checked ~ div span {
   @apply opacity-100;
 }

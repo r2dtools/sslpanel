@@ -1,9 +1,11 @@
 package storage
 
 import (
-	"crypto/md5"
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -12,8 +14,7 @@ const guidPrefix = "server_guid_prefix"
 
 func (s *Server) AfterFind(tx *gorm.DB) (err error) {
 	guidRaw := fmt.Sprintf("%s_%d", guidPrefix, s.ID)
-	guidMd5 := md5.Sum([]byte(guidRaw))
-	s.Guid = fmt.Sprintf("%x", guidMd5)
+	s.Guid = base64.RawStdEncoding.EncodeToString([]byte(guidRaw))
 
 	return
 }
@@ -35,6 +36,23 @@ func (s sqlStorage) FindByID(id int) (*Server, error) {
 	}
 
 	return &server, nil
+}
+
+func (s sqlStorage) FindByGuid(guid string) (*Server, error) {
+	decodedGuid, err := base64.RawStdEncoding.DecodeString(guid)
+
+	if err != nil {
+		return nil, fmt.Errorf("invalid server guid: %v", err)
+	}
+
+	idStr := strings.TrimPrefix(string(decodedGuid), fmt.Sprintf("%s_", guidPrefix))
+	id, err := strconv.Atoi(idStr)
+
+	if err != nil {
+		return nil, fmt.Errorf("invalid server guid: %v", err)
+	}
+
+	return s.FindByID(id)
 }
 
 func (s sqlStorage) FindAllByAccountID(accountID int) ([]Server, error) {

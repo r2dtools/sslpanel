@@ -1,15 +1,41 @@
-import { Link } from 'react-router-dom';
-import React, { useContext } from 'react';
+import { generatePath, Link, matchPath, useLocation, useParams } from 'react-router-dom';
+import React, { useContext, useMemo } from 'react';
 import RoutesContext from '../app/context';
+import { RouteItem } from '../app/types';
 
 interface BreadcrumbProps {
     pageName: string;
     children?: React.ReactNode;
 }
 
+const createBreadcrumbs = (pathname: string, routes: RouteItem[], params: {} | undefined): { name: string, url: string }[] => {
+    const breadcrumbs = [];
+    const parts = pathname.split('/');
+
+    while (parts.length > 0) {
+        parts.pop();
+        const match = routes.find(
+            (routeItem: RouteItem) => routeItem.path
+                && routeItem.path !== '*'
+                && matchPath(routeItem.path, parts.join('/')) !== null
+        );
+
+        if (match?.name && match.path) {
+            breadcrumbs.unshift({
+                name: match.name,
+                url: generatePath(match.path, params),
+            });
+        }
+    }
+
+    return breadcrumbs;
+};
+
 const Breadcrumb = ({ pageName, children }: BreadcrumbProps) => {
     const routes = useContext(RoutesContext);
-    console.log(routes);
+    const { pathname } = useLocation();
+    const params = useParams();
+    const breadcrumbs = useMemo(() => createBreadcrumbs(pathname, routes, params), [pathname, routes, params]);
 
     return (
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -27,6 +53,7 @@ const Breadcrumb = ({ pageName, children }: BreadcrumbProps) => {
                             Dashboard /
                         </Link>
                     </li>
+                    {breadcrumbs.map(({ name, url }) => <Link className='font-medium' to={url} key={name}>{`${name} /`}</Link>)}
                     <li className="font-medium text-primary">{pageName}</li>
                 </ol>
             </nav>

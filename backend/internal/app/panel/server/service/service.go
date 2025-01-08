@@ -9,6 +9,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/r2dtools/agentintegration"
@@ -27,6 +28,7 @@ func (e ErrServerService) Error() string {
 }
 
 var ErrServerNotFound = errors.New("server not found")
+var ErrAgentConnection = errors.New("failed to connect to the server agent")
 
 type ServerService struct {
 	config        *config.Config
@@ -49,8 +51,70 @@ func (s ServerService) FindAccountServers(accountID int) ([]Server, error) {
 	return servers, nil
 }
 
-func (s ServerService) FindServerByID(id int) (*Server, error) {
-	serverModel, err := s.serverStorage.FindByID(id)
+func (s ServerService) GetServerDetailsByGuid(guid string) (*ServerDetails, error) {
+	serverModel, err := s.serverStorage.FindByGuid(guid)
+
+	if err != nil {
+		return nil, ErrServerNotFound
+	}
+
+	nAgent, err := s.getServerAgent(serverModel)
+
+	if err != nil {
+		return nil, err
+	}
+
+	refData, err := nAgent.Refresh()
+	connErr := agent.ConnectionError{}
+
+	if err != nil {
+		s.logger.Debug(err.Error())
+
+		if errors.As(err, &connErr) {
+			serverModel.IsActive = 0
+			s.serverStorage.Save(serverModel)
+
+			return nil, ErrAgentConnection
+		}
+
+		return nil, err
+	}
+
+	serverModel.OsCode = refData.Platform
+	serverModel.OsVersion = refData.PlatformVersion
+	serverModel.AgentVersion = refData.AgentVersion
+	serverModel.IsActive = 1
+
+	err = s.serverStorage.Save(serverModel)
+
+	if err != nil {
+		return nil, err
+	}
+
+	vhosts, err := nAgent.GetVhosts()
+
+	if err != nil {
+		return nil, err
+	}
+
+	serverDetails := ServerDetails{
+		Server:         *createServer(serverModel),
+		PlatformFamily: refData.PlatformFamily,
+		Os:             refData.Os,
+		Virtualization: refData.Virtualization,
+		HostName:       refData.HostName,
+		KernelVersion:  refData.KernelVersion,
+		KernelArch:     refData.KernelArch,
+		Uptime:         refData.Uptime,
+		BootTime:       refData.BootTime,
+		Domains:        createDomains(vhosts),
+	}
+
+	return &serverDetails, nil
+}
+
+func (s ServerService) FindServerByGuid(guid string) (*Server, error) {
+	serverModel, err := s.serverStorage.FindByGuid(guid)
 
 	if err != nil {
 		return nil, ErrServerNotFound
@@ -93,6 +157,7 @@ func (s ServerService) AddServer(request NewServerRequest) error {
 		Ipv4Address: request.Ipv4Address,
 		Ipv6Address: request.Ipv6Address,
 		AgentPort:   request.AgentPort,
+		Token:       request.Token,
 	}
 	guid, err := generateToken(serverTokenLength)
 
@@ -142,6 +207,7 @@ func (s ServerService) UpdateServer(request UpdateServerRequest) error {
 	serverModel.Name = request.Name
 	serverModel.Ipv4Address = request.Ipv4Address
 	serverModel.Ipv6Address = request.Ipv6Address
+	serverModel.Token = request.Token
 
 	agentPort := request.AgentPort
 
@@ -152,79 +218,6 @@ func (s ServerService) UpdateServer(request UpdateServerRequest) error {
 	serverModel.AgentPort = agentPort
 
 	return s.serverStorage.Save(serverModel)
-}
-
-func (s ServerService) RefreshServer(serverID int) (*Server, *agentintegration.ServerData, error) {
-	serverModel, err := s.serverStorage.FindByID(serverID)
-
-	if err != nil {
-		return nil, nil, err
-	}
-
-	if serverModel == nil {
-		return nil, nil, ErrServerNotFound
-	}
-
-	nAgent, err := getServerAgent(serverModel)
-
-	if err != nil {
-		return nil, nil, err
-	}
-
-	refData, err := nAgent.Refresh()
-	connErr := agent.ConnectionError{}
-
-	if err != nil {
-		// If connection failed with server agent then change agent status to "inactive"
-		if errors.As(err, &connErr) {
-			serverModel.IsActive = 0
-			err = s.serverStorage.Save(serverModel)
-
-			s.logger.Error(err.Error())
-		}
-
-		return nil, nil, err
-	}
-
-	serverModel.OsCode = refData.Platform
-	serverModel.OsVersion = refData.PlatformVersion
-	serverModel.AgentVersion = refData.AgentVersion
-	serverModel.IsRegistered = 1
-	serverModel.IsActive = 1
-
-	err = s.serverStorage.Save(serverModel)
-
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return createServer(serverModel), refData, nil
-}
-
-func (s ServerService) FindServerVhosts(serverID int) ([]agentintegration.VirtualHost, error) {
-	serverModel, err := s.serverStorage.FindByID(serverID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if serverModel == nil {
-		return nil, ErrServerNotFound
-	}
-
-	nAgent, err := getServerAgent(serverModel)
-
-	if err != nil {
-		return nil, err
-	}
-
-	vhosts, err := nAgent.GetVhosts()
-
-	if err != nil {
-		return nil, err
-	}
-
-	return filterVhosts(vhosts), nil
 }
 
 func (s ServerService) GetVhostCertificate(serverID int, vhostName string) (*agentintegration.Certificate, error) {
@@ -238,7 +231,7 @@ func (s ServerService) GetVhostCertificate(serverID int, vhostName string) (*age
 		return nil, ErrServerNotFound
 	}
 
-	nAgent, err := getServerAgent(serverModel)
+	nAgent, err := s.getServerAgent(serverModel)
 
 	if err != nil {
 		return nil, err
@@ -262,6 +255,7 @@ func createServer(server *serverStorage.Server) *Server {
 		IsRegistered: int(server.IsRegistered),
 		AccountID:    int(server.AccountID),
 		CreatedAt:    server.CreatedAt,
+		Token:        server.Token,
 	}
 }
 
@@ -276,29 +270,78 @@ func generateToken(length int) (string, error) {
 	return fmt.Sprintf("%x", b), nil
 }
 
-func getServerAgent(server *serverStorage.Server) (*agent.Agent, error) {
+func (s ServerService) getServerAgent(server *serverStorage.Server) (*agent.Agent, error) {
 	return agent.NewAgent(
 		server.Ipv4Address,
 		server.Ipv6Address,
 		server.Token,
 		server.AgentPort,
+		s.logger,
 	)
 }
 
-func filterVhosts(vhosts []agentintegration.VirtualHost) []agentintegration.VirtualHost {
-	var rVhosts []agentintegration.VirtualHost
+func createDomains(vhosts []agentintegration.VirtualHost) []Domain {
+	var domains []Domain
 
 	for _, vhost := range vhosts {
 		serverName := strings.Trim(vhost.ServerName, ".")
 		serverNameParts := strings.Split(serverName, ".")
 
 		// skip vhost names like 'domain'
-		if len(serverNameParts) > 1 {
-			rVhosts = append(rVhosts, vhost)
+		if len(serverNameParts) <= 1 {
+			continue
 		}
+
+		var addresses []DomainAddress
+
+		for _, address := range vhost.Addresses {
+			port, err := strconv.Atoi(address.Port)
+
+			if err != nil {
+				continue
+			}
+
+			addresses = append(addresses, DomainAddress{
+				IsIpv6: address.IsIpv6,
+				Host:   address.Host,
+				Port:   port,
+			})
+		}
+
+		domains = append(domains, Domain{
+			FilePath:    vhost.FilePath,
+			ServerName:  vhost.ServerName,
+			DocRoot:     vhost.DocRoot,
+			WebServer:   vhost.WebServer,
+			Aliases:     vhost.Aliases,
+			Ssl:         vhost.Ssl,
+			Addresses:   addresses,
+			Certificate: createCertificate(vhost.Certificate),
+		})
 	}
 
-	return rVhosts
+	return domains
+}
+
+func createCertificate(cert *agentintegration.Certificate) *DomainCertificate {
+	if cert == nil {
+		return nil
+	}
+
+	return &DomainCertificate{
+		CN:             cert.CN,
+		ValidFrom:      cert.ValidFrom,
+		ValidTo:        cert.ValidTo,
+		DNSNames:       cert.DNSNames,
+		EmailAddresses: cert.EmailAddresses,
+		Organization:   cert.Organization,
+		Country:        cert.Country,
+		Locality:       cert.Locality,
+		Province:       cert.Province,
+		IsValid:        cert.IsValid,
+		IsCA:           cert.IsCA,
+		Issuer:         Issuer(cert.Issuer),
+	}
 }
 
 func NewServerService(config *config.Config, serverStorage storage.ServerStorage, logger logger.Logger) ServerService {

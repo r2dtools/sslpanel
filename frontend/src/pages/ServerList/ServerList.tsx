@@ -10,7 +10,7 @@ import {
     selectServers,
     selectServerSaveStatus,
     selectServersFetchStatus,
-} from '../../features/server/serverSlice';
+} from '../../features/server/serversSlice';
 import useAuthToken from '../../features/auth/hooks';
 import { FetchStatus } from '../../app/types';
 import Loader from '../../components/Loader/Loader';
@@ -99,7 +99,7 @@ const ServerList = () => {
                 </div>
                 <ServerEditDrawer
                     open={serverFormOpen}
-                    token={authToken || ''}
+                    authToken={authToken || ''}
                     loading={serverSaveStatus === FetchStatus.Pending}
                     onSubmit={handleSubmit}
                     onClose={handleServerFormClose}

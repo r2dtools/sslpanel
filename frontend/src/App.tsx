@@ -30,6 +30,7 @@ import Server from './pages/Server/Server';
 import useAuthToken from './features/auth/hooks';
 import RoutesContext from './app/context';
 import Error404 from './pages/Error404';
+import Domain from './pages/Domain/Domain';
 
 function App() {
     const { pathname } = useLocation();
@@ -145,6 +146,12 @@ function App() {
                     title: "Server | R2DTools Control Panel",
                     name: 'Server',
                     component: <Server />,
+                },
+                {
+                    path: "/servers/:guid/domain/:name",
+                    title: "Domain | R2DTools Control Panel",
+                    name: 'Domain',
+                    component: <Domain />,
                 },
                 {
                     path: "/ui/alerts",

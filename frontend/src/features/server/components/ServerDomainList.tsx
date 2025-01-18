@@ -4,6 +4,7 @@ import { Domain } from '../types';
 import React from 'react';
 import empty from '../../../images/empty.png';
 import moment from 'moment';
+import { encode } from 'js-base64';
 import { getSiteCertExpiredDays, isSelfSignedCertificate } from '../utils';
 import { CERT_ABOUT_TO_EXPIRE_DAYS } from '../constants';
 
@@ -54,7 +55,7 @@ const ServerDomainList: React.FC<ServerDomainListProps> = ({ domains }) => {
                     const expireDuration = expireDays && expireDays > 0 ? moment.duration(expireDays, 'days').humanize() : null;
 
                     return (
-                        <Link to={`${pathname}/domain/${domain.servername}`} key={domain.servername}>
+                        <Link to={`${pathname}/domain/${encode(domain.servername)}`} key={domain.servername}>
                             <div className="p-3 -mx-3 flex items-center gap-3 hover:bg-[#F8FAFD] dark:hover:bg-meta-4 hover:rounded">
                                 <div className="w-8/12 md:w-5/12 xl:w-4/12">
                                     <span className="font-medium">{domain.servername}</span>

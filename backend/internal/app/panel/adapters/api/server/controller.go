@@ -109,6 +109,56 @@ func CreateGetServerDetailsByGuidHandler(cAuth auth.Auth, appServerService serve
 	}
 }
 
+func CreateGetServerDomainHandler(cAuth auth.Auth, appServerService serverService.ServerService) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		user := cAuth.GetCurrentUser(c)
+
+		if user == nil {
+			return
+		}
+
+		guid := c.Param("serverId")
+
+		if guid == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
+
+			return
+		}
+
+		domainName := c.Param("domainName")
+
+		if domainName == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name"))
+
+			return
+		}
+
+		domain, err := appServerService.GetServerDomain(guid, domainName)
+
+		if err != nil {
+			if errors.Is(err, serverService.ErrServerNotFound) {
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else if errors.Is(err, serverService.ErrDomainNotFound) {
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else if errors.Is(err, serverService.ErrAgentConnection) {
+				c.AbortWithStatusJSON(http.StatusGatewayTimeout, gin.H{"message": err.Error()})
+			} else {
+				c.AbortWithError(http.StatusInternalServerError, err)
+			}
+
+			return
+		}
+
+		if domain == nil {
+			c.AbortWithError(http.StatusNotFound, err)
+
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"domain": domain})
+	}
+}
+
 func CreateRemoveServerHandler(cAuth auth.Auth, appServerService serverService.ServerService) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		user := cAuth.GetCurrentUser(c)

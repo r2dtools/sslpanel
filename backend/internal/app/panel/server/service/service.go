@@ -28,6 +28,7 @@ func (e ErrServerService) Error() string {
 }
 
 var ErrServerNotFound = errors.New("server not found")
+var ErrDomainNotFound = errors.New("domain not found")
 var ErrAgentConnection = errors.New("failed to connect to the server agent")
 
 type ServerService struct {
@@ -111,6 +112,48 @@ func (s ServerService) GetServerDetailsByGuid(guid string) (*ServerDetails, erro
 	}
 
 	return &serverDetails, nil
+}
+
+func (s ServerService) GetServerDomain(guid string, domainName string) (*Domain, error) {
+	serverModel, err := s.serverStorage.FindByGuid(guid)
+
+	if err != nil {
+		return nil, ErrServerNotFound
+	}
+
+	nAgent, err := s.getServerAgent(serverModel)
+
+	if err != nil {
+		return nil, err
+	}
+
+	vhosts, err := nAgent.GetVhosts()
+
+	if err != nil {
+		return nil, err
+	}
+
+	var dVhost *agentintegration.VirtualHost
+
+	for _, vhost := range vhosts {
+		if vhost.ServerName == domainName {
+			dVhost = &vhost
+
+			break
+		}
+	}
+
+	if dVhost == nil {
+		return nil, ErrDomainNotFound
+	}
+
+	domain := createDomain(dVhost)
+
+	if domain == nil {
+		return nil, ErrDomainNotFound
+	}
+
+	return domain, nil
 }
 
 func (s ServerService) FindServerByGuid(guid string) (*Server, error) {
@@ -284,43 +327,53 @@ func createDomains(vhosts []agentintegration.VirtualHost) []Domain {
 	var domains []Domain
 
 	for _, vhost := range vhosts {
-		serverName := strings.Trim(vhost.ServerName, ".")
-		serverNameParts := strings.Split(serverName, ".")
+		domain := createDomain(&vhost)
 
-		// skip vhost names like 'domain'
-		if len(serverNameParts) <= 1 {
+		if domain == nil {
 			continue
 		}
 
-		var addresses []DomainAddress
-
-		for _, address := range vhost.Addresses {
-			port, err := strconv.Atoi(address.Port)
-
-			if err != nil {
-				continue
-			}
-
-			addresses = append(addresses, DomainAddress{
-				IsIpv6: address.IsIpv6,
-				Host:   address.Host,
-				Port:   port,
-			})
-		}
-
-		domains = append(domains, Domain{
-			FilePath:    vhost.FilePath,
-			ServerName:  vhost.ServerName,
-			DocRoot:     vhost.DocRoot,
-			WebServer:   vhost.WebServer,
-			Aliases:     vhost.Aliases,
-			Ssl:         vhost.Ssl,
-			Addresses:   addresses,
-			Certificate: createCertificate(vhost.Certificate),
-		})
+		domains = append(domains, *domain)
 	}
 
 	return domains
+}
+
+func createDomain(vhost *agentintegration.VirtualHost) *Domain {
+	serverName := strings.Trim(vhost.ServerName, ".")
+	serverNameParts := strings.Split(serverName, ".")
+
+	// skip vhost names like 'domain'
+	if len(serverNameParts) <= 1 {
+		return nil
+	}
+
+	var addresses []DomainAddress
+
+	for _, address := range vhost.Addresses {
+		port, err := strconv.Atoi(address.Port)
+
+		if err != nil {
+			continue
+		}
+
+		addresses = append(addresses, DomainAddress{
+			IsIpv6: address.IsIpv6,
+			Host:   address.Host,
+			Port:   port,
+		})
+	}
+
+	return &Domain{
+		FilePath:    vhost.FilePath,
+		ServerName:  vhost.ServerName,
+		DocRoot:     vhost.DocRoot,
+		WebServer:   vhost.WebServer,
+		Aliases:     vhost.Aliases,
+		Ssl:         vhost.Ssl,
+		Addresses:   addresses,
+		Certificate: createCertificate(vhost.Certificate),
+	}
 }
 
 func createCertificate(cert *agentintegration.Certificate) *DomainCertificate {

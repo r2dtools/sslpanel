@@ -54,7 +54,7 @@ const ServerItem: React.FC<ServerItemProps> = ({ server, onDelete, onEdit }: Ser
                     {server.ipv6_address && <div className="font-medium">{server.ipv6_address}</div>}
                 </div>
                 <div className="hidden xl:block lg:w-1/12">
-                    <span className="font-medium">{server.agent_version ? `v${server.agent_version}` : ''}</span>
+                    <span className="font-medium">{server.agent_version ? server.agent_version : ''}</span>
                 </div>
                 <div className="w-3/12 md:w-1/12">
                     {server.is_active ? (

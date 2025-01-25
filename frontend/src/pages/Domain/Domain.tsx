@@ -7,7 +7,7 @@ import { decode } from 'js-base64';
 import Error404 from '../Error404';
 import { HiOutlineQuestionMarkCircle } from 'react-icons/hi2';
 import { useAppSelector } from "../../app/hooks";
-import { selectDomain, selectDomainFetchStatus } from "../../features/server/domainSlice";
+import { selectDomain, selectDomainFetchStatus, selectDomainSecureStatus } from "../../features/server/domainSlice";
 import { FetchStatus } from "../../app/types";
 import useAuthToken from "../../features/auth/hooks";
 import moment from "moment";
@@ -18,6 +18,9 @@ import {
     getWebServerIcon,
 } from "../../features/server/utils";
 import { CERT_ABOUT_TO_EXPIRE_DAYS } from "../../features/server/constants";
+import { useState } from "react";
+import SecureDomainDrawer from "../../features/server/components/SecureDomainDrawer";
+import { DomainSecurePayload } from "../../features/server/types";
 
 const emptyPlaceholder = '----------';
 
@@ -30,7 +33,9 @@ const Domain = () => {
     const [authToken] = useAuthToken();
     const domainName = decode(name || '');
     const domainSelectStatus = useAppSelector(selectDomainFetchStatus);
+    const domainSecureStatus = useAppSelector(selectDomainSecureStatus);
     const domain = useAppSelector(selectDomain);
+    const [secureFormOpen, setSecureFormOpen] = useState(false);
 
     if (!domainName) {
         return <Error404 />
@@ -49,6 +54,18 @@ const Domain = () => {
     const organizations = certificate?.organization || [];
 
     const isLoading = domainSelectStatus === FetchStatus.Pending;
+
+    const handleSubmitSecureForm = async (payload: DomainSecurePayload) => {
+        console.log(payload);
+    };
+
+    const handleSecureFormOpen = (): void => {
+        setSecureFormOpen(true);
+    };
+
+    const handleSecureFormClose = (): void => {
+        setSecureFormOpen(false);
+    };
 
     return (
         !isLoading ?
@@ -72,7 +89,7 @@ const Domain = () => {
                                         </div>
                                     </Avatar>
                                     <div className='flex gap-3'>
-                                        <Button color='blue'>
+                                        <Button color='blue' onClick={handleSecureFormOpen}>
                                             <HiMiniLockClosed className="mr-2 h-5 w-4" />
                                             Secure
                                         </Button>
@@ -155,7 +172,7 @@ const Domain = () => {
                                                     {
                                                         aliases.length
                                                             ? aliases.map(
-                                                                alias => <div>
+                                                                alias => <div key={alias}>
                                                                     <span>{alias}</span>
                                                                     {
                                                                         isDnsNameSecure(certificateDnsNames, alias)
@@ -219,6 +236,16 @@ const Domain = () => {
                         </div>
                     </div >
                 </div >
+                {
+                    domain && (
+                        <SecureDomainDrawer
+                            domain={domain}
+                            open={secureFormOpen}
+                            onClose={handleSecureFormClose}
+                            onSubmit={handleSubmitSecureForm}
+                            loading={domainSecureStatus === FetchStatus.Pending}
+                        />)
+                }
             </> : <Loader />
     );
 }

@@ -30,5 +30,6 @@ export const { domainFetched } = domainSlice.actions;
 
 export const selectDomain = (state: RootState) => state.domain.domain;
 export const selectDomainFetchStatus = (state: RootState) => state.domain.domainStatus;
+export const selectDomainSecureStatus = (state: RootState) => state.domain.domainSecureStatus;
 
 export default domainSlice.reducer

@@ -5,20 +5,50 @@ import { HiMiniEye, HiMiniLockClosed } from "react-icons/hi2";
 import { useParams } from 'react-router-dom';
 import { decode } from 'js-base64';
 import Error404 from '../Error404';
-import nginxIcon from '../../images/nginx.svg';
-import comodo from '../../images/ca/sectigo.svg';
 import { HiOutlineQuestionMarkCircle } from 'react-icons/hi2';
+import { useAppSelector } from "../../app/hooks";
+import { selectDomain, selectDomainFetchStatus } from "../../features/server/domainSlice";
+import { FetchStatus } from "../../app/types";
+import useAuthToken from "../../features/auth/hooks";
+import moment from "moment";
+import {
+    getCertificateIssuerIcon,
+    getCertificateIssuerCode,
+    getSiteCertExpiredDays,
+    getWebServerIcon,
+} from "../../features/server/utils";
+import { CERT_ABOUT_TO_EXPIRE_DAYS } from "../../features/server/constants";
 
+const emptyPlaceholder = '----------';
+
+const isDnsNameSecure = (certificateDnsNames: string[], name: string): boolean =>
+    Boolean(certificateDnsNames.find(certificateDnsName => certificateDnsName === name));
 
 const Domain = () => {
     const { name } = useParams();
+    const { guid } = useParams();
+    const [authToken] = useAuthToken();
     const domainName = decode(name || '');
+    const domainSelectStatus = useAppSelector(selectDomainFetchStatus);
+    const domain = useAppSelector(selectDomain);
 
     if (!domainName) {
         return <Error404 />
     }
 
-    const isLoading = false;
+    const confPathParts = (domain?.filepath || '').split('/');
+    const confFile = confPathParts.pop() || emptyPlaceholder;
+    const addresses = (domain?.addresses || []).map(({ host, port }) => `${host}:${port}`);
+    const aliases = domain?.aliases || [];
+    const certificate = domain?.certificate || null;
+    const certificateDnsNames = certificate?.dnsnames || [];
+    const certificateExpireDays = getSiteCertExpiredDays(certificate?.validto);
+    const expireDuration = certificateExpireDays && certificateExpireDays > 0 ? moment.duration(certificateExpireDays, 'days').humanize() : null;
+    const issuerCode = getCertificateIssuerCode(certificate);
+    const issuerImg = getCertificateIssuerIcon(issuerCode);
+    const organizations = certificate?.organization || [];
+
+    const isLoading = domainSelectStatus === FetchStatus.Pending;
 
     return (
         !isLoading ?
@@ -29,11 +59,15 @@ const Domain = () => {
                         <div className="border-b border-stroke px-4 py-5 dark:border-strokedark md:px-6 xl:px-9">
                             <div className="items-center sm:flex">
                                 <div className="w-full flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                                    <Avatar img={nginxIcon} size='lg' rounded className='justify-start'>
+                                    <Avatar img={getWebServerIcon(domain?.webserver)} size='lg' rounded className='justify-start'>
                                         <div className="space-y-2 font-medium dark:text-white">
-                                            <h3 className="inline-block text-2xl font-medium text-black hover:text-primary dark:text-white">{domainName}</h3>
+                                            <h3 className="inline-block text-2xl font-medium text-black hover:text-primary dark:text-white">{domain?.servername || emptyPlaceholder}</h3>
                                             <div>
-                                                <Badge color='success' size='sm' className='inline'>Secure</Badge>
+                                                {
+                                                    domain?.servername && isDnsNameSecure(certificateDnsNames, domain.servername)
+                                                        ? <Badge color='success' size='sm' className='inline'>Secure</Badge>
+                                                        : <Badge color='failure' size='sm' className='inline'>Insecure</Badge>
+                                                }
                                             </div>
                                         </div>
                                     </Avatar>
@@ -52,38 +86,52 @@ const Domain = () => {
                                     <div className='sm:basis-1/2'>
                                         <h4 className="mb-3 font-bold text-black dark:text-white uppercase">Certificate Information</h4>
                                         <dl className='flex flex-col gap-3'>
-                                            <div>
-                                                <img src={comodo} className='max-w-[200px]' />
-                                            </div>
+                                            {
+                                                issuerImg && <div><img src={issuerImg} className='max-w-[200px]' /></div>
+                                            }
                                             <div>
                                                 <dt>Issuer CN</dt>
                                                 <dd className="font-bold text-black dark:text-white">
-                                                    R3
+                                                    {certificate?.issuer.cn || emptyPlaceholder}
                                                 </dd>
                                             </div>
                                             <div>
                                                 <dt>Issuer Organization</dt>
-                                                <dd className="font-bold text-black dark:text-white">
-                                                    Let`s Encrypt
+                                                <dd className="font-bold text-black dark:text-white flex flex-col gap-2">
+                                                    {
+                                                        organizations.length
+                                                            ? organizations.map(organization => (
+                                                                <div key={organization}>{organization}</div>
+                                                            ))
+                                                            : emptyPlaceholder
+                                                    }
                                                 </dd>
                                             </div>
                                             <div>
                                                 <dt>Common Name</dt>
                                                 <dd className="font-bold text-black dark:text-white">
-                                                    r2dtools.work.gd
+                                                    {certificate?.cn || emptyPlaceholder}
                                                 </dd>
                                             </div>
                                             <div>
                                                 <dt>Alternative Names</dt>
-                                                <dd className="font-bold text-black dark:text-white">
-                                                    www.r2dtools.work.gd, webmail.r2dtools.work.gd
+                                                <dd className="font-bold text-black dark:text-white flex flex-col gap-2">
+                                                    {
+                                                        certificateDnsNames.length
+                                                            ? certificateDnsNames.map(certificateDnsName => <div key={certificateDnsName}>{certificateDnsName}</div>)
+                                                            : emptyPlaceholder
+                                                    }
                                                 </dd>
                                             </div>
                                             <div>
                                                 <dt>Expires</dt>
                                                 <dd className="font-bold text-black dark:text-white">
-                                                    <span>25 Jan 2025</span>
-                                                    <Badge color='warning' className='inline ml-2'>30 days</Badge>
+                                                    <span>{certificate?.validto ? moment(certificate.validto).format('LL') : emptyPlaceholder}</span>
+                                                    {
+                                                        expireDuration !== null && certificateExpireDays !== null
+                                                            ? <Badge color={certificateExpireDays < CERT_ABOUT_TO_EXPIRE_DAYS ? 'warning' : 'success'} className='inline ml-2'>{expireDuration}</Badge>
+                                                            : null
+                                                    }
                                                 </dd>
                                             </div>
                                         </dl>
@@ -94,20 +142,36 @@ const Domain = () => {
                                             <div>
                                                 <dt>SSL</dt>
                                                 <dd className="font-bold text-black dark:text-white">
-                                                    <Badge color='success' className='inline'>Enabled</Badge>
+                                                    {
+                                                        domain?.ssl
+                                                            ? <Badge color='success' className='inline'>Enabled</Badge>
+                                                            : <Badge color='failure' className='inline'>Disabled</Badge>
+                                                    }
                                                 </dd>
                                             </div>
                                             <div>
                                                 <dt>Aliases</dt>
-                                                <dd className="font-bold text-black dark:text-white">
-                                                    <span>www.domain.com</span>
-                                                    <Badge color='failure' className='inline ml-2'>Insecure</Badge>
+                                                <dd className="font-bold text-black dark:text-white flex flex-col gap-2">
+                                                    {
+                                                        aliases.length
+                                                            ? aliases.map(
+                                                                alias => <div>
+                                                                    <span>{alias}</span>
+                                                                    {
+                                                                        isDnsNameSecure(certificateDnsNames, alias)
+                                                                            ? <Badge color='success' className='inline ml-2'>Secure</Badge>
+                                                                            : <Badge color='failure' className='inline ml-2'>Insecure</Badge>
+                                                                    }
+                                                                </div>
+                                                            )
+                                                            : emptyPlaceholder
+                                                    }
                                                 </dd>
                                             </div>
                                             <div>
                                                 <dt>Configuration</dt>
                                                 <dd className="font-bold text-black dark:text-white flex items-center gap-2">
-                                                    <span>example.com.conf</span>
+                                                    <span>{confFile}</span>
                                                     <div className='cursor-pointer'>
                                                         <Tooltip content='show'>
                                                             <HiMiniEye />
@@ -117,11 +181,13 @@ const Domain = () => {
                                             </div>
                                             <div>
                                                 <dt>IP Addresses</dt>
-                                                <dd className="font-bold text-black dark:text-white">*</dd>
+                                                <dd className="font-bold text-black dark:text-white">
+                                                    {addresses.length ? addresses.join(', ') : emptyPlaceholder}
+                                                </dd>
                                             </div>
                                             <div>
                                                 <dt>Web Server</dt>
-                                                <dd className="font-bold text-black dark:text-white">Nginx</dd>
+                                                <dd className="font-bold text-black dark:text-white">{domain?.webserver || emptyPlaceholder}</dd>
                                             </div>
                                         </dl>
                                     </div>

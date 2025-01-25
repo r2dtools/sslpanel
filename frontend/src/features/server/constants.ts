@@ -5,3 +5,6 @@ export const SECTIGO_CODE = 'sectigo';
 export const COMODO_CODE = 'comodo';
 export const AMAZON_CODE = 'amazon';
 export const CLOUD_FLARE_CODE = 'cloudflare';
+
+export const NGINX_CODE = 'nginx';
+export const APACHE_CODE = 'apache';

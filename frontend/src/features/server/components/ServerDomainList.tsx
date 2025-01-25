@@ -1,21 +1,25 @@
 import { Badge } from 'flowbite-react';
-import { Link, useLocation } from 'react-router-dom';
 import { Domain } from '../types';
 import React from 'react';
 import empty from '../../../images/empty.png';
 import moment from 'moment';
-import { encode } from 'js-base64';
 import { getSiteCertExpiredDays, isSelfSignedCertificate } from '../utils';
 import { CERT_ABOUT_TO_EXPIRE_DAYS } from '../constants';
 
 type ServerDomainListProps = {
     domains: Domain[];
+    onDomainClick: (domain: Domain) => void;
 };
 
 const emptyPlaceholder = '----------';
 
-const ServerDomainList: React.FC<ServerDomainListProps> = ({ domains }) => {
-    const { pathname } = useLocation();
+const ServerDomainList: React.FC<ServerDomainListProps> = ({ domains, onDomainClick }) => {
+    const handleDomainClick = (event: React.MouseEvent, domain: Domain): void => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        onDomainClick(domain);
+    };
 
     return (
         <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
@@ -55,7 +59,7 @@ const ServerDomainList: React.FC<ServerDomainListProps> = ({ domains }) => {
                     const expireDuration = expireDays && expireDays > 0 ? moment.duration(expireDays, 'days').humanize() : null;
 
                     return (
-                        <Link to={`${pathname}/domain/${encode(domain.servername)}`} key={domain.servername}>
+                        <a href='#' key={domain.servername} onClick={(event: React.MouseEvent) => handleDomainClick(event, domain)}>
                             <div className="p-3 -mx-3 flex items-center gap-3 hover:bg-[#F8FAFD] dark:hover:bg-meta-4 hover:rounded">
                                 <div className="w-8/12 md:w-5/12 xl:w-4/12">
                                     <span className="font-medium">{domain.servername}</span>
@@ -87,7 +91,7 @@ const ServerDomainList: React.FC<ServerDomainListProps> = ({ domains }) => {
                                     ) : null}
                                 </div>
                             </div>
-                        </Link>
+                        </a>
                     );
                 })}
             </div>

@@ -2,9 +2,23 @@ import centosIcon from '../../images/server/centos-icon.svg';
 import debianIcon from '../../images/server/debian-icon.svg';
 import ubuntuIcon from '../../images/server/ubuntu-icon.svg';
 import linuxIcon from '../../images/server/linux-icon.svg';
+import apacheIcon from '../../images/webserver/apache.svg';
+import nginxIcon from '../../images/webserver/nginx.svg';
+import defaultWebServerIcon from '../../images/webserver/default.png';
 import { DomainCertificate, OsCode } from './types';
+// @ts-ignore
+import * as caIcons from '../../images/ca';
 import moment from 'moment';
-import { AMAZON_CODE, CLOUD_FLARE_CODE, COMODO_CODE, DIGICERT_CODE, LE_CODE, SECTIGO_CODE } from './constants';
+import {
+    AMAZON_CODE,
+    APACHE_CODE,
+    CLOUD_FLARE_CODE,
+    COMODO_CODE,
+    DIGICERT_CODE,
+    LE_CODE,
+    NGINX_CODE,
+    SECTIGO_CODE,
+} from './constants';
 
 export const getOsIcon = (code: string): string => {
     let icon = '';
@@ -52,7 +66,7 @@ export const getOsName = (code: string): string => {
     return name;
 };
 
-export const getSiteCertExpiredDays = (validTo: string | null) => {
+export const getSiteCertExpiredDays = (validTo?: string | null) => {
     if (!validTo) {
         return null;
     }
@@ -110,4 +124,22 @@ export const getCertificateIssuerCode = (certificate: DomainCertificate | null) 
 
 const checkOrganization = (organization: string[], name: string) => {
     return !!organization.find(org => org.indexOf(name) !== -1);
+};
+
+export const getWebServerIcon = (code?: string | null): string => {
+    if (code === APACHE_CODE) {
+        return apacheIcon;
+    } else if (code === NGINX_CODE) {
+        return nginxIcon;
+    }
+
+    return defaultWebServerIcon;
+};
+
+export const getCertificateIssuerIcon = (code?: string | null): string | null => {
+    if (!code) {
+        return null;
+    }
+
+    return caIcons[code] || null;
 };

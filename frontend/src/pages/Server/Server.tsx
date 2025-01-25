@@ -1,7 +1,7 @@
 import { Alert, Avatar, Badge, Button, Popover, Tooltip } from 'flowbite-react';
 import Breadcrumb from '../../components/Breadcrumb';
 import { getOsIcon, getOsName } from '../../features/server/utils';
-import { useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { HiMiniSignal, HiMiniPencil, HiMiniEye, HiMiniClipboard } from 'react-icons/hi2';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { toast } from 'react-toastify';
@@ -24,7 +24,9 @@ import moment from 'moment';
 import Error404 from '../Error404';
 import ServerDomainList from '../../features/server/components/ServerDomainList';
 import ServerEditDrawer from '../../features/server/components/ServerEditDrawer';
-import { ServerSavePayload } from '../../features/server/types';
+import { Domain, ServerSavePayload } from '../../features/server/types';
+import { domainFetched } from '../../features/server/domainSlice';
+import { encode } from 'js-base64';
 
 const emptyPlaceholder = '----------';
 
@@ -40,6 +42,8 @@ const Server = () => {
     const [serverFormOpen, setServerFormOpen] = useState(false);
     const serverSaveStatus = useAppSelector(selectServerSaveStatus);
     const [pinging, setPinging] = useState<boolean>(false);
+    const navigate = useNavigate();
+    const { pathname } = useLocation();
 
     const isLoading = (serverSelectStatus === FetchStatus.Pending || serverDetailsSelectStatus === FetchStatus.Pending) && !pinging;
 
@@ -80,6 +84,11 @@ const Server = () => {
         await dispatch(fetchServerDetails({ guid: guid as string, token: authToken }));
         setPinging(false);
     };
+
+    const handleDomainSelect = (domain: Domain): void => {
+        dispatch(domainFetched(domain));
+        navigate(`${pathname}/domain/${encode(domain.servername)}`);
+    }
 
     const uptime = serverDetails?.uptime ? moment.duration(serverDetails.uptime, 'seconds').humanize() : emptyPlaceholder;
 
@@ -206,7 +215,7 @@ const Server = () => {
                             </div>
                         </div>
                     </div>
-                    <ServerDomainList domains={serverDetails?.domains || []} />
+                    <ServerDomainList domains={serverDetails?.domains || []} onDomainClick={handleDomainSelect} />
                     <ServerEditDrawer
                         open={serverFormOpen}
                         authToken={authToken || ''}

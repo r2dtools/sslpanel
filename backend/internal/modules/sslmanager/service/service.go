@@ -1,6 +1,7 @@
 package service
 
 import (
+	"backend/internal/app/panel/server/service"
 	serverStorage "backend/internal/app/panel/server/storage"
 	"backend/internal/modules/sslmanager/agent"
 	"errors"
@@ -13,6 +14,14 @@ import (
 	"github.com/r2dtools/agentintegration"
 )
 
+type ErrAgentCertificate struct {
+	message string
+}
+
+func (e ErrAgentCertificate) Error() string {
+	return e.message
+}
+
 var ErrServerNotFound = errors.New("server not found")
 
 type CertificateService struct {
@@ -21,49 +30,67 @@ type CertificateService struct {
 }
 
 func (s CertificateService) IssueCertificate(
-	serverID int,
-	certData agentintegration.CertificateIssueRequestData,
-) (*agentintegration.Certificate, error) {
-	cAgent, err := s.getCertificateAgent(serverID)
+	guid string,
+	certIssueRequest CertificateIssueRequest,
+) (*service.DomainCertificate, error) {
+	cAgent, err := s.getCertificateAgent(guid)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return cAgent.Issue(certData)
+	cert, err := cAgent.Issue(agentintegration.CertificateIssueRequestData(certIssueRequest))
+
+	if err != nil {
+		return nil, ErrAgentCertificate{message: err.Error()}
+	}
+
+	return service.CreateCertificate(cert), nil
 }
 
 func (s CertificateService) AssignCertificate(
-	serverID int,
+	guid string,
 	requestData agentintegration.CertificateAssignRequestData,
-) (*agentintegration.Certificate, error) {
-	cAgent, err := s.getCertificateAgent(serverID)
+) (*service.DomainCertificate, error) {
+	cAgent, err := s.getCertificateAgent(guid)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return cAgent.AssignCertificateToDomain(&requestData)
+	cert, err := cAgent.AssignCertificateToDomain(&requestData)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return service.CreateCertificate(cert), nil
 }
 
 func (s CertificateService) UploadCertificate(
-	serverID int,
+	guid string,
 	requestData agentintegration.CertificateUploadRequestData,
-) (*agentintegration.Certificate, error) {
-	cAgent, err := s.getCertificateAgent(serverID)
+) (*service.DomainCertificate, error) {
+	cAgent, err := s.getCertificateAgent(guid)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return cAgent.Upload(&requestData)
+	cert, err := cAgent.Upload(&requestData)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return service.CreateCertificate(cert), nil
 }
 
 func (s CertificateService) UploadCertificateToStorage(
-	serverID int,
+	guid string,
 	requestData agentintegration.CertificateUploadRequestData,
 ) (*agentintegration.Certificate, error) {
-	cAgent, err := s.getCertificateAgent(serverID)
+	cAgent, err := s.getCertificateAgent(guid)
 
 	if err != nil {
 		return nil, err
@@ -72,8 +99,8 @@ func (s CertificateService) UploadCertificateToStorage(
 	return cAgent.UploadPemCertificateToStorage(&requestData)
 }
 
-func (s CertificateService) DownloadCertificateFromStorage(serverID int, certName string) (*agentintegration.CertificateDownloadResponseData, error) {
-	cAgent, err := s.getCertificateAgent(serverID)
+func (s CertificateService) DownloadCertificateFromStorage(guid string, certName string) (*agentintegration.CertificateDownloadResponseData, error) {
+	cAgent, err := s.getCertificateAgent(guid)
 
 	if err != nil {
 		return nil, err
@@ -82,8 +109,8 @@ func (s CertificateService) DownloadCertificateFromStorage(serverID int, certNam
 	return cAgent.DownloadtStorageCertificate(certName)
 }
 
-func (s CertificateService) GetStorageCertNameList(serverID int) ([]string, error) {
-	cAgent, err := s.getCertificateAgent(serverID)
+func (s CertificateService) GetStorageCertNameList(guid string) ([]string, error) {
+	cAgent, err := s.getCertificateAgent(guid)
 
 	if err != nil {
 		return nil, err
@@ -92,8 +119,8 @@ func (s CertificateService) GetStorageCertNameList(serverID int) ([]string, erro
 	return cAgent.GetStorageCertNameList()
 }
 
-func (s CertificateService) GetStorageCertificate(serverID int, certName string) (*agentintegration.Certificate, error) {
-	cAgent, err := s.getCertificateAgent(serverID)
+func (s CertificateService) GetStorageCertificate(guid string, certName string) (*agentintegration.Certificate, error) {
+	cAgent, err := s.getCertificateAgent(guid)
 
 	if err != nil {
 		return nil, err
@@ -102,8 +129,8 @@ func (s CertificateService) GetStorageCertificate(serverID int, certName string)
 	return cAgent.GetStorageCertificate(certName)
 }
 
-func (s CertificateService) RemoveCertificateFromStorage(serverID int, certName string) error {
-	cAgent, err := s.getCertificateAgent(serverID)
+func (s CertificateService) RemoveCertificateFromStorage(guid string, certName string) error {
+	cAgent, err := s.getCertificateAgent(guid)
 
 	if err != nil {
 		return err
@@ -112,8 +139,8 @@ func (s CertificateService) RemoveCertificateFromStorage(serverID int, certName 
 	return cAgent.RemoveCertificatefromStorage(certName)
 }
 
-func (s CertificateService) CreateSelfSignCertificate(serverID int, requestData SelfSignedCertificateRequest) (*agentintegration.Certificate, error) {
-	cAgent, err := s.getCertificateAgent(serverID)
+func (s CertificateService) CreateSelfSignCertificate(guid string, requestData SelfSignedCertificateRequest) (*agentintegration.Certificate, error) {
+	cAgent, err := s.getCertificateAgent(guid)
 
 	if err != nil {
 		return nil, err
@@ -142,8 +169,8 @@ func (s CertificateService) CreateSelfSignCertificate(serverID int, requestData 
 	return cAgent.UploadPemCertificateToStorage(&uploadCertRequestData)
 }
 
-func (s CertificateService) getCertificateAgent(serverID int) (*agent.CertificateAgent, error) {
-	server, err := s.serverStorage.FindByID(serverID)
+func (s CertificateService) getCertificateAgent(guid string) (*agent.CertificateAgent, error) {
+	server, err := s.serverStorage.FindByGuid(guid)
 
 	if err != nil {
 		return nil, err

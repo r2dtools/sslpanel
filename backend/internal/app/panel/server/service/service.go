@@ -56,6 +56,10 @@ func (s ServerService) GetServerDetailsByGuid(guid string) (*ServerDetails, erro
 	serverModel, err := s.serverStorage.FindByGuid(guid)
 
 	if err != nil {
+		return nil, err
+	}
+
+	if serverModel == nil {
 		return nil, ErrServerNotFound
 	}
 
@@ -118,6 +122,10 @@ func (s ServerService) GetServerDomain(guid string, domainName string) (*Domain,
 	serverModel, err := s.serverStorage.FindByGuid(guid)
 
 	if err != nil {
+		return nil, err
+	}
+
+	if serverModel == nil {
 		return nil, ErrServerNotFound
 	}
 
@@ -160,6 +168,10 @@ func (s ServerService) FindServerByGuid(guid string) (*Server, error) {
 	serverModel, err := s.serverStorage.FindByGuid(guid)
 
 	if err != nil {
+		return nil, err
+	}
+
+	if serverModel == nil {
 		return nil, ErrServerNotFound
 	}
 
@@ -372,11 +384,11 @@ func createDomain(vhost *agentintegration.VirtualHost) *Domain {
 		Aliases:     vhost.Aliases,
 		Ssl:         vhost.Ssl,
 		Addresses:   addresses,
-		Certificate: createCertificate(vhost.Certificate),
+		Certificate: CreateCertificate(vhost.Certificate),
 	}
 }
 
-func createCertificate(cert *agentintegration.Certificate) *DomainCertificate {
+func CreateCertificate(cert *agentintegration.Certificate) *DomainCertificate {
 	if cert == nil {
 		return nil
 	}

@@ -32,13 +32,26 @@ export enum OsCode {
     Debian = 'debian',
 }
 
-export interface DomainSecurePayload {
+export interface DomainSecureRequest {
     email: string;
     subjects: string[];
     servername: string;
     webserver: string;
     docroot: string;
+    challengetype: string;
     assign: boolean;
+};
+
+export interface DomainSecurePayload {
+    guid: string;
+    email: string;
+    subjects: string[];
+    servername: string;
+    webserver: string;
+    docroot: string;
+    challengetype: string;
+    assign: boolean;
+    token: string;
 };
 
 export interface ServerSaveRequest {

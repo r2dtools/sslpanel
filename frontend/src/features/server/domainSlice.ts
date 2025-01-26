@@ -1,9 +1,10 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { FetchStatus } from '../../app/types';
-import { Domain, DomainFetchPayload } from './types';
+import { Domain, DomainFetchPayload, DomainSecurePayload } from './types';
 import { RootState } from '../../app/store';
 import { getServerDomainApi } from './serverApi';
 import { toast } from 'react-toastify';
+import { secureDomainApi } from './domainApi';
 
 export interface DomainState {
     domain: Domain | null;
@@ -24,6 +25,25 @@ export const fetchServerDomain = createAsyncThunk(
     },
 );
 
+export const secureServerDomain = createAsyncThunk(
+    'secure',
+    async (payload: DomainSecurePayload) => {
+        const request = {
+            email: payload.email,
+            subjects: payload.subjects,
+            servername: payload.servername,
+            webserver: payload.webserver,
+            docroot: payload.docroot,
+            challengetype: payload.challengetype,
+            assign: payload.assign,
+        };
+
+        await secureDomainApi(payload.guid, request, payload.token);
+
+        return await getServerDomainApi(payload.guid, payload.servername, payload.token);
+    },
+);
+
 export const domainSlice = createSlice({
     name: 'domain',
     initialState,
@@ -34,16 +54,30 @@ export const domainSlice = createSlice({
         },
     },
     extraReducers: builder => {
-        builder.addCase(fetchServerDomain.pending, state => {
-            state.domainStatus = FetchStatus.Pending;
-        })
+        builder
+            .addCase(fetchServerDomain.pending, state => {
+                state.domainStatus = FetchStatus.Pending;
+            })
             .addCase(fetchServerDomain.fulfilled, (state, action) => {
                 state.domainStatus = FetchStatus.Succeeded;
                 state.domain = action.payload;
             })
             .addCase(fetchServerDomain.rejected, (state, action) => {
-                state.domainSecureStatus = FetchStatus.Failed;
+                state.domainStatus = FetchStatus.Failed;
                 state.domain = null;
+
+                if (action.error.message) {
+                    toast.error(action.error.message);
+                }
+            }).addCase(secureServerDomain.pending, state => {
+                state.domainSecureStatus = FetchStatus.Pending;
+            })
+            .addCase(secureServerDomain.fulfilled, (state, action) => {
+                state.domainSecureStatus = FetchStatus.Succeeded;
+                state.domain = action.payload;
+            })
+            .addCase(secureServerDomain.rejected, (state, action) => {
+                state.domainSecureStatus = FetchStatus.Failed;
 
                 if (action.error.message) {
                     toast.error(action.error.message);

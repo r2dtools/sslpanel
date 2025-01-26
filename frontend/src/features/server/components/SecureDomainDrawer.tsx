@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Button, Checkbox, Drawer, HR, Label, Spinner, TextInput } from 'flowbite-react';
 import { HiMiniLockClosed, HiMiniEnvelope } from 'react-icons/hi2';
 import { Domain, DomainSecurePayload } from '../types';
+import { HTTP_CHALLENGE } from '../constants';
 
 type SecureDomainProps = {
+    guid: string,
+    authToken: string,
     domain: Domain;
     open: boolean;
     loading: boolean;
@@ -12,6 +15,8 @@ type SecureDomainProps = {
 };
 
 const SecureDomainDrawer: React.FC<SecureDomainProps> = ({
+    guid,
+    authToken,
     domain,
     open,
     loading,
@@ -50,12 +55,15 @@ const SecureDomainDrawer: React.FC<SecureDomainProps> = ({
             }
         }
 
-        onSubmit({
+        await onSubmit({
+            guid,
+            token: authToken,
             email,
             servername: domain.servername,
             subjects,
             webserver: domain.webserver,
             docroot: domain.docroot,
+            challengetype: HTTP_CHALLENGE,
             assign,
         });
         handleFormClose();

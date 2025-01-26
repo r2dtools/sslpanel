@@ -7,7 +7,7 @@ import { decode } from 'js-base64';
 import Error404 from '../Error404';
 import { HiOutlineQuestionMarkCircle } from 'react-icons/hi2';
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { fetchServerDomain, selectDomain, selectDomainFetchStatus, selectDomainSecureStatus } from "../../features/server/domainSlice";
+import { fetchServerDomain, secureServerDomain, selectDomain, selectDomainFetchStatus, selectDomainSecureStatus } from "../../features/server/domainSlice";
 import { FetchStatus } from "../../app/types";
 import useAuthToken from "../../features/auth/hooks";
 import moment from "moment";
@@ -63,7 +63,7 @@ const Domain = () => {
     const isLoading = domainSelectStatus === FetchStatus.Pending;
 
     const handleSubmitSecureForm = async (payload: DomainSecurePayload) => {
-        console.log(payload);
+        return dispatch(secureServerDomain(payload));
     };
 
     const handleSecureFormOpen = (): void => {
@@ -248,8 +248,10 @@ const Domain = () => {
                     </div >
                 </div >
                 {
-                    domain && (
+                    domain && authToken && guid && (
                         <SecureDomainDrawer
+                            authToken={authToken}
+                            guid={guid}
                             domain={domain}
                             open={secureFormOpen}
                             onClose={handleSecureFormClose}

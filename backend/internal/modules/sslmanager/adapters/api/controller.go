@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -28,27 +27,30 @@ func CreateIssueCertificateHandler(cAuth auth.Auth, certService service.Certific
 			return
 		}
 
-		serverID, err := strconv.Atoi(c.Param("serverId"))
+		guid := c.Param("serverId")
 
-		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server ID"))
+		if guid == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
 
 			return
 		}
 
-		var certData agentintegration.CertificateIssueRequestData
+		var certIssueRequest service.CertificateIssueRequest
 
-		if err := c.ShouldBindJSON(&certData); err != nil {
+		if err := c.ShouldBindJSON(&certIssueRequest); err != nil {
 			c.AbortWithError(http.StatusBadRequest, err)
 
 			return
 		}
 
-		cert, err := certService.IssueCertificate(serverID, certData)
+		var agentCertErr = service.ErrAgentCertificate{}
+		cert, err := certService.IssueCertificate(guid, certIssueRequest)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
-				c.AbortWithError(http.StatusNotFound, err)
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else if errors.As(err, &agentCertErr) {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
 				c.AbortWithError(http.StatusInternalServerError, err)
 			}
@@ -68,10 +70,10 @@ func CreateAssignCertificateHandler(cAuth auth.Auth, certService service.Certifi
 			return
 		}
 
-		serverID, err := strconv.Atoi(c.Param("serverId"))
+		guid := c.Param("serverId")
 
-		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server ID"))
+		if guid == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
 
 			return
 		}
@@ -84,7 +86,7 @@ func CreateAssignCertificateHandler(cAuth auth.Auth, certService service.Certifi
 			return
 		}
 
-		cert, err := certService.AssignCertificate(serverID, requestData)
+		cert, err := certService.AssignCertificate(guid, requestData)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
@@ -108,10 +110,10 @@ func CreateUploadCertificateHandler(cAuth auth.Auth, certService service.Certifi
 			return
 		}
 
-		serverID, err := strconv.Atoi(c.Param("serverId"))
+		guid := c.Param("serverId")
 
-		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server ID"))
+		if guid == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
 
 			return
 		}
@@ -139,7 +141,7 @@ func CreateUploadCertificateHandler(cAuth auth.Auth, certService service.Certifi
 		requestData.ServerName = serverName
 		requestData.WebServer = webServer
 
-		cert, err := certService.UploadCertificate(serverID, requestData)
+		cert, err := certService.UploadCertificate(guid, requestData)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
@@ -163,10 +165,10 @@ func CreateUploadCertificateToStorageHandler(cAuth auth.Auth, certService servic
 			return
 		}
 
-		serverID, err := strconv.Atoi(c.Param("serverId"))
+		guid := c.Param("serverId")
 
-		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server ID"))
+		if guid == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
 
 			return
 		}
@@ -194,7 +196,7 @@ func CreateUploadCertificateToStorageHandler(cAuth auth.Auth, certService servic
 		requestData.PemCertificate = string(pemFileBytes)
 		requestData.CertName = certName
 
-		certificate, err := certService.UploadCertificateToStorage(serverID, requestData)
+		certificate, err := certService.UploadCertificateToStorage(guid, requestData)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
@@ -218,17 +220,17 @@ func CreateDownloadCertificateFromStorageHandler(cAuth auth.Auth, certService se
 			return
 		}
 
-		serverID, err := strconv.Atoi(c.Param("serverId"))
+		guid := c.Param("serverId")
 
-		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server ID"))
+		if guid == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
 
 			return
 		}
 
 		requestData := struct{ CertName string }{}
 
-		if err = c.ShouldBindJSON(&requestData); err != nil {
+		if err := c.ShouldBindJSON(&requestData); err != nil {
 			c.AbortWithError(http.StatusBadRequest, err)
 
 			return
@@ -239,7 +241,7 @@ func CreateDownloadCertificateFromStorageHandler(cAuth auth.Auth, certService se
 			return
 		}
 
-		certData, err := certService.DownloadCertificateFromStorage(serverID, requestData.CertName)
+		certData, err := certService.DownloadCertificateFromStorage(guid, requestData.CertName)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
@@ -266,15 +268,15 @@ func CreateGetStorageCertNameListHandler(cAuth auth.Auth, certService service.Ce
 			return
 		}
 
-		serverID, err := strconv.Atoi(c.Param("serverId"))
+		guid := c.Param("serverId")
 
-		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server ID"))
+		if guid == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
 
 			return
 		}
 
-		certNameList, err := certService.GetStorageCertNameList(serverID)
+		certNameList, err := certService.GetStorageCertNameList(guid)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
@@ -298,10 +300,10 @@ func CreateGetStorageCertificateHandler(cAuth auth.Auth, certService service.Cer
 			return
 		}
 
-		serverID, err := strconv.Atoi(c.Param("serverId"))
+		guid := c.Param("serverId")
 
-		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server ID"))
+		if guid == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
 
 			return
 		}
@@ -314,7 +316,7 @@ func CreateGetStorageCertificateHandler(cAuth auth.Auth, certService service.Cer
 			return
 		}
 
-		certificate, err := certService.GetStorageCertificate(serverID, certName)
+		certificate, err := certService.GetStorageCertificate(guid, certName)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
@@ -338,17 +340,17 @@ func CreateRemoveCertificateFromStorageHandler(cAuth auth.Auth, certService serv
 			return
 		}
 
-		serverID, err := strconv.Atoi(c.Param("serverId"))
+		guid := c.Param("serverId")
 
-		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server ID"))
+		if guid == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
 
 			return
 		}
 
 		requestData := struct{ CertName string }{}
 
-		if err = c.ShouldBindJSON(&requestData); err != nil {
+		if err := c.ShouldBindJSON(&requestData); err != nil {
 			c.AbortWithError(http.StatusBadRequest, err)
 
 			return
@@ -360,7 +362,7 @@ func CreateRemoveCertificateFromStorageHandler(cAuth auth.Auth, certService serv
 			return
 		}
 
-		err = certService.RemoveCertificateFromStorage(serverID, requestData.CertName)
+		err := certService.RemoveCertificateFromStorage(guid, requestData.CertName)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
@@ -382,10 +384,10 @@ func CreateAddSelfSignCertificateToStorageHandler(cAuth auth.Auth, certService s
 			return
 		}
 
-		serverID, err := strconv.Atoi(c.Param("serverId"))
+		guid := c.Param("serverId")
 
-		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server ID"))
+		if guid == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
 
 			return
 		}
@@ -400,13 +402,13 @@ func CreateAddSelfSignCertificateToStorageHandler(cAuth auth.Auth, certService s
 
 		requestData := service.SelfSignedCertificateRequest{}
 
-		if err = json.Unmarshal([]byte(selfSignedCertData), &requestData); err != nil {
+		if err := json.Unmarshal([]byte(selfSignedCertData), &requestData); err != nil {
 			c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid certificate data: %v", err))
 
 			return
 		}
 
-		certificate, err := certService.CreateSelfSignCertificate(serverID, requestData)
+		certificate, err := certService.CreateSelfSignCertificate(guid, requestData)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {

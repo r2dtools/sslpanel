@@ -65,6 +65,12 @@ export interface ServerFetchPayload {
     token: string;
 }
 
+export interface DomainFetchPayload {
+    guid: string;
+    domainName: string;
+    token: string;
+}
+
 interface DomainAddress {
     isIpv6: boolean;
     host: string;

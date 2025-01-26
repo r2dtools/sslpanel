@@ -1,7 +1,9 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { FetchStatus } from '../../app/types';
-import { Domain } from './types';
+import { Domain, DomainFetchPayload } from './types';
 import { RootState } from '../../app/store';
+import { getServerDomainApi } from './serverApi';
+import { toast } from 'react-toastify';
 
 export interface DomainState {
     domain: Domain | null;
@@ -15,14 +17,38 @@ const initialState: DomainState = {
     domainSecureStatus: FetchStatus.Idle,
 }
 
+export const fetchServerDomain = createAsyncThunk(
+    'domain',
+    async (payload: DomainFetchPayload) => {
+        return await getServerDomainApi(payload.guid, payload.domainName, payload.token);
+    },
+);
+
 export const domainSlice = createSlice({
     name: 'domain',
     initialState,
     reducers: {
         domainFetched: (state, action: PayloadAction<Domain>) => {
-            state.domain = action.payload;
             state.domainStatus = FetchStatus.Succeeded;
+            state.domain = action.payload;
         },
+    },
+    extraReducers: builder => {
+        builder.addCase(fetchServerDomain.pending, state => {
+            state.domainStatus = FetchStatus.Pending;
+        })
+            .addCase(fetchServerDomain.fulfilled, (state, action) => {
+                state.domainStatus = FetchStatus.Succeeded;
+                state.domain = action.payload;
+            })
+            .addCase(fetchServerDomain.rejected, (state, action) => {
+                state.domainSecureStatus = FetchStatus.Failed;
+                state.domain = null;
+
+                if (action.error.message) {
+                    toast.error(action.error.message);
+                }
+            });
     },
 });
 

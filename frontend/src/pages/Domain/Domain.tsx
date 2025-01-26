@@ -6,8 +6,8 @@ import { useParams } from 'react-router-dom';
 import { decode } from 'js-base64';
 import Error404 from '../Error404';
 import { HiOutlineQuestionMarkCircle } from 'react-icons/hi2';
-import { useAppSelector } from "../../app/hooks";
-import { selectDomain, selectDomainFetchStatus, selectDomainSecureStatus } from "../../features/server/domainSlice";
+import { useAppDispatch, useAppSelector } from "../../app/hooks";
+import { fetchServerDomain, selectDomain, selectDomainFetchStatus, selectDomainSecureStatus } from "../../features/server/domainSlice";
 import { FetchStatus } from "../../app/types";
 import useAuthToken from "../../features/auth/hooks";
 import moment from "moment";
@@ -18,7 +18,7 @@ import {
     getWebServerIcon,
 } from "../../features/server/utils";
 import { CERT_ABOUT_TO_EXPIRE_DAYS } from "../../features/server/constants";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SecureDomainDrawer from "../../features/server/components/SecureDomainDrawer";
 import { DomainSecurePayload } from "../../features/server/types";
 
@@ -31,6 +31,7 @@ const Domain = () => {
     const { name } = useParams();
     const { guid } = useParams();
     const [authToken] = useAuthToken();
+    const dispatch = useAppDispatch();
     const domainName = decode(name || '');
     const domainSelectStatus = useAppSelector(selectDomainFetchStatus);
     const domainSecureStatus = useAppSelector(selectDomainSecureStatus);
@@ -40,6 +41,12 @@ const Domain = () => {
     if (!domainName) {
         return <Error404 />
     }
+
+    useEffect(() => {
+        if (authToken && domainSelectStatus !== FetchStatus.Pending) {
+            dispatch(fetchServerDomain({ guid: guid as string, domainName, token: authToken }));
+        }
+    }, [authToken, domainName, guid]);
 
     const confPathParts = (domain?.filepath || '').split('/');
     const confFile = confPathParts.pop() || emptyPlaceholder;
@@ -66,6 +73,10 @@ const Domain = () => {
     const handleSecureFormClose = (): void => {
         setSecureFormOpen(false);
     };
+
+    if (!isLoading && !domain) {
+        return <Error404 />
+    }
 
     return (
         !isLoading ?

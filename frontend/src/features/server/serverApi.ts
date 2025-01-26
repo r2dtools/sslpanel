@@ -1,5 +1,5 @@
 import api, { configWithAuth, getErrorMessage } from '../../lib/api';
-import { ServerSaveRequest, Server, ServerDetails } from './types';
+import { ServerSaveRequest, Server, ServerDetails, Domain } from './types';
 
 export const getServersApi = async (token: string) => {
     try {
@@ -50,6 +50,16 @@ export const editServerApi = async (id: number, server: ServerSaveRequest, token
 export const deleteServerApi = async (id: number, token: string) => {
     try {
         await api.delete(`/v1/servers/${id}`, configWithAuth(token));
+    } catch (error) {
+        throw new Error(getErrorMessage(error))
+    }
+};
+
+export const getServerDomainApi = async (guid: string, domainName: string, token: string) => {
+    try {
+        const response = await api.get(`/v1/servers/${guid}/domain/${domainName}`, configWithAuth(token));
+
+        return response.data.domain as Domain;
     } catch (error) {
         throw new Error(getErrorMessage(error))
     }

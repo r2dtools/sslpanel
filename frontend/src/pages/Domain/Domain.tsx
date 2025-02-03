@@ -146,7 +146,9 @@ const Domain = () => {
                                                 <dd className="font-bold text-black dark:text-white flex flex-col gap-2">
                                                     {
                                                         certificateDnsNames.length
-                                                            ? certificateDnsNames.map(certificateDnsName => <div key={certificateDnsName}>{certificateDnsName}</div>)
+                                                            ? certificateDnsNames
+                                                                .filter(certificateDnsName => certificateDnsName !== certificate?.cn)
+                                                                .map(certificateDnsName => <div key={certificateDnsName}>{certificateDnsName}</div>)
                                                             : emptyPlaceholder
                                                     }
                                                 </dd>

@@ -77,7 +77,10 @@ export const serverSlice = createSlice({
             })
             .addCase(fetchServerDetails.fulfilled, (state, action) => {
                 state.serverDetailsStatus = FetchStatus.Succeeded;
-                state.serverDetails = action.payload;
+
+                const serverDetails = action.payload;
+                serverDetails.domains = serverDetails.domains.sort((a, b) => a.servername.localeCompare(b.servername));
+                state.serverDetails = serverDetails;
             })
             .addCase(fetchServerDetails.rejected, (state, action) => {
                 state.serverDetailsStatus = FetchStatus.Failed;

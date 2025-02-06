@@ -15,6 +15,7 @@ const (
 	getVhostsCommand           = "getVhosts"
 	getVhostCertificateCommand = "getVhostCertificate"
 	commonDirStatusCommand     = "commondirdtatus"
+	getVhostConfigCommand      = "getvhostconfig"
 )
 
 type ErrAgentResponse struct {
@@ -99,6 +100,23 @@ func (a *Agent) GetVhostCertificate(vhostName string) (*agentintegration.Certifi
 	}
 
 	return &certificate, nil
+}
+
+func (a *Agent) GetVhostConfig(request agentintegration.VirtualHostConfigRequestData) (agentintegration.VirtualHostConfigResponseData, error) {
+	var response agentintegration.VirtualHostConfigResponseData
+	data, err := a.Request(getVhostConfigCommand, request)
+
+	if err != nil {
+		return response, err
+	}
+
+	err = mapstructure.Decode(data, &response)
+
+	if err != nil {
+		return response, errors.New("invalid vhost config response data")
+	}
+
+	return response, nil
 }
 
 func (a *Agent) Request(command string, data interface{}) (interface{}, error) {

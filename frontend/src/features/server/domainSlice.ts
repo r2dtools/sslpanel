@@ -3,6 +3,7 @@ import { FetchStatus } from '../../app/types';
 import {
     CommonChallengeDirStatusChangePayload,
     Domain,
+    DomainConfigPayload,
     DomainFetchPayload,
     DomainSecurePayload,
     DomainSettings,
@@ -11,24 +12,28 @@ import {
 import { RootState } from '../../app/store';
 import { getServerDomainApi } from './serverApi';
 import { toast } from 'react-toastify';
-import { changeCommonDirStatusApi, getCommonDirApi, secureDomainApi } from './domainApi';
+import { changeCommonDirStatusApi, getCommonDirApi, getDomainConfigApi, secureDomainApi } from './domainApi';
 
 export interface DomainState {
     domain: Domain | null;
     settings: DomainSettings | null;
+    config: string | null;
     domainStatus: FetchStatus;
     domainSecureStatus: FetchStatus;
     settingsStatus: FetchStatus;
     changeCommonDirStatusStatus: FetchStatus;
+    configStatus: FetchStatus;
 }
 
 const initialState: DomainState = {
     domain: null,
     settings: null,
+    config: null,
     domainStatus: FetchStatus.Idle,
     domainSecureStatus: FetchStatus.Idle,
     settingsStatus: FetchStatus.Idle,
     changeCommonDirStatusStatus: FetchStatus.Idle,
+    configStatus: FetchStatus.Idle,
 }
 
 export const fetchServerDomain = createAsyncThunk(
@@ -89,6 +94,18 @@ export const changeCommonDirStatus = createAsyncThunk(
     },
 );
 
+export const fetchConfig = createAsyncThunk(
+    'config',
+    async (payload: DomainConfigPayload) => {
+        const request = {
+            webserver: payload.domain.webserver,
+            servername: payload.domain.servername,
+        };
+
+        return await getDomainConfigApi(payload.guid, request, payload.token);
+    },
+);
+
 export const domainSlice = createSlice({
     name: 'domain',
     initialState,
@@ -96,6 +113,10 @@ export const domainSlice = createSlice({
         domainFetched: (state, action: PayloadAction<Domain>) => {
             state.domainStatus = FetchStatus.Succeeded;
             state.domain = action.payload;
+        },
+        configReset: state => {
+            state.configStatus = FetchStatus.Idle;
+            state.config = null;
         },
     },
     extraReducers: builder => {
@@ -158,17 +179,34 @@ export const domainSlice = createSlice({
                 if (action.error.message) {
                     toast.error(action.error.message);
                 }
+            }).addCase(fetchConfig.pending, state => {
+                state.configStatus = FetchStatus.Pending;
+                state.config = null;
+            })
+            .addCase(fetchConfig.fulfilled, (state, action) => {
+                state.configStatus = FetchStatus.Succeeded;
+                state.config = action.payload;
+            })
+            .addCase(fetchConfig.rejected, (state, action) => {
+                state.configStatus = FetchStatus.Failed;
+                state.config = null;
+
+                if (action.error.message) {
+                    toast.error(action.error.message);
+                }
             });
     },
 });
 
-export const { domainFetched } = domainSlice.actions;
+export const { domainFetched, configReset } = domainSlice.actions;
 
 export const selectDomain = (state: RootState) => state.domain.domain;
 export const selectSettings = (state: RootState) => state.domain.settings;
+export const selectConfig = (state: RootState) => state.domain.config;
 export const selectDomainFetchStatus = (state: RootState) => state.domain.domainStatus;
 export const selectSettingsFetchStatus = (state: RootState) => state.domain.settingsStatus;
 export const selectDomainSecureStatus = (state: RootState) => state.domain.domainSecureStatus;
 export const selectChangeCommonDirStatusStatus = (state: RootState) => state.domain.changeCommonDirStatusStatus;
+export const selectConfigFetchStatus = (state: RootState) => state.domain.configStatus;
 
 export default domainSlice.reducer

@@ -27,6 +27,14 @@ func (e ErrServerService) Error() string {
 	return e.message
 }
 
+type ErrAgentCommon struct {
+	message string
+}
+
+func (err ErrAgentCommon) Error() string {
+	return err.message
+}
+
 var ErrServerNotFound = errors.New("server not found")
 var ErrDomainNotFound = errors.New("domain not found")
 var ErrAgentConnection = errors.New("failed to connect to the server agent")
@@ -162,6 +170,35 @@ func (s ServerService) GetServerDomain(guid string, domainName string) (*Domain,
 	}
 
 	return domain, nil
+}
+
+func (s ServerService) GetDomainConfig(guid string, request DomainConfigRequest) (string, error) {
+	serverModel, err := s.serverStorage.FindByGuid(guid)
+
+	if err != nil {
+		return "", err
+	}
+
+	if serverModel == nil {
+		return "", ErrServerNotFound
+	}
+
+	nAgent, err := s.getServerAgent(serverModel)
+
+	if err != nil {
+		return "", err
+	}
+
+	config, err := nAgent.GetVhostConfig(agentintegration.VirtualHostConfigRequestData{
+		WebServer:  request.WebServer,
+		ServerName: request.ServerName,
+	})
+
+	if err != nil {
+		return "", ErrAgentCommon{message: err.Error()}
+	}
+
+	return config.Content, nil
 }
 
 func (s ServerService) FindServerByGuid(guid string) (*Server, error) {

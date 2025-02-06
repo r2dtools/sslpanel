@@ -95,6 +95,7 @@ func newEngine(config *config.Config, logger logger.Logger) (*gin.Engine, error)
 			serverGroup.GET("/:serverId", serverApi.CreateGetServerByGuidHandler(appAuth, appServerSevice))
 			serverGroup.GET("/:serverId/details", serverApi.CreateGetServerDetailsByGuidHandler(appAuth, appServerSevice))
 			serverGroup.GET("/:serverId/domain/:domainName", serverApi.CreateGetServerDomainHandler(appAuth, appServerSevice))
+			serverGroup.GET("/:serverId/domain-config", serverApi.CreateGetDomainConfigHandler(appAuth, appServerSevice))
 		}
 
 		settingGroup := v1.Group("settings")

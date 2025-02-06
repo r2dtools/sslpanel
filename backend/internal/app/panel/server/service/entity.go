@@ -87,3 +87,8 @@ type Issuer struct {
 	CN           string   `json:"cn"`
 	Organization []string `json:"organization"`
 }
+
+type DomainConfigRequest struct {
+	ServerName string `form:"servername"`
+	WebServer  string `form:"webserver"`
+}

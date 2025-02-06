@@ -1,4 +1,4 @@
-import { Avatar, Badge, Button, Tooltip } from "flowbite-react";
+import { Avatar, Badge, Button, Spinner, Tooltip } from "flowbite-react";
 import Breadcrumb from "../../components/Breadcrumb";
 import Loader from "../../components/Loader/Loader";
 import { HiMiniEye, HiMiniLockClosed } from "react-icons/hi2";
@@ -8,10 +8,14 @@ import Error404 from '../Error404';
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import {
     changeCommonDirStatus,
+    configReset,
+    fetchConfig,
     fetchServerDomain,
     fetchSettings,
     secureServerDomain,
     selectChangeCommonDirStatusStatus,
+    selectConfig,
+    selectConfigFetchStatus,
     selectDomain,
     selectDomainFetchStatus,
     selectDomainSecureStatus,
@@ -32,6 +36,7 @@ import { useEffect, useState } from "react";
 import SecureDomainDrawer from "../../features/server/components/SecureDomainDrawer";
 import { DomainSecurePayload } from "../../features/server/types";
 import DomainSettings from "../../features/server/components/DomainSettings";
+import DomainConfigDrawer from "../../features/server/components/DomainConfigDrawer";
 
 const emptyPlaceholder = '----------';
 
@@ -48,8 +53,10 @@ const Domain = () => {
     const settingsSelectStatus = useAppSelector(selectSettingsFetchStatus);
     const domainSecureStatus = useAppSelector(selectDomainSecureStatus);
     const changeCommonDirStatusStatus = useAppSelector(selectChangeCommonDirStatusStatus);
+    const configSelectStatus = useAppSelector(selectConfigFetchStatus);
     const domain = useAppSelector(selectDomain);
     const settings = useAppSelector(selectSettings);
+    const config = useAppSelector(selectConfig);
     const [secureFormOpen, setSecureFormOpen] = useState(false);
 
     if (!domainName) {
@@ -84,7 +91,9 @@ const Domain = () => {
     const issuerImg = getCertificateIssuerIcon(issuerCode);
     const organizations = certificate?.organization || [];
 
-    const isLoading = domainSelectStatus === FetchStatus.Pending || settingsSelectStatus === FetchStatus.Pending;
+    const isLoading = domainSelectStatus === FetchStatus.Pending
+        || settingsSelectStatus === FetchStatus.Pending
+        || settingsSelectStatus === FetchStatus.Idle;
 
     const handleSubmitSecureForm = async (payload: DomainSecurePayload) => {
         return dispatch(secureServerDomain(payload));
@@ -96,6 +105,22 @@ const Domain = () => {
 
     const handleSecureFormClose = (): void => {
         setSecureFormOpen(false);
+    };
+
+    const handleDomainConfigOpen = async () => {
+        if (!authToken || !domain || configSelectStatus === FetchStatus.Pending) {
+            return;
+        }
+
+        await dispatch(fetchConfig({
+            guid: guid as string,
+            token: authToken,
+            domain,
+        }));
+    };
+
+    const handleDomainConfigClose = (): void => {
+        dispatch(configReset());
     };
 
     const handleCommonDirChange = async (value: boolean) => {
@@ -239,11 +264,17 @@ const Domain = () => {
                                                 <dt>Configuration</dt>
                                                 <dd className="font-bold text-black dark:text-white flex items-center gap-2">
                                                     <span>{confFile}</span>
-                                                    <div className='cursor-pointer'>
-                                                        <Tooltip content='show'>
-                                                            <HiMiniEye />
-                                                        </Tooltip>
-                                                    </div>
+                                                    {
+                                                        configSelectStatus === FetchStatus.Pending
+                                                            ? <Spinner size="sm" />
+                                                            : (
+                                                                <div className='cursor-pointer' onClick={handleDomainConfigOpen}>
+                                                                    <Tooltip content='show'>
+                                                                        <HiMiniEye />
+                                                                    </Tooltip>
+                                                                </div>
+                                                            )
+                                                    }
                                                 </dd>
                                             </div>
                                             <div>
@@ -283,6 +314,18 @@ const Domain = () => {
                             onSubmit={handleSubmitSecureForm}
                             loading={domainSecureStatus === FetchStatus.Pending}
                         />)
+                }
+                {
+                    domain && authToken && guid && (
+                        <DomainConfigDrawer
+                            authToken={authToken}
+                            domain={domain}
+                            guid={guid}
+                            open={configSelectStatus === FetchStatus.Succeeded}
+                            onClose={handleDomainConfigClose}
+                            config={config}
+                        />
+                    )
                 }
             </> : <Loader />
     );

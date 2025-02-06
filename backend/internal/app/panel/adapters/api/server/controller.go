@@ -303,3 +303,46 @@ func CreateGetVhostCertificateHandler(appServerService serverService.ServerServi
 		c.JSON(http.StatusOK, gin.H{"certificate": certificate})
 	}
 }
+
+func CreateGetDomainConfigHandler(cAuth auth.Auth, appService serverService.ServerService) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		user := cAuth.GetCurrentUser(c)
+
+		if user == nil {
+			return
+		}
+
+		guid := c.Param("serverId")
+
+		if guid == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
+
+			return
+		}
+
+		var request serverService.DomainConfigRequest
+
+		if err := c.ShouldBind(&request); err != nil {
+			c.AbortWithError(http.StatusBadRequest, err)
+
+			return
+		}
+
+		response, err := appService.GetDomainConfig(guid, request)
+		var errAgentCommon serverService.ErrAgentCommon
+
+		if err != nil {
+			if errors.Is(err, serverService.ErrServerNotFound) {
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else if errors.As(err, &errAgentCommon) {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			} else {
+				c.AbortWithError(http.StatusInternalServerError, err)
+			}
+
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"content": response})
+	}
+}

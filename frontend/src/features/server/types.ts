@@ -153,3 +153,14 @@ export interface CommonChallengeDirStatusChangePayload {
     token: string;
     status: boolean;
 }
+
+export interface GetDomainConfigRequest {
+    webserver: string;
+    servername: string;
+}
+
+export interface DomainConfigPayload {
+    guid: string;
+    token: string;
+    domain: Domain;
+}

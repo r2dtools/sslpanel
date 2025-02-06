@@ -43,13 +43,13 @@ func CreateIssueCertificateHandler(cAuth auth.Auth, certService service.Certific
 			return
 		}
 
-		var agentCertErr = service.ErrAgentCertificate{}
+		var errAgentCommon service.ErrAgentCommon
 		cert, err := certService.IssueCertificate(guid, certIssueRequest)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
-			} else if errors.As(err, &agentCertErr) {
+			} else if errors.As(err, &errAgentCommon) {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
 				c.AbortWithError(http.StatusInternalServerError, err)
@@ -128,9 +128,13 @@ func CreateChangeCommonDirStatusHandler(cAuth auth.Auth, certService service.Cer
 
 		err := certService.ChangeCommonDirStatus(guid, request)
 
+		var errAgentCommon service.ErrAgentCommon
+
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else if errors.As(err, &errAgentCommon) {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
 				c.AbortWithError(http.StatusInternalServerError, err)
 			}

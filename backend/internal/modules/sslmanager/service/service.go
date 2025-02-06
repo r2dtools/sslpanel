@@ -14,12 +14,12 @@ import (
 	"github.com/r2dtools/agentintegration"
 )
 
-type ErrAgentCertificate struct {
+type ErrAgentCommon struct {
 	message string
 }
 
-func (e ErrAgentCertificate) Error() string {
-	return e.message
+func (err ErrAgentCommon) Error() string {
+	return err.message
 }
 
 var ErrServerNotFound = errors.New("server not found")
@@ -42,7 +42,7 @@ func (s CertificateService) IssueCertificate(
 	cert, err := cAgent.Issue(agentintegration.CertificateIssueRequestData(certIssueRequest))
 
 	if err != nil {
-		return nil, ErrAgentCertificate{message: err.Error()}
+		return nil, ErrAgentCommon{message: err.Error()}
 	}
 
 	return service.CreateCertificate(cert), nil
@@ -169,11 +169,19 @@ func (s CertificateService) ChangeCommonDirStatus(guid string, request CommonDir
 		return err
 	}
 
-	return cAgent.ChangeCommonDirStatus(agentintegration.CommonDirChangeStatusRequestData{
+	err = cAgent.ChangeCommonDirStatus(agentintegration.CommonDirChangeStatusRequestData{
 		WebServer:  request.WebServer,
 		ServerName: request.ServerName,
 		Status:     request.Status,
 	})
+
+	if err != nil {
+		return ErrAgentCommon{
+			message: err.Error(),
+		}
+	}
+
+	return nil
 }
 
 func (s CertificateService) CreateSelfSignCertificate(guid string, requestData SelfSignedCertificateRequest) (*agentintegration.Certificate, error) {

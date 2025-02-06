@@ -25,6 +25,7 @@ export const changeCommonDirStatusApi = async (guid: string, requestData: Common
     try {
         await api.post(`/v1/modules/certificates/${guid}/domain/change-commondir-status`, requestData, configWithAuth(token));
     } catch (error) {
+        console.log(error);
         throw new Error(getErrorMessage(error))
     }
 };

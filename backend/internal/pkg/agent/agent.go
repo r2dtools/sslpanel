@@ -17,6 +17,15 @@ const (
 	commonDirStatusCommand     = "commondirdtatus"
 )
 
+type ErrAgentResponse struct {
+	Command string
+	Message string
+}
+
+func (err ErrAgentResponse) Error() string {
+	return err.Message
+}
+
 type Agent struct {
 	token  string
 	client *client
@@ -125,7 +134,10 @@ func (a *Agent) Request(command string, data interface{}) (interface{}, error) {
 			message = "unknown error"
 		}
 
-		return nil, errors.New(message)
+		return nil, ErrAgentResponse{
+			Command: command,
+			Message: message,
+		}
 	}
 
 	return resp.Data, nil

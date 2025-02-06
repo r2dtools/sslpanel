@@ -56,11 +56,7 @@ func (a *CertificateAgent) UploadPemCertificateToStorage(certData *agentintegrat
 func (a *CertificateAgent) RemoveCertificatefromStorage(certName string) error {
 	_, err := a.serverAgent.Request("certificates.storagecertremove", certName)
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 func (a *CertificateAgent) GetStorageCertNameList() ([]string, error) {
@@ -109,6 +105,30 @@ func (a *CertificateAgent) DownloadtStorageCertificate(certName string) (*agenti
 	}
 
 	return &certData, nil
+}
+
+func (a *CertificateAgent) GetCommonDirStatus(request agentintegration.CommonDirStatusRequestData) (agentintegration.CommonDirStatusResponseData, error) {
+	var responsse agentintegration.CommonDirStatusResponseData
+
+	data, err := a.serverAgent.Request("certificates.commondirstatus", request)
+
+	if err != nil {
+		return responsse, err
+	}
+
+	err = mapstructure.Decode(data, &responsse)
+
+	if err != nil {
+		return responsse, fmt.Errorf("invalid common dir status data: %v", err)
+	}
+
+	return responsse, nil
+}
+
+func (a *CertificateAgent) ChangeCommonDirStatus(request agentintegration.CommonDirChangeStatusRequestData) error {
+	_, err := a.serverAgent.Request("certificates.changecommondirstatus", request)
+
+	return err
 }
 
 func getCertificate(responseData interface{}) (*agentintegration.Certificate, error) {

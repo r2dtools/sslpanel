@@ -1,13 +1,23 @@
-import { Avatar, Badge, Button, ToggleSwitch, Tooltip } from "flowbite-react";
+import { Avatar, Badge, Button, Tooltip } from "flowbite-react";
 import Breadcrumb from "../../components/Breadcrumb";
 import Loader from "../../components/Loader/Loader";
 import { HiMiniEye, HiMiniLockClosed } from "react-icons/hi2";
 import { useParams } from 'react-router-dom';
 import { decode } from 'js-base64';
 import Error404 from '../Error404';
-import { HiOutlineQuestionMarkCircle } from 'react-icons/hi2';
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
-import { fetchServerDomain, secureServerDomain, selectDomain, selectDomainFetchStatus, selectDomainSecureStatus } from "../../features/server/domainSlice";
+import {
+    changeCommonDirStatus,
+    fetchServerDomain,
+    fetchSettings,
+    secureServerDomain,
+    selectChangeCommonDirStatusStatus,
+    selectDomain,
+    selectDomainFetchStatus,
+    selectDomainSecureStatus,
+    selectSettings,
+    selectSettingsFetchStatus,
+} from "../../features/server/domainSlice";
 import { FetchStatus } from "../../app/types";
 import useAuthToken from "../../features/auth/hooks";
 import moment from "moment";
@@ -21,6 +31,7 @@ import { CERT_ABOUT_TO_EXPIRE_DAYS } from "../../features/server/constants";
 import { useEffect, useState } from "react";
 import SecureDomainDrawer from "../../features/server/components/SecureDomainDrawer";
 import { DomainSecurePayload } from "../../features/server/types";
+import DomainSettings from "../../features/server/components/DomainSettings";
 
 const emptyPlaceholder = '----------';
 
@@ -34,8 +45,11 @@ const Domain = () => {
     const dispatch = useAppDispatch();
     const domainName = decode(name || '');
     const domainSelectStatus = useAppSelector(selectDomainFetchStatus);
+    const settingsSelectStatus = useAppSelector(selectSettingsFetchStatus);
     const domainSecureStatus = useAppSelector(selectDomainSecureStatus);
+    const changeCommonDirStatusStatus = useAppSelector(selectChangeCommonDirStatusStatus);
     const domain = useAppSelector(selectDomain);
+    const settings = useAppSelector(selectSettings);
     const [secureFormOpen, setSecureFormOpen] = useState(false);
 
     if (!domainName) {
@@ -47,6 +61,16 @@ const Domain = () => {
             dispatch(fetchServerDomain({ guid: guid as string, domainName, token: authToken }));
         }
     }, [authToken, domainName, guid]);
+
+    useEffect(() => {
+        if (authToken && domain && settingsSelectStatus !== FetchStatus.Pending) {
+            dispatch(fetchSettings({
+                guid: guid as string,
+                token: authToken,
+                domain: domain,
+            }));
+        }
+    }, [authToken, domain, guid]);
 
     const confPathParts = (domain?.filepath || '').split('/');
     const confFile = confPathParts.pop() || emptyPlaceholder;
@@ -60,7 +84,7 @@ const Domain = () => {
     const issuerImg = getCertificateIssuerIcon(issuerCode);
     const organizations = certificate?.organization || [];
 
-    const isLoading = domainSelectStatus === FetchStatus.Pending;
+    const isLoading = domainSelectStatus === FetchStatus.Pending || settingsSelectStatus === FetchStatus.Pending;
 
     const handleSubmitSecureForm = async (payload: DomainSecurePayload) => {
         return dispatch(secureServerDomain(payload));
@@ -73,6 +97,19 @@ const Domain = () => {
     const handleSecureFormClose = (): void => {
         setSecureFormOpen(false);
     };
+
+    const handleCommonDirChange = async (value: boolean) => {
+        if (!authToken || !domain) {
+            return;
+        }
+
+        return await dispatch(changeCommonDirStatus({
+            domain,
+            status: value,
+            guid: guid as string,
+            token: authToken,
+        }));
+    }
 
     if (!isLoading && !domain) {
         return <Error404 />
@@ -226,28 +263,14 @@ const Domain = () => {
                             </div>
                         </div>
                     </div>
-                    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-                        <div className="p-4 md:p-6 xl:p-7.5">
-                            <div className="flex items-start justify-between">
-                                <div>
-                                    <h2 className="text-xl font-bold text-black dark:text-white">Settings</h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="border-b border-stroke px-4 dark:border-strokedark md:px-6 xl:px-7.5"></div>
-                        <div className="p-4 md:p-6 xl:p-7.5">
-                            <div className="flex max-w-md flex-col items-start gap-4">
-                                <div className='flex items-center gap-2'>
-                                    <ToggleSwitch color='green' checked={false} label="Enable Common Challenge Directory" onChange={() => ''} />
-                                    <HiOutlineQuestionMarkCircle className='inline' />
-                                </div>
-                                <div>
-                                    <ToggleSwitch color='green' checked label="Automatic Renewal" onChange={() => ''} />
-                                </div>
-
-                            </div>
-                        </div>
-                    </div >
+                    {settings && domain && (
+                        <DomainSettings
+                            settings={settings}
+                            domain={domain}
+                            commonDirStatusLoading={changeCommonDirStatusStatus === FetchStatus.Pending}
+                            onCommonDirStatusChange={handleCommonDirChange}
+                        />
+                    )}
                 </div >
                 {
                     domain && authToken && guid && (

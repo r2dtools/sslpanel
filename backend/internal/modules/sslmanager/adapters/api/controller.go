@@ -62,6 +62,82 @@ func CreateIssueCertificateHandler(cAuth auth.Auth, certService service.Certific
 	}
 }
 
+func CreateGetCommonDirStatusHandler(cAuth auth.Auth, certService service.CertificateService) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		user := cAuth.GetCurrentUser(c)
+
+		if user == nil {
+			return
+		}
+
+		guid := c.Param("serverId")
+
+		if guid == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
+
+			return
+		}
+
+		var request service.CommonDirStatusRequest
+
+		if err := c.ShouldBindJSON(&request); err != nil {
+			c.AbortWithError(http.StatusBadRequest, err)
+
+			return
+		}
+
+		response, err := certService.GetCommonDirStatus(guid, request)
+
+		if err != nil {
+			if errors.Is(err, service.ErrServerNotFound) {
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else {
+				c.AbortWithError(http.StatusInternalServerError, err)
+			}
+
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"commondir": response})
+	}
+}
+
+func CreateChangeCommonDirStatusHandler(cAuth auth.Auth, certService service.CertificateService) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		user := cAuth.GetCurrentUser(c)
+
+		if user == nil {
+			return
+		}
+
+		guid := c.Param("serverId")
+
+		if guid == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
+
+			return
+		}
+
+		var request service.CommonDirStatusChangeRequest
+
+		if err := c.ShouldBindJSON(&request); err != nil {
+			c.AbortWithError(http.StatusBadRequest, err)
+
+			return
+		}
+
+		err := certService.ChangeCommonDirStatus(guid, request)
+
+		if err != nil {
+			if errors.Is(err, service.ErrServerNotFound) {
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else {
+				c.AbortWithError(http.StatusInternalServerError, err)
+			}
+		}
+	}
+}
+
 func CreateAssignCertificateHandler(cAuth auth.Auth, certService service.CertificateService) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		user := cAuth.GetCurrentUser(c)

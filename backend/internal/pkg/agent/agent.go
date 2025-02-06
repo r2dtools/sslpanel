@@ -14,6 +14,7 @@ const (
 	refreshCommand             = "refresh"
 	getVhostsCommand           = "getVhosts"
 	getVhostCertificateCommand = "getVhostCertificate"
+	commonDirStatusCommand     = "commondirdtatus"
 )
 
 type Agent struct {
@@ -68,9 +69,9 @@ func (a *Agent) GetVhosts() ([]agentintegration.VirtualHost, error) {
 	return vhosts, nil
 }
 
-func (a *Agent) GetVhostCertificate(vhsotName string) (*agentintegration.Certificate, error) {
+func (a *Agent) GetVhostCertificate(vhostName string) (*agentintegration.Certificate, error) {
 	data, err := a.Request(getVhostCertificateCommand, map[string]string{
-		"vhostName": vhsotName,
+		"vhostName": vhostName,
 	})
 
 	if err != nil {

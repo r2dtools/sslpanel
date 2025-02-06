@@ -21,3 +21,18 @@ type CertificateIssueRequest struct {
 	AdditionalParams map[string]string `json:"params"`
 	Assign           bool              `json:"assign"`
 }
+
+type CommonDirStatusRequest struct {
+	ServerName string `json:"servername"`
+	WebServer  string `json:"webserver"`
+}
+
+type CommonDirStatusChangeRequest struct {
+	Status     bool   `json:"status"`
+	ServerName string `json:"servername"`
+	WebServer  string `json:"webserver"`
+}
+
+type CommonDirStatusResponse struct {
+	Status bool `json:"status"`
+}

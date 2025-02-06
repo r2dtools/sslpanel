@@ -139,6 +139,43 @@ func (s CertificateService) RemoveCertificateFromStorage(guid string, certName s
 	return cAgent.RemoveCertificatefromStorage(certName)
 }
 
+func (s CertificateService) GetCommonDirStatus(guid string, request CommonDirStatusRequest) (CommonDirStatusResponse, error) {
+	var response CommonDirStatusResponse
+
+	cAgent, err := s.getCertificateAgent(guid)
+
+	if err != nil {
+		return response, err
+	}
+
+	agentResponse, err := cAgent.GetCommonDirStatus(agentintegration.CommonDirStatusRequestData{
+		WebServer:  request.WebServer,
+		ServerName: request.ServerName,
+	})
+
+	if err != nil {
+		return response, err
+	}
+
+	response.Status = agentResponse.Status
+
+	return response, nil
+}
+
+func (s CertificateService) ChangeCommonDirStatus(guid string, request CommonDirStatusChangeRequest) error {
+	cAgent, err := s.getCertificateAgent(guid)
+
+	if err != nil {
+		return err
+	}
+
+	return cAgent.ChangeCommonDirStatus(agentintegration.CommonDirChangeStatusRequestData{
+		WebServer:  request.WebServer,
+		ServerName: request.ServerName,
+		Status:     request.Status,
+	})
+}
+
 func (s CertificateService) CreateSelfSignCertificate(guid string, requestData SelfSignedCertificateRequest) (*agentintegration.Certificate, error) {
 	cAgent, err := s.getCertificateAgent(guid)
 

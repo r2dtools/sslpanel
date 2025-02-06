@@ -120,3 +120,36 @@ export interface Issuer {
     cn: string;
     organization: string[] | null;
 }
+
+export interface GetCommonDirStatusRequest {
+    webserver: string;
+    servername: string;
+}
+
+export interface DomainSettingsPayload {
+    guid: string;
+    domain: Domain;
+    token: string;
+}
+
+export interface CommonDirStatus {
+    status: boolean;
+}
+
+export interface DomainSettings {
+    commondirstatus: CommonDirStatus;
+    renewal: boolean;
+}
+
+export interface CommonChallengeDirStatusChangeRequest {
+    webserver: string;
+    servername: string;
+    status: boolean;
+}
+
+export interface CommonChallengeDirStatusChangePayload {
+    guid: string;
+    domain: Domain;
+    token: string;
+    status: boolean;
+}

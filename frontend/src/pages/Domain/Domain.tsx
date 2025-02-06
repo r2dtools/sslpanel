@@ -44,8 +44,7 @@ const isDnsNameSecure = (certificateDnsNames: string[], name: string): boolean =
     Boolean(certificateDnsNames.find(certificateDnsName => certificateDnsName === name));
 
 const Domain = () => {
-    const { name } = useParams();
-    const { guid } = useParams();
+    const { name, guid } = useParams();
     const [authToken] = useAuthToken();
     const dispatch = useAppDispatch();
     const domainName = decode(name || '');
@@ -70,7 +69,7 @@ const Domain = () => {
     }, [authToken, domainName, guid]);
 
     useEffect(() => {
-        if (authToken && domain && settingsSelectStatus !== FetchStatus.Pending) {
+        if (authToken && domain && settingsSelectStatus === FetchStatus.Idle) {
             dispatch(fetchSettings({
                 guid: guid as string,
                 token: authToken,
@@ -92,8 +91,7 @@ const Domain = () => {
     const organizations = certificate?.organization || [];
 
     const isLoading = domainSelectStatus === FetchStatus.Pending
-        || settingsSelectStatus === FetchStatus.Pending
-        || settingsSelectStatus === FetchStatus.Idle;
+        || settingsSelectStatus === FetchStatus.Pending;
 
     const handleSubmitSecureForm = async (payload: DomainSecurePayload) => {
         return dispatch(secureServerDomain(payload));

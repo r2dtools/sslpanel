@@ -51,7 +51,6 @@ export const secureServerDomain = createAsyncThunk(
             subjects: payload.subjects,
             servername: payload.servername,
             webserver: payload.webserver,
-            docroot: payload.docroot,
             challengetype: payload.challengetype,
             assign: payload.assign,
         };

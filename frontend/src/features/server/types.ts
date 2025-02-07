@@ -37,7 +37,6 @@ export interface DomainSecureRequest {
     subjects: string[];
     servername: string;
     webserver: string;
-    docroot: string;
     challengetype: string;
     assign: boolean;
 };
@@ -48,7 +47,6 @@ export interface DomainSecurePayload {
     subjects: string[];
     servername: string;
     webserver: string;
-    docroot: string;
     challengetype: string;
     assign: boolean;
     token: string;

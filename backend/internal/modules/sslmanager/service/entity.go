@@ -14,7 +14,6 @@ type SelfSignedCertificateRequest struct {
 type CertificateIssueRequest struct {
 	Email            string            `json:"email"`
 	ServerName       string            `json:"servername"`
-	DocRoot          string            `json:"docroot"`
 	WebServer        string            `json:"webserver"`
 	ChallengeType    string            `json:"challengetype"`
 	Subjects         []string          `json:"subjects"`

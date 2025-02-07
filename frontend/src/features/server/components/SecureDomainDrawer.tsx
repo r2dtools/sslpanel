@@ -62,7 +62,6 @@ const SecureDomainDrawer: React.FC<SecureDomainProps> = ({
             servername: domain.servername,
             subjects,
             webserver: domain.webserver,
-            docroot: domain.docroot,
             challengetype: HTTP_CHALLENGE,
             assign,
         });

@@ -18,10 +18,10 @@ func InitRouter(
 ) {
 	appCertificateService := service.NewCertificateService(appServerStorage, logger)
 
-	group.POST("/:serverId/domain/issue", certApi.CreateIssueCertificateHandler(cAuth, appCertificateService))
-	group.POST("/:serverId/domain/assign", certApi.CreateAssignCertificateHandler(cAuth, appCertificateService))
-	group.POST("/:serverId/domain/commondir-status", certApi.CreateGetCommonDirStatusHandler(cAuth, appCertificateService))
-	group.POST("/:serverId/domain/change-commondir-status", certApi.CreateChangeCommonDirStatusHandler(cAuth, appCertificateService))
+	group.POST("/:serverId/domain/:domainName/issue", certApi.CreateIssueCertificateHandler(cAuth, appCertificateService))
+	group.POST("/:serverId/domain/:domainName/assign", certApi.CreateAssignCertificateHandler(cAuth, appCertificateService))
+	group.GET("/:serverId/domain/:domainName/commondir-status", certApi.CreateGetCommonDirStatusHandler(cAuth, appCertificateService))
+	group.POST("/:serverId/domain/:domainName/commondir-status", certApi.CreateChangeCommonDirStatusHandler(cAuth, appCertificateService))
 	group.POST("/:serverId/upload/:serverName", certApi.CreateUploadCertificateHandler(cAuth, appCertificateService))
 	group.POST("/:serverId/storage/upload", certApi.CreateUploadCertificateToStorageHandler(cAuth, appCertificateService))
 	group.POST("/:serverId/storage/download", certApi.CreateDownloadCertificateFromStorageHandler(cAuth, appCertificateService))

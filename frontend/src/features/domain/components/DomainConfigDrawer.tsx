@@ -1,9 +1,9 @@
 import { Drawer } from "flowbite-react";
-import { Domain } from "../types";
 import { FC } from "react";
 import { HiMiniCodeBracketSquare } from "react-icons/hi2";
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { dracula } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import { Domain } from "../types";
 
 type DomainConfigDrawerProps = {
     domain: Domain;

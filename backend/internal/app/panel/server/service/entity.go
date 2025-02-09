@@ -1,6 +1,9 @@
 package service
 
-import "time"
+import (
+	domainService "backend/internal/app/panel/domain/service"
+	"time"
+)
 
 type Server struct {
 	ID           int       `json:"id"`
@@ -22,15 +25,15 @@ type Server struct {
 type ServerDetails struct {
 	Server
 
-	HostName       string   `json:"hostname"`
-	Os             string   `json:"os"`
-	PlatformFamily string   `json:"platform_family"`
-	KernelVersion  string   `json:"kernal_version"`
-	KernelArch     string   `json:"kernal_arch"`
-	Virtualization string   `json:"virtualization"`
-	Uptime         uint64   `json:"uptime"`
-	BootTime       uint64   `json:"boottime"`
-	Domains        []Domain `json:"domains"`
+	HostName       string                 `json:"hostname"`
+	Os             string                 `json:"os"`
+	PlatformFamily string                 `json:"platform_family"`
+	KernelVersion  string                 `json:"kernal_version"`
+	KernelArch     string                 `json:"kernal_arch"`
+	Virtualization string                 `json:"virtualization"`
+	Uptime         uint64                 `json:"uptime"`
+	BootTime       uint64                 `json:"boottime"`
+	Domains        []domainService.Domain `json:"domains"`
 }
 
 type NewServerRequest struct {
@@ -49,46 +52,4 @@ type UpdateServerRequest struct {
 	Ipv6Address string `json:"ipv6_address"`
 	AgentPort   int    `json:"agent_port" validate:nonzero`
 	Token       string `json:"token" validate:nonzero`
-}
-
-type Domain struct {
-	FilePath    string             `json:"filepath"`
-	ServerName  string             `json:"servername"`
-	DocRoot     string             `json:"docroot"`
-	WebServer   string             `json:"webserver"`
-	Aliases     []string           `json:"aliases"`
-	Ssl         bool               `json:"ssl"`
-	Addresses   []DomainAddress    `json:"addresses"`
-	Certificate *DomainCertificate `json:"certificate"`
-}
-
-type DomainAddress struct {
-	IsIpv6 bool   `json:"isIpv6"`
-	Host   string `json:"host"`
-	Port   int    `json:"port"`
-}
-
-type DomainCertificate struct {
-	CN             string   `json:"cn"`
-	ValidFrom      string   `json:"validfrom"`
-	ValidTo        string   `json:"validto"`
-	DNSNames       []string `json:"dnsnames"`
-	EmailAddresses []string `json:"emailaddresses"`
-	Organization   []string `json:"organization"`
-	Province       []string `json:"province"`
-	Country        []string `json:"country"`
-	Locality       []string `json:"locality"`
-	IsCA           bool     `json:"isca"`
-	IsValid        bool     `json:"isvalid"`
-	Issuer         Issuer   `json:"issuer"`
-}
-
-type Issuer struct {
-	CN           string   `json:"cn"`
-	Organization []string `json:"organization"`
-}
-
-type DomainConfigRequest struct {
-	ServerName string `form:"servername"`
-	WebServer  string `form:"webserver"`
 }

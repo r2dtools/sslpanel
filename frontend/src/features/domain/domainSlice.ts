@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { FetchStatus } from '../../app/types';
 import {
-    CommonChallengeDirStatusChangePayload,
+    ChangeCommonChallengeDirStatusPayload,
     Domain,
     DomainConfigPayload,
     DomainFetchPayload,
@@ -10,9 +10,14 @@ import {
     DomainSettingsPayload,
 } from './types';
 import { RootState } from '../../app/store';
-import { getServerDomainApi } from './serverApi';
 import { toast } from 'react-toastify';
-import { changeCommonDirStatusApi, getCommonDirApi, getDomainConfigApi, secureDomainApi } from './domainApi';
+import {
+    changeCommonDirStatusApi,
+    getCommonDirApi,
+    getDomainConfigApi,
+    getDomainApi,
+    secureDomainApi,
+} from './domainApi';
 
 export interface DomainState {
     domain: Domain | null;
@@ -39,7 +44,12 @@ const initialState: DomainState = {
 export const fetchServerDomain = createAsyncThunk(
     'domain',
     async (payload: DomainFetchPayload) => {
-        return await getServerDomainApi(payload.guid, payload.domainName, payload.token);
+        const request = {
+            guid: payload.guid,
+            domainname: payload.domainname,
+            token: payload.token
+        };
+        return await getDomainApi(request);
     },
 );
 
@@ -47,29 +57,38 @@ export const secureServerDomain = createAsyncThunk(
     'secure',
     async (payload: DomainSecurePayload) => {
         const request = {
+            guid: payload.guid,
             email: payload.email,
             subjects: payload.subjects,
             servername: payload.servername,
             webserver: payload.webserver,
             challengetype: payload.challengetype,
             assign: payload.assign,
+            token: payload.token,
         };
 
-        await secureDomainApi(payload.guid, request, payload.token);
+        await secureDomainApi(request);
 
-        return await getServerDomainApi(payload.guid, payload.servername, payload.token);
+        return await getDomainApi({
+            guid: payload.guid,
+            domainname: payload.servername,
+            webserver: payload.webserver,
+            token: payload.token,
+        });
     },
 );
 
 export const fetchSettings = createAsyncThunk(
     'settings',
     async (payload: DomainSettingsPayload) => {
-        const commonDirRequest = {
+        const request = {
+            guid: payload.guid,
             servername: payload.domain.servername,
             webserver: payload.domain.webserver,
+            token: payload.token,
         };
 
-        const status = await getCommonDirApi(payload.guid, commonDirRequest, payload.token);
+        const status = await getCommonDirApi(request);
 
         return {
             commondirstatus: status,
@@ -80,14 +99,16 @@ export const fetchSettings = createAsyncThunk(
 
 export const changeCommonDirStatus = createAsyncThunk(
     'commondirstatus/change',
-    async (payload: CommonChallengeDirStatusChangePayload) => {
+    async (payload: ChangeCommonChallengeDirStatusPayload) => {
         const request = {
+            guid: payload.guid,
             servername: payload.domain.servername,
             webserver: payload.domain.webserver,
             status: payload.status,
+            token: payload.token,
         };
 
-        await changeCommonDirStatusApi(payload.guid, request, payload.token);
+        await changeCommonDirStatusApi(request);
 
         return true;
     },
@@ -97,11 +118,13 @@ export const fetchConfig = createAsyncThunk(
     'config',
     async (payload: DomainConfigPayload) => {
         const request = {
+            guid: payload.guid,
             webserver: payload.domain.webserver,
-            servername: payload.domain.servername,
+            domainname: payload.domain.servername,
+            token: payload.token,
         };
 
-        return await getDomainConfigApi(payload.guid, request, payload.token);
+        return await getDomainConfigApi(request);
     },
 );
 

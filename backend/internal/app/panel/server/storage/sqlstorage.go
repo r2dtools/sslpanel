@@ -1,20 +1,14 @@
 package storage
 
 import (
-	"encoding/base64"
 	"errors"
 	"fmt"
-	"strconv"
-	"strings"
 
 	"gorm.io/gorm"
 )
 
-const guidPrefix = "server_guid_prefix"
-
 func (s *Server) AfterFind(tx *gorm.DB) (err error) {
-	guidRaw := fmt.Sprintf("%s_%d", guidPrefix, s.ID)
-	s.Guid = base64.RawStdEncoding.EncodeToString([]byte(guidRaw))
+	s.Guid = GetServerGUIDByID(int(s.ID))
 
 	return
 }
@@ -39,17 +33,10 @@ func (s sqlStorage) FindByID(id int) (*Server, error) {
 }
 
 func (s sqlStorage) FindByGuid(guid string) (*Server, error) {
-	decodedGuid, err := base64.RawStdEncoding.DecodeString(guid)
+	id, err := GetServerIDByGUID(guid)
 
 	if err != nil {
-		return nil, fmt.Errorf("invalid server guid: %v", err)
-	}
-
-	idStr := strings.TrimPrefix(string(decodedGuid), fmt.Sprintf("%s_", guidPrefix))
-	id, err := strconv.Atoi(idStr)
-
-	if err != nil {
-		return nil, fmt.Errorf("invalid server guid: %v", err)
+		return nil, err
 	}
 
 	return s.FindByID(id)

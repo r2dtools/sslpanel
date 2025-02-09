@@ -1,6 +1,14 @@
 package storage
 
-import "time"
+import (
+	"encoding/base64"
+	"fmt"
+	"strconv"
+	"strings"
+	"time"
+)
+
+const guidPrefix = "server_guid_prefix"
 
 type Server struct {
 	ID           uint      `gorm:"AUTO_INCREMENT" gorm:"primary_key" json:"id"`
@@ -27,4 +35,27 @@ type ServerStorage interface {
 	FindCountByIP(ipv4, ipv6 string, excludeIds []int) (int, error)
 	Save(*Server) error
 	Remove(*Server) error
+}
+
+func GetServerIDByGUID(guid string) (int, error) {
+	decodedGuid, err := base64.RawStdEncoding.DecodeString(guid)
+
+	if err != nil {
+		return 0, fmt.Errorf("invalid server guid: %v", err)
+	}
+
+	idStr := strings.TrimPrefix(string(decodedGuid), fmt.Sprintf("%s_", guidPrefix))
+	id, err := strconv.Atoi(idStr)
+
+	if err != nil {
+		return 0, fmt.Errorf("invalid server guid: %v", err)
+	}
+
+	return id, nil
+}
+
+func GetServerGUIDByID(id int) string {
+	guidRaw := fmt.Sprintf("%s_%d", guidPrefix, id)
+
+	return base64.RawStdEncoding.EncodeToString([]byte(guidRaw))
 }

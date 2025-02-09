@@ -21,7 +21,7 @@ import {
     selectDomainSecureStatus,
     selectSettings,
     selectSettingsFetchStatus,
-} from "../../features/server/domainSlice";
+} from "../../features/domain/domainSlice";
 import { FetchStatus } from "../../app/types";
 import useAuthToken from "../../features/auth/hooks";
 import moment from "moment";
@@ -33,10 +33,10 @@ import {
 } from "../../features/server/utils";
 import { CERT_ABOUT_TO_EXPIRE_DAYS } from "../../features/server/constants";
 import { useEffect, useState } from "react";
-import SecureDomainDrawer from "../../features/server/components/SecureDomainDrawer";
-import { DomainSecurePayload } from "../../features/server/types";
-import DomainSettings from "../../features/server/components/DomainSettings";
-import DomainConfigDrawer from "../../features/server/components/DomainConfigDrawer";
+import SecureDomainDrawer from "../../features/domain/components/SecureDomainDrawer";
+import { DomainSecurePayload } from "../../features/domain/types";
+import DomainSettings from "../../features/domain/components/DomainSettings";
+import DomainConfigDrawer from "../../features/domain/components/DomainConfigDrawer";
 
 const emptyPlaceholder = '----------';
 
@@ -64,7 +64,7 @@ const Domain = () => {
 
     useEffect(() => {
         if (authToken && domainSelectStatus !== FetchStatus.Pending) {
-            dispatch(fetchServerDomain({ guid: guid as string, domainName, token: authToken }));
+            dispatch(fetchServerDomain({ guid: guid as string, domainname: domainName, token: authToken }));
         }
     }, [authToken, domainName, guid]);
 

@@ -12,8 +12,9 @@ type SelfSignedCertificateRequest struct {
 }
 
 type CertificateIssueRequest struct {
+	ServerGuid       string
+	DomainName       string
 	Email            string            `json:"email"`
-	ServerName       string            `json:"servername"`
 	WebServer        string            `json:"webserver"`
 	ChallengeType    string            `json:"challengetype"`
 	Subjects         []string          `json:"subjects"`
@@ -22,16 +23,25 @@ type CertificateIssueRequest struct {
 }
 
 type CommonDirStatusRequest struct {
-	ServerName string `json:"servername"`
-	WebServer  string `json:"webserver"`
+	ServerGuid string
+	DomainName string
+	WebServer  string `form:"webserver"`
 }
 
-type CommonDirStatusChangeRequest struct {
+type ChangeCommonDirStatusRequest struct {
+	ServerGuid string
+	DomainName string
 	Status     bool   `json:"status"`
-	ServerName string `json:"servername"`
 	WebServer  string `json:"webserver"`
 }
 
 type CommonDirStatusResponse struct {
 	Status bool `json:"status"`
+}
+
+type AssignCertificateRequest struct {
+	ServerGuid string
+	DomainName string
+	WebServer  string `json:"webserver"`
+	CertName   string `json:"certname"`
 }

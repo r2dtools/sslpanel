@@ -1,7 +1,7 @@
 package service
 
 import (
-	"backend/internal/app/panel/server/service"
+	"backend/internal/app/panel/domain/service"
 	serverStorage "backend/internal/app/panel/server/storage"
 	"backend/internal/modules/sslmanager/agent"
 	"errors"
@@ -29,17 +29,22 @@ type CertificateService struct {
 	logger        logger.Logger
 }
 
-func (s CertificateService) IssueCertificate(
-	guid string,
-	certIssueRequest CertificateIssueRequest,
-) (*service.DomainCertificate, error) {
-	cAgent, err := s.getCertificateAgent(guid)
+func (s CertificateService) IssueCertificate(request CertificateIssueRequest) (*service.DomainCertificate, error) {
+	cAgent, err := s.getCertificateAgent(request.ServerGuid)
 
 	if err != nil {
 		return nil, err
 	}
 
-	cert, err := cAgent.Issue(agentintegration.CertificateIssueRequestData(certIssueRequest))
+	cert, err := cAgent.Issue(agentintegration.CertificateIssueRequestData{
+		Email:            request.Email,
+		ServerName:       request.DomainName,
+		WebServer:        request.WebServer,
+		ChallengeType:    request.ChallengeType,
+		Subjects:         request.Subjects,
+		AdditionalParams: request.AdditionalParams,
+		Assign:           request.Assign,
+	})
 
 	if err != nil {
 		return nil, ErrAgentCommon{message: err.Error()}
@@ -48,17 +53,18 @@ func (s CertificateService) IssueCertificate(
 	return service.CreateCertificate(cert), nil
 }
 
-func (s CertificateService) AssignCertificate(
-	guid string,
-	requestData agentintegration.CertificateAssignRequestData,
-) (*service.DomainCertificate, error) {
-	cAgent, err := s.getCertificateAgent(guid)
+func (s CertificateService) AssignCertificate(request AssignCertificateRequest) (*service.DomainCertificate, error) {
+	cAgent, err := s.getCertificateAgent(request.ServerGuid)
 
 	if err != nil {
 		return nil, err
 	}
 
-	cert, err := cAgent.AssignCertificateToDomain(&requestData)
+	cert, err := cAgent.AssignCertificateToDomain(&agentintegration.CertificateAssignRequestData{
+		ServerName: request.DomainName,
+		WebServer:  request.WebServer,
+		CertName:   request.CertName,
+	})
 
 	if err != nil {
 		return nil, err
@@ -139,10 +145,9 @@ func (s CertificateService) RemoveCertificateFromStorage(guid string, certName s
 	return cAgent.RemoveCertificatefromStorage(certName)
 }
 
-func (s CertificateService) GetCommonDirStatus(guid string, request CommonDirStatusRequest) (CommonDirStatusResponse, error) {
+func (s CertificateService) GetCommonDirStatus(request CommonDirStatusRequest) (CommonDirStatusResponse, error) {
 	var response CommonDirStatusResponse
-
-	cAgent, err := s.getCertificateAgent(guid)
+	cAgent, err := s.getCertificateAgent(request.ServerGuid)
 
 	if err != nil {
 		return response, err
@@ -150,7 +155,7 @@ func (s CertificateService) GetCommonDirStatus(guid string, request CommonDirSta
 
 	agentResponse, err := cAgent.GetCommonDirStatus(agentintegration.CommonDirStatusRequestData{
 		WebServer:  request.WebServer,
-		ServerName: request.ServerName,
+		ServerName: request.DomainName,
 	})
 
 	if err != nil {
@@ -162,8 +167,8 @@ func (s CertificateService) GetCommonDirStatus(guid string, request CommonDirSta
 	return response, nil
 }
 
-func (s CertificateService) ChangeCommonDirStatus(guid string, request CommonDirStatusChangeRequest) error {
-	cAgent, err := s.getCertificateAgent(guid)
+func (s CertificateService) ChangeCommonDirStatus(request ChangeCommonDirStatusRequest) error {
+	cAgent, err := s.getCertificateAgent(request.ServerGuid)
 
 	if err != nil {
 		return err
@@ -171,7 +176,7 @@ func (s CertificateService) ChangeCommonDirStatus(guid string, request CommonDir
 
 	err = cAgent.ChangeCommonDirStatus(agentintegration.CommonDirChangeStatusRequestData{
 		WebServer:  request.WebServer,
-		ServerName: request.ServerName,
+		ServerName: request.DomainName,
 		Status:     request.Status,
 	})
 

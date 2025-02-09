@@ -2,6 +2,7 @@ package service
 
 import (
 	"backend/config"
+	domainService "backend/internal/app/panel/domain/service"
 	"backend/internal/app/panel/server/storage"
 	serverStorage "backend/internal/app/panel/server/storage"
 	"backend/internal/pkg/agent"
@@ -9,8 +10,6 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-	"strconv"
-	"strings"
 
 	"github.com/r2dtools/agentintegration"
 )
@@ -36,7 +35,6 @@ func (err ErrAgentCommon) Error() string {
 }
 
 var ErrServerNotFound = errors.New("server not found")
-var ErrDomainNotFound = errors.New("domain not found")
 var ErrAgentConnection = errors.New("failed to connect to the server agent")
 
 type ServerService struct {
@@ -124,81 +122,6 @@ func (s ServerService) GetServerDetailsByGuid(guid string) (*ServerDetails, erro
 	}
 
 	return &serverDetails, nil
-}
-
-func (s ServerService) GetServerDomain(guid string, domainName string) (*Domain, error) {
-	serverModel, err := s.serverStorage.FindByGuid(guid)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if serverModel == nil {
-		return nil, ErrServerNotFound
-	}
-
-	nAgent, err := s.getServerAgent(serverModel)
-
-	if err != nil {
-		return nil, err
-	}
-
-	vhosts, err := nAgent.GetVhosts()
-
-	if err != nil {
-		return nil, err
-	}
-
-	var dVhost *agentintegration.VirtualHost
-
-	for _, vhost := range vhosts {
-		if vhost.ServerName == domainName {
-			dVhost = &vhost
-
-			break
-		}
-	}
-
-	if dVhost == nil {
-		return nil, ErrDomainNotFound
-	}
-
-	domain := createDomain(dVhost)
-
-	if domain == nil {
-		return nil, ErrDomainNotFound
-	}
-
-	return domain, nil
-}
-
-func (s ServerService) GetDomainConfig(guid string, request DomainConfigRequest) (string, error) {
-	serverModel, err := s.serverStorage.FindByGuid(guid)
-
-	if err != nil {
-		return "", err
-	}
-
-	if serverModel == nil {
-		return "", ErrServerNotFound
-	}
-
-	nAgent, err := s.getServerAgent(serverModel)
-
-	if err != nil {
-		return "", err
-	}
-
-	config, err := nAgent.GetVhostConfig(agentintegration.VirtualHostConfigRequestData{
-		WebServer:  request.WebServer,
-		ServerName: request.ServerName,
-	})
-
-	if err != nil {
-		return "", ErrAgentCommon{message: err.Error()}
-	}
-
-	return config.Content, nil
 }
 
 func (s ServerService) FindServerByGuid(guid string) (*Server, error) {
@@ -312,26 +235,6 @@ func (s ServerService) UpdateServer(request UpdateServerRequest) error {
 	return s.serverStorage.Save(serverModel)
 }
 
-func (s ServerService) GetVhostCertificate(serverID int, vhostName string) (*agentintegration.Certificate, error) {
-	serverModel, err := s.serverStorage.FindByID(serverID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if serverModel == nil {
-		return nil, ErrServerNotFound
-	}
-
-	nAgent, err := s.getServerAgent(serverModel)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return nAgent.GetVhostCertificate(vhostName)
-}
-
 func createServer(server *serverStorage.Server) *Server {
 	return &Server{
 		ID:           int(server.ID),
@@ -372,11 +275,11 @@ func (s ServerService) getServerAgent(server *serverStorage.Server) (*agent.Agen
 	)
 }
 
-func createDomains(vhosts []agentintegration.VirtualHost) []Domain {
-	var domains []Domain
+func createDomains(vhosts []agentintegration.VirtualHost) []domainService.Domain {
+	var domains []domainService.Domain
 
 	for _, vhost := range vhosts {
-		domain := createDomain(&vhost)
+		domain := domainService.CreateDomain(&vhost)
 
 		if domain == nil {
 			continue
@@ -386,64 +289,6 @@ func createDomains(vhosts []agentintegration.VirtualHost) []Domain {
 	}
 
 	return domains
-}
-
-func createDomain(vhost *agentintegration.VirtualHost) *Domain {
-	serverName := strings.Trim(vhost.ServerName, ".")
-	serverNameParts := strings.Split(serverName, ".")
-
-	// skip vhost names like 'domain'
-	if len(serverNameParts) <= 1 {
-		return nil
-	}
-
-	var addresses []DomainAddress
-
-	for _, address := range vhost.Addresses {
-		port, err := strconv.Atoi(address.Port)
-
-		if err != nil {
-			continue
-		}
-
-		addresses = append(addresses, DomainAddress{
-			IsIpv6: address.IsIpv6,
-			Host:   address.Host,
-			Port:   port,
-		})
-	}
-
-	return &Domain{
-		FilePath:    vhost.FilePath,
-		ServerName:  vhost.ServerName,
-		DocRoot:     vhost.DocRoot,
-		WebServer:   vhost.WebServer,
-		Aliases:     vhost.Aliases,
-		Ssl:         vhost.Ssl,
-		Addresses:   addresses,
-		Certificate: CreateCertificate(vhost.Certificate),
-	}
-}
-
-func CreateCertificate(cert *agentintegration.Certificate) *DomainCertificate {
-	if cert == nil {
-		return nil
-	}
-
-	return &DomainCertificate{
-		CN:             cert.CN,
-		ValidFrom:      cert.ValidFrom,
-		ValidTo:        cert.ValidTo,
-		DNSNames:       cert.DNSNames,
-		EmailAddresses: cert.EmailAddresses,
-		Organization:   cert.Organization,
-		Country:        cert.Country,
-		Locality:       cert.Locality,
-		Province:       cert.Province,
-		IsValid:        cert.IsValid,
-		IsCA:           cert.IsCA,
-		Issuer:         Issuer(cert.Issuer),
-	}
 }
 
 func NewServerService(config *config.Config, serverStorage storage.ServerStorage, logger logger.Logger) ServerService {

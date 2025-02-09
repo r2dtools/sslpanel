@@ -3,6 +3,7 @@ package adapters
 import (
 	"backend/internal/app/panel/adapters/api/auth"
 	"backend/internal/modules/sslmanager/service"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -35,16 +36,37 @@ func CreateIssueCertificateHandler(cAuth auth.Auth, certService service.Certific
 			return
 		}
 
-		var certIssueRequest service.CertificateIssueRequest
+		domainName := c.Param("domainName")
 
-		if err := c.ShouldBindJSON(&certIssueRequest); err != nil {
+		if domainName == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name"))
+
+			return
+		}
+
+		decodedDomainName, err := base64.RawStdEncoding.DecodeString(domainName)
+
+		if err != nil {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name"))
+
+			return
+		}
+
+		domainName = string(decodedDomainName)
+
+		var request service.CertificateIssueRequest
+
+		if err := c.ShouldBindJSON(&request); err != nil {
 			c.AbortWithError(http.StatusBadRequest, err)
 
 			return
 		}
 
+		request.ServerGuid = guid
+		request.DomainName = domainName
+
 		var errAgentCommon service.ErrAgentCommon
-		cert, err := certService.IssueCertificate(guid, certIssueRequest)
+		cert, err := certService.IssueCertificate(request)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
@@ -78,15 +100,35 @@ func CreateGetCommonDirStatusHandler(cAuth auth.Auth, certService service.Certif
 			return
 		}
 
+		domainName := c.Param("domainName")
+
+		if domainName == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name"))
+
+			return
+		}
+
+		decodedDomainName, err := base64.RawStdEncoding.DecodeString(domainName)
+
+		if err != nil {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name"))
+
+			return
+		}
+
+		domainName = string(decodedDomainName)
+
 		var request service.CommonDirStatusRequest
 
-		if err := c.ShouldBindJSON(&request); err != nil {
+		if err := c.ShouldBind(&request); err != nil {
 			c.AbortWithError(http.StatusBadRequest, err)
 
 			return
 		}
 
-		response, err := certService.GetCommonDirStatus(guid, request)
+		request.ServerGuid = guid
+		request.DomainName = domainName
+		response, err := certService.GetCommonDirStatus(request)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
@@ -118,7 +160,25 @@ func CreateChangeCommonDirStatusHandler(cAuth auth.Auth, certService service.Cer
 			return
 		}
 
-		var request service.CommonDirStatusChangeRequest
+		domainName := c.Param("domainName")
+
+		if domainName == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name"))
+
+			return
+		}
+
+		decodedDomainName, err := base64.RawStdEncoding.DecodeString(domainName)
+
+		if err != nil {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name"))
+
+			return
+		}
+
+		domainName = string(decodedDomainName)
+
+		var request service.ChangeCommonDirStatusRequest
 
 		if err := c.ShouldBindJSON(&request); err != nil {
 			c.AbortWithError(http.StatusBadRequest, err)
@@ -126,7 +186,9 @@ func CreateChangeCommonDirStatusHandler(cAuth auth.Auth, certService service.Cer
 			return
 		}
 
-		err := certService.ChangeCommonDirStatus(guid, request)
+		request.DomainName = domainName
+		request.ServerGuid = guid
+		err = certService.ChangeCommonDirStatus(request)
 
 		var errAgentCommon service.ErrAgentCommon
 
@@ -158,15 +220,35 @@ func CreateAssignCertificateHandler(cAuth auth.Auth, certService service.Certifi
 			return
 		}
 
-		var requestData agentintegration.CertificateAssignRequestData
+		domainName := c.Param("domainName")
 
-		if err := c.ShouldBindJSON(&requestData); err != nil {
+		if domainName == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name"))
+
+			return
+		}
+
+		decodedDomainName, err := base64.RawStdEncoding.DecodeString(domainName)
+
+		if err != nil {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name"))
+
+			return
+		}
+
+		domainName = string(decodedDomainName)
+
+		var request service.AssignCertificateRequest
+
+		if err := c.ShouldBindJSON(&request); err != nil {
 			c.AbortWithError(http.StatusBadRequest, err)
 
 			return
 		}
 
-		cert, err := certService.AssignCertificate(guid, requestData)
+		request.ServerGuid = guid
+		request.DomainName = domainName
+		cert, err := certService.AssignCertificate(request)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {

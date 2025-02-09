@@ -25,7 +25,7 @@ import Error404 from '../Error404';
 import ServerDomainList from '../../features/server/components/ServerDomainList';
 import ServerEditDrawer from '../../features/server/components/ServerEditDrawer';
 import { Domain, ServerSavePayload } from '../../features/server/types';
-import { domainFetched } from '../../features/server/domainSlice';
+import { domainFetched } from '../../features/domain/domainSlice';
 import { encode } from 'js-base64';
 
 const emptyPlaceholder = '----------';

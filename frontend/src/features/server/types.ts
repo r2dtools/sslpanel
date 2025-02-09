@@ -1,3 +1,5 @@
+import { Domain } from "../domain/types";
+
 export interface Server {
     id: number;
     guid: string;
@@ -32,25 +34,7 @@ export enum OsCode {
     Debian = 'debian',
 }
 
-export interface DomainSecureRequest {
-    email: string;
-    subjects: string[];
-    servername: string;
-    webserver: string;
-    challengetype: string;
-    assign: boolean;
-};
 
-export interface DomainSecurePayload {
-    guid: string;
-    email: string;
-    subjects: string[];
-    servername: string;
-    webserver: string;
-    challengetype: string;
-    assign: boolean;
-    token: string;
-};
 
 export interface ServerSaveRequest {
     name: string;
@@ -76,89 +60,3 @@ export interface ServerFetchPayload {
     token: string;
 }
 
-export interface DomainFetchPayload {
-    guid: string;
-    domainName: string;
-    token: string;
-}
-
-interface DomainAddress {
-    isIpv6: boolean;
-    host: string;
-    port: string;
-}
-
-export interface Domain {
-    filepath: string;
-    servername: string;
-    docroot: string;
-    webserver: string;
-    aliases: string[];
-    ssl: boolean;
-    addresses: DomainAddress[];
-    certificate: DomainCertificate | null;
-}
-
-export interface DomainCertificate {
-    cn: string;
-    validfrom: string;
-    validto: string;
-    dnsnames: string[] | null;
-    emailaddresses: string[] | null;
-    organization: string[] | null;
-    province: string[] | null;
-    country: string[] | null;
-    locality: string[] | null;
-    isca: boolean;
-    isvalid: boolean;
-    issuer: Issuer;
-}
-
-export interface Issuer {
-    cn: string;
-    organization: string[] | null;
-}
-
-export interface GetCommonDirStatusRequest {
-    webserver: string;
-    servername: string;
-}
-
-export interface DomainSettingsPayload {
-    guid: string;
-    domain: Domain;
-    token: string;
-}
-
-export interface CommonDirStatus {
-    status: boolean;
-}
-
-export interface DomainSettings {
-    commondirstatus: CommonDirStatus;
-    renewal: boolean;
-}
-
-export interface CommonChallengeDirStatusChangeRequest {
-    webserver: string;
-    servername: string;
-    status: boolean;
-}
-
-export interface CommonChallengeDirStatusChangePayload {
-    guid: string;
-    domain: Domain;
-    token: string;
-    status: boolean;
-}
-
-export interface GetDomainConfigRequest {
-    webserver: string;
-    servername: string;
-}
-
-export interface DomainConfigPayload {
-    guid: string;
-    token: string;
-    domain: Domain;
-}

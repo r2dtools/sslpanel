@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Button, Checkbox, Drawer, HR, Label, Spinner, TextInput } from 'flowbite-react';
 import { HiMiniLockClosed, HiMiniEnvelope } from 'react-icons/hi2';
 import { Domain, DomainSecurePayload } from '../types';
-import { HTTP_CHALLENGE } from '../constants';
+import { HTTP_CHALLENGE } from '../../server/constants';
 
 type SecureDomainProps = {
     guid: string,

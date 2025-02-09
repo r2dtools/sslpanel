@@ -6,9 +6,12 @@ import (
 	accountStorage "backend/internal/app/panel/account/storage"
 	accountApi "backend/internal/app/panel/adapters/api/account"
 	authApi "backend/internal/app/panel/adapters/api/auth"
+	domainApi "backend/internal/app/panel/adapters/api/domain"
 	serverApi "backend/internal/app/panel/adapters/api/server"
 	userApi "backend/internal/app/panel/adapters/api/user"
 	authService "backend/internal/app/panel/auth/service"
+	domainService "backend/internal/app/panel/domain/service"
+	domainStorage "backend/internal/app/panel/domain/storage"
 	serverService "backend/internal/app/panel/server/service"
 	serverStorage "backend/internal/app/panel/server/storage"
 	userService "backend/internal/app/panel/user/service"
@@ -52,6 +55,9 @@ func newEngine(config *config.Config, logger logger.Logger) (*gin.Engine, error)
 	appServerStorage := serverStorage.NewServerSqlStorage(database)
 	appServerSevice := serverService.NewServerService(config, appServerStorage, logger)
 
+	appDomainSettingStorage := domainStorage.NewDomainSettingSqlStorage(database)
+	appDomainSevice := domainService.NewDomainService(config, appDomainSettingStorage, appServerStorage, logger)
+
 	authMiddleware := authApi.AuthMiddleware(config, appUserStorage)
 
 	appAuthService := authService.NewAuthService(appUserStorage, emailNotifocation)
@@ -91,11 +97,15 @@ func newEngine(config *config.Config, logger logger.Logger) (*gin.Engine, error)
 			serverGroup.POST("", serverApi.CreateAddServerHandler(appAuth, appServerSevice))
 			serverGroup.POST("/:serverId", serverApi.CreateUpdateServerHandler(appServerSevice))
 			serverGroup.DELETE("/:serverId", serverApi.CreateRemoveServerHandler(appAuth, appServerSevice))
-			serverGroup.GET("/:serverId/vhost-certificate", serverApi.CreateGetVhostCertificateHandler(appServerSevice))
 			serverGroup.GET("/:serverId", serverApi.CreateGetServerByGuidHandler(appAuth, appServerSevice))
 			serverGroup.GET("/:serverId/details", serverApi.CreateGetServerDetailsByGuidHandler(appAuth, appServerSevice))
-			serverGroup.GET("/:serverId/domain/:domainName", serverApi.CreateGetServerDomainHandler(appAuth, appServerSevice))
-			serverGroup.GET("/:serverId/domain-config", serverApi.CreateGetDomainConfigHandler(appAuth, appServerSevice))
+
+			domainGroup := serverGroup.Group("/:serverId/domain/:domainName")
+			{
+				domainGroup.GET("", domainApi.CreateGetDomainHandler(appAuth, appDomainSevice))
+				domainGroup.GET("/config", domainApi.CreateGetDomainConfigHandler(appAuth, appDomainSevice))
+				domainGroup.GET("/settings", domainApi.CreateFindDomainSettingsHandler(appAuth, appDomainSevice))
+			}
 		}
 
 		settingGroup := v1.Group("settings")

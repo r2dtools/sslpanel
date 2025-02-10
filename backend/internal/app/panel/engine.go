@@ -105,6 +105,7 @@ func newEngine(config *config.Config, logger logger.Logger) (*gin.Engine, error)
 				domainGroup.GET("", domainApi.CreateGetDomainHandler(appAuth, appDomainSevice))
 				domainGroup.GET("/config", domainApi.CreateGetDomainConfigHandler(appAuth, appDomainSevice))
 				domainGroup.GET("/settings", domainApi.CreateFindDomainSettingsHandler(appAuth, appDomainSevice))
+				domainGroup.POST("/settings", domainApi.CreateChangeDomainSettingHandler(appAuth, appDomainSevice))
 			}
 		}
 

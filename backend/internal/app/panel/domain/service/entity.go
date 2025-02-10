@@ -39,8 +39,8 @@ type Issuer struct {
 
 type DomainSetting struct {
 	ID           int    `json:"id"`
-	SettingName  string `json:"setting_name"`
-	SettingValue string `json:"setting_value"`
+	SettingName  string `json:"settingname"`
+	SettingValue string `json:"settingvalue"`
 }
 
 type DomainConfigRequest struct {
@@ -59,4 +59,16 @@ type DomainCertificateRequest struct {
 	ServerGuid string
 	DomainName string
 	WebServer  string `form:"webserver"`
+}
+
+type DomainSettingsRequest struct {
+	ServerGuid string
+	DomainName string
+}
+
+type ChangeDomainSettingRequest struct {
+	ServerGuid   string
+	DomainName   string
+	SettingName  string `json:"settingname"`
+	SettingValue string `json:"settingvalue"`
 }

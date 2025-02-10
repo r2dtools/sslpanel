@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { FetchStatus } from '../../app/types';
 import {
-    ChangeCommonChallengeDirStatusPayload,
+    ChangeSettingPayload,
     Domain,
     DomainConfigPayload,
     DomainFetchPayload,
@@ -17,7 +17,10 @@ import {
     getDomainConfigApi,
     getDomainApi,
     secureDomainApi,
+    getDomainSettingsApi,
+    changeSettingApi,
 } from './domainApi';
+import { COMMON_DIR_SETTING, RENEWAL_SETTING } from './constants';
 
 export interface DomainState {
     domain: Domain | null;
@@ -27,6 +30,7 @@ export interface DomainState {
     domainSecureStatus: FetchStatus;
     settingsStatus: FetchStatus;
     changeCommonDirStatusStatus: FetchStatus;
+    changeRenewalStatus: FetchStatus;
     configStatus: FetchStatus;
 }
 
@@ -38,6 +42,7 @@ const initialState: DomainState = {
     domainSecureStatus: FetchStatus.Idle,
     settingsStatus: FetchStatus.Idle,
     changeCommonDirStatusStatus: FetchStatus.Idle,
+    changeRenewalStatus: FetchStatus.Idle,
     configStatus: FetchStatus.Idle,
 }
 
@@ -83,34 +88,50 @@ export const fetchSettings = createAsyncThunk(
     async (payload: DomainSettingsPayload) => {
         const request = {
             guid: payload.guid,
-            servername: payload.domain.servername,
+            domainname: payload.domain.servername,
             webserver: payload.domain.webserver,
             token: payload.token,
         };
 
         const status = await getCommonDirApi(request);
+        const settings = await getDomainSettingsApi(request);
 
         return {
             commondirstatus: status,
-            renewal: false,
+            renewalstatus: settings[RENEWAL_SETTING] === 'true',
         };
     },
 );
 
 export const changeCommonDirStatus = createAsyncThunk(
     'commondirstatus/change',
-    async (payload: ChangeCommonChallengeDirStatusPayload) => {
+    async (payload: ChangeSettingPayload) => {
         const request = {
             guid: payload.guid,
             servername: payload.domain.servername,
             webserver: payload.domain.webserver,
+            name: COMMON_DIR_SETTING,
             status: payload.status,
             token: payload.token,
         };
 
         await changeCommonDirStatusApi(request);
+    },
+);
 
-        return true;
+export const changeRenewal = createAsyncThunk(
+    'renewal/change',
+    async (payload: ChangeSettingPayload) => {
+        const request = {
+            guid: payload.guid,
+            servername: payload.domain.servername,
+            webserver: payload.domain.webserver,
+            name: RENEWAL_SETTING,
+            status: payload.status,
+            token: payload.token,
+        };
+
+        await changeSettingApi(request);
     },
 );
 
@@ -216,6 +237,21 @@ export const domainSlice = createSlice({
                 if (action.error.message) {
                     toast.error(action.error.message);
                 }
+            }).addCase(changeRenewal.pending, state => {
+                state.changeRenewalStatus = FetchStatus.Pending;
+            })
+            .addCase(changeRenewal.fulfilled, state => {
+                state.changeRenewalStatus = FetchStatus.Succeeded;
+
+                if (state.settings) {
+                    state.settings.renewalstatus = !state.settings.renewalstatus;
+                }
+            }).addCase(changeRenewal.rejected, (state, action) => {
+                state.changeRenewalStatus = FetchStatus.Failed;
+
+                if (action.error.message) {
+                    toast.error(action.error.message);
+                }
             });
     },
 });
@@ -230,5 +266,6 @@ export const selectSettingsFetchStatus = (state: RootState) => state.domain.sett
 export const selectDomainSecureStatus = (state: RootState) => state.domain.domainSecureStatus;
 export const selectChangeCommonDirStatusStatus = (state: RootState) => state.domain.changeCommonDirStatusStatus;
 export const selectConfigFetchStatus = (state: RootState) => state.domain.configStatus;
+export const selectChangeRenewalStatus = (state: RootState) => state.domain.changeRenewalStatus;
 
 export default domainSlice.reducer

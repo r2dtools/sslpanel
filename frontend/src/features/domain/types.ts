@@ -37,7 +37,7 @@ export interface Issuer {
 
 export interface DomainSettings {
     commondirstatus: CommonDirStatus;
-    renewal: boolean;
+    renewalstatus: boolean;
 }
 
 export interface DomainSecureRequest {
@@ -71,7 +71,7 @@ export interface DomainFetchPayload {
 export interface CommonDirStatusRequest {
     guid: string;
     webserver: string;
-    servername: string;
+    domainname: string;
     token: string;
 }
 
@@ -85,19 +85,20 @@ export interface CommonDirStatus {
     status: boolean;
 }
 
-export interface ChangeCommonChallengeDirStatusRequest {
+export interface ChangeSettingRequest {
     guid: string;
     webserver: string;
     servername: string;
-    status: boolean;
+    name: string;
+    status: string;
     token: string;
 }
 
-export interface ChangeCommonChallengeDirStatusPayload {
+export interface ChangeSettingPayload {
     guid: string;
     domain: Domain;
     token: string;
-    status: boolean;
+    status: string;
 }
 
 export interface DomainConfigRequest {
@@ -118,4 +119,14 @@ export interface DomainRequest {
     domainname: string;
     webserver?: string;
     token: string;
+}
+
+export interface DomainSettingsRequest {
+    guid: string;
+    domainname: string;
+    token: string;
+}
+
+export interface DomainSettingsResponse {
+    [key: string]: string;
 }

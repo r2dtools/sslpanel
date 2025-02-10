@@ -27,7 +27,7 @@ func (s sqlSettingStorage) FindByID(id int) (*DomainSetting, error) {
 	return &setting, nil
 }
 
-func (s sqlSettingStorage) FindByDomain(domainName string, serverGuid string) ([]DomainSetting, error) {
+func (s sqlSettingStorage) FindAllByDomain(domainName string, serverGuid string) ([]DomainSetting, error) {
 	var settings []DomainSetting
 	serverId, err := serverStorage.GetServerIDByGUID(serverGuid)
 
@@ -44,12 +44,53 @@ func (s sqlSettingStorage) FindByDomain(domainName string, serverGuid string) ([
 	return settings, nil
 }
 
+func (s sqlSettingStorage) FindByDomain(domainName string, serverGuid string, settingName string) (*DomainSetting, error) {
+	var setting DomainSetting
+	serverId, err := serverStorage.GetServerIDByGUID(serverGuid)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = s.db.Where("server_id = ?", serverId).
+		Where("domain_name = ?", domainName).
+		Where("setting_name = ?", settingName).
+		First(&setting).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+
+		return nil, err
+	}
+
+	return &setting, nil
+}
+
 func (s sqlSettingStorage) Save(setting *DomainSetting) error {
 	if setting.ID == 0 {
 		return s.db.Create(setting).Error
 	}
 
 	return s.db.Save(setting).Error
+}
+
+func (s sqlSettingStorage) Create(domainName string, serverGuid string, settingName string, settingValue string) error {
+	serverId, err := serverStorage.GetServerIDByGUID(serverGuid)
+
+	if err != nil {
+		return err
+	}
+
+	setting := &DomainSetting{
+		DomainName:   domainName,
+		ServerId:     serverId,
+		SettingName:  settingName,
+		SettingValue: settingValue,
+	}
+
+	return s.db.Create(setting).Error
 }
 
 func (s sqlSettingStorage) Remove(setting *DomainSetting) error {

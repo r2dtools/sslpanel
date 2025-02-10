@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS domain_settings(
    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
    PRIMARY KEY(id),
-   INDEX server_id_domain_name_setting_name_index (server_id, domain_name, setting_name),
+   UNIQUE (server_id, domain_name, setting_name),
 
    FOREIGN KEY (server_id) REFERENCES servers(id)
       ON DELETE CASCADE

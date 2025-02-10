@@ -2,13 +2,15 @@ import { Base64 } from 'js-base64';
 import api, { configWithAuth, getErrorMessage } from '../../lib/api';
 import {
     DomainSecureRequest,
-    ChangeCommonChallengeDirStatusRequest,
+    ChangeSettingRequest,
     CommonDirStatus,
     Domain,
     DomainCertificate,
     CommonDirStatusRequest,
     DomainConfigRequest,
     DomainRequest,
+    DomainSettingsRequest,
+    DomainSettingsResponse,
 } from './types';
 
 export const secureDomainApi = async (request: DomainSecureRequest) => {
@@ -31,7 +33,7 @@ export const secureDomainApi = async (request: DomainSecureRequest) => {
 
 export const getCommonDirApi = async (request: CommonDirStatusRequest) => {
     try {
-        const domainname = Base64.encodeURI(request.servername);
+        const domainname = Base64.encodeURI(request.domainname);
         const response = await api.get(`/v1/modules/certificates/${request.guid}/domain/${domainname}/commondir-status`, {
             ...configWithAuth(request.token),
             params: {
@@ -45,16 +47,29 @@ export const getCommonDirApi = async (request: CommonDirStatusRequest) => {
     }
 };
 
-export const changeCommonDirStatusApi = async (request: ChangeCommonChallengeDirStatusRequest) => {
+export const changeCommonDirStatusApi = async (request: ChangeSettingRequest) => {
     try {
         const domainname = Base64.encodeURI(request.servername);
         const data = {
             webserver: request.webserver,
-            status: request.status,
+            status: request.status === 'true',
         };
         await api.post(`/v1/modules/certificates/${request.guid}/domain/${domainname}/commondir-status`, data, configWithAuth(request.token));
     } catch (error) {
-        console.log(error);
+        throw new Error(getErrorMessage(error))
+    }
+};
+
+export const changeSettingApi = async (request: ChangeSettingRequest) => {
+    try {
+        const domainname = Base64.encodeURI(request.servername);
+        const data = {
+            settingname: request.name,
+            webserver: request.webserver,
+            settingvalue: request.status,
+        };
+        await api.post(`/v1/servers/${request.guid}/domain/${domainname}/settings`, data, configWithAuth(request.token));
+    } catch (error) {
         throw new Error(getErrorMessage(error))
     }
 };
@@ -81,6 +96,17 @@ export const getDomainApi = async (request: DomainRequest) => {
         const response = await api.get(`/v1/servers/${request.guid}/domain/${domainname}`, configWithAuth(request.token));
 
         return response.data.domain as Domain;
+    } catch (error) {
+        throw new Error(getErrorMessage(error))
+    }
+};
+
+export const getDomainSettingsApi = async (request: DomainSettingsRequest) => {
+    try {
+        const domainname = Base64.encodeURI(request.domainname);
+        const response = await api.get(`/v1/servers/${request.guid}/domain/${domainname}/settings`, configWithAuth(request.token));
+
+        return response.data.settings as DomainSettingsResponse;
     } catch (error) {
         throw new Error(getErrorMessage(error))
     }

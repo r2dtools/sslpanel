@@ -8,12 +8,14 @@ import Error404 from '../Error404';
 import { useAppDispatch, useAppSelector } from "../../app/hooks";
 import {
     changeCommonDirStatus,
+    changeRenewal,
     configReset,
     fetchConfig,
     fetchServerDomain,
     fetchSettings,
     secureServerDomain,
     selectChangeCommonDirStatusStatus,
+    selectChangeRenewalStatus,
     selectConfig,
     selectConfigFetchStatus,
     selectDomain,
@@ -52,6 +54,7 @@ const Domain = () => {
     const settingsSelectStatus = useAppSelector(selectSettingsFetchStatus);
     const domainSecureStatus = useAppSelector(selectDomainSecureStatus);
     const changeCommonDirStatusStatus = useAppSelector(selectChangeCommonDirStatusStatus);
+    const changeRenewalStatus = useAppSelector(selectChangeRenewalStatus);
     const configSelectStatus = useAppSelector(selectConfigFetchStatus);
     const domain = useAppSelector(selectDomain);
     const settings = useAppSelector(selectSettings);
@@ -128,7 +131,20 @@ const Domain = () => {
 
         return await dispatch(changeCommonDirStatus({
             domain,
-            status: value,
+            status: (new Boolean(value)).toString(),
+            guid: guid as string,
+            token: authToken,
+        }));
+    }
+
+    const handleRenewalChange = async (value: boolean) => {
+        if (!authToken || !domain) {
+            return;
+        }
+
+        return await dispatch(changeRenewal({
+            domain,
+            status: (new Boolean(value)).toString(),
             guid: guid as string,
             token: authToken,
         }));
@@ -298,6 +314,8 @@ const Domain = () => {
                             domain={domain}
                             commonDirStatusLoading={changeCommonDirStatusStatus === FetchStatus.Pending}
                             onCommonDirStatusChange={handleCommonDirChange}
+                            onRenewalChange={handleRenewalChange}
+                            renewalLoading={changeRenewalStatus === FetchStatus.Pending}
                         />
                     )}
                 </div >

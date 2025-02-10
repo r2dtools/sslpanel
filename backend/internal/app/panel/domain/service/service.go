@@ -110,12 +110,12 @@ func (s DomainService) GetDomainConfig(request DomainConfigRequest) (string, err
 	return config.Content, nil
 }
 
-func (s DomainService) FindDomainSettings(domainName string, serverGuid string) ([]DomainSetting, error) {
-	var settings []DomainSetting
-	settingModels, err := s.settingStorage.FindByDomain(domainName, serverGuid)
+func (s DomainService) FindDomainSettings(request DomainSettingsRequest) ([]DomainSetting, error) {
+	settings := []DomainSetting{}
+	settingModels, err := s.settingStorage.FindAllByDomain(request.DomainName, request.ServerGuid)
 
 	if err != nil {
-		return settings, fmt.Errorf("could not find domain settings for domain %s", domainName)
+		return settings, fmt.Errorf("error while searching settings for domain %s", request.DomainName)
 	}
 
 	for _, settingModel := range settingModels {
@@ -123,6 +123,32 @@ func (s DomainService) FindDomainSettings(domainName string, serverGuid string) 
 	}
 
 	return settings, nil
+}
+
+func (s DomainService) ChangeDomainSettings(request ChangeDomainSettingRequest) error {
+	settingModel, err := s.settingStorage.FindByDomain(request.DomainName, request.ServerGuid, request.SettingName)
+
+	if err != nil {
+		return fmt.Errorf("error while searching setting %s for domain %s", request.SettingName, request.DomainName)
+	}
+
+	if settingModel == nil {
+		err = s.settingStorage.Create(
+			request.DomainName,
+			request.ServerGuid,
+			request.SettingName,
+			request.SettingValue,
+		)
+	} else {
+		settingModel.SettingValue = request.SettingValue
+		err = s.settingStorage.Save(settingModel)
+	}
+
+	if err != nil {
+		return fmt.Errorf("failed to change setting %s: %v", request.SettingName, err)
+	}
+
+	return nil
 }
 
 func (s DomainService) getServerAgent(server *serverStorage.Server) (*agent.Agent, error) {

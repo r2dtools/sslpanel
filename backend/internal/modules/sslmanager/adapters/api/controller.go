@@ -422,7 +422,7 @@ func CreateDownloadCertificateFromStorageHandler(cAuth auth.Auth, certService se
 	}
 }
 
-func CreateGetStorageCertNameListHandler(cAuth auth.Auth, certService service.CertificateService) func(c *gin.Context) {
+func CreateGetStorageCertificatesHandler(cAuth auth.Auth, certService service.CertificateService) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		user := cAuth.GetCurrentUser(c)
 
@@ -438,11 +438,15 @@ func CreateGetStorageCertNameListHandler(cAuth auth.Auth, certService service.Ce
 			return
 		}
 
-		certNameList, err := certService.GetStorageCertNameList(guid)
+		var errAgentCommon service.ErrAgentCommon
+		request := service.CertificatesRequest{Guid: guid}
+		certsMap, err := certService.GetStorageCertificates(request)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
-				c.AbortWithError(http.StatusNotFound, err)
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else if errors.As(err, &errAgentCommon) {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
 				c.AbortWithError(http.StatusInternalServerError, err)
 			}
@@ -450,7 +454,7 @@ func CreateGetStorageCertNameListHandler(cAuth auth.Auth, certService service.Ce
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"certNameList": certNameList})
+		c.JSON(http.StatusOK, gin.H{"certificates": certsMap})
 	}
 }
 

@@ -59,25 +59,26 @@ func (a *CertificateAgent) RemoveCertificatefromStorage(certName string) error {
 	return err
 }
 
-func (a *CertificateAgent) GetStorageCertNameList() ([]string, error) {
-	data, err := a.serverAgent.Request("certificates.storagecertnamelist", nil)
+func (a *CertificateAgent) GetStorageCertificates() (map[string]*agentintegration.Certificate, error) {
+	certificates := map[string]*agentintegration.Certificate{}
+	data, err := a.serverAgent.Request("certificates.storagecertificates", nil)
 
 	if err != nil {
 		return nil, err
 	}
 
 	if data == nil {
-		return []string{}, nil
+		return certificates, nil
 	}
 
-	var certNameList agentintegration.StorageCertificateNameList
-	err = mapstructure.Decode(data, &certNameList)
+	var response agentintegration.CertificatesResponseData
+	err = mapstructure.Decode(data, &response)
 
 	if err != nil {
-		return nil, fmt.Errorf("invalid certificate name list data: %v", err)
+		return nil, fmt.Errorf("invalid certificate list data: %v", err)
 	}
 
-	return certNameList.CertNameList, nil
+	return response.Certificates, nil
 }
 
 func (a *CertificateAgent) GetStorageCertificate(certName string) (*agentintegration.Certificate, error) {

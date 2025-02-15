@@ -115,14 +115,25 @@ func (s CertificateService) DownloadCertificateFromStorage(guid string, certName
 	return cAgent.DownloadtStorageCertificate(certName)
 }
 
-func (s CertificateService) GetStorageCertNameList(guid string) ([]string, error) {
-	cAgent, err := s.getCertificateAgent(guid)
+func (s CertificateService) GetStorageCertificates(request CertificatesRequest) (map[string]Certificate, error) {
+	result := map[string]Certificate{}
+	cAgent, err := s.getCertificateAgent(request.Guid)
 
 	if err != nil {
-		return nil, err
+		return result, err
 	}
 
-	return cAgent.GetStorageCertNameList()
+	certsMap, err := cAgent.GetStorageCertificates()
+
+	if err != nil {
+		return result, ErrAgentCommon{message: err.Error()}
+	}
+
+	for name, cert := range certsMap {
+		result[name] = createCertificate(cert)
+	}
+
+	return result, nil
 }
 
 func (s CertificateService) GetStorageCertificate(guid string, certName string) (*agentintegration.Certificate, error) {
@@ -249,5 +260,25 @@ func NewCertificateService(serverStorage serverStorage.ServerStorage, logger log
 	return CertificateService{
 		serverStorage: serverStorage,
 		logger:        logger,
+	}
+}
+
+func createCertificate(cert *agentintegration.Certificate) Certificate {
+	return Certificate{
+		CN:           cert.CN,
+		ValidFrom:    cert.ValidFrom,
+		ValidTo:      cert.ValidTo,
+		DNSNames:     cert.DNSNames,
+		Emails:       cert.EmailAddresses,
+		Organization: cert.Organization,
+		Province:     cert.Province,
+		Country:      cert.Country,
+		Locality:     cert.Locality,
+		IsCA:         cert.IsCA,
+		IsValid:      cert.IsValid,
+		Issuer: Issuer{
+			CN:           cert.Issuer.CN,
+			Organization: cert.Issuer.Organization,
+		},
 	}
 }

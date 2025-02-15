@@ -25,8 +25,7 @@ func InitRouter(
 	group.POST("/:serverId/upload/:serverName", certApi.CreateUploadCertificateHandler(cAuth, appCertificateService))
 	group.POST("/:serverId/storage/upload", certApi.CreateUploadCertificateToStorageHandler(cAuth, appCertificateService))
 	group.POST("/:serverId/storage/download", certApi.CreateDownloadCertificateFromStorageHandler(cAuth, appCertificateService))
-	group.GET("/:serverId/storage/cert-name-list", certApi.CreateGetStorageCertNameListHandler(cAuth, appCertificateService))
-	group.GET("/:serverId/storage/cert-data", certApi.CreateGetStorageCertNameListHandler(cAuth, appCertificateService))
+	group.GET("/:serverId/storage/certificates", certApi.CreateGetStorageCertificatesHandler(cAuth, appCertificateService))
 	group.POST("/:serverId/storage/remove", certApi.CreateRemoveCertificateFromStorageHandler(cAuth, appCertificateService))
 	group.POST("/:serverId/storage/add-self-signed", certApi.CreateAddSelfSignCertificateToStorageHandler(cAuth, appCertificateService))
 }

@@ -1,5 +1,25 @@
 package service
 
+type Certificate struct {
+	CN           string   `json:"cn"`
+	ValidFrom    string   `json:"validfrom"`
+	ValidTo      string   `json:"validto"`
+	DNSNames     []string `json:"dnsnames"`
+	Emails       []string `json:"emails"`
+	Organization []string `json:"organization"`
+	Province     []string `json:"province"`
+	Country      []string `json:"country"`
+	Locality     []string `json:"locality"`
+	IsCA         bool     `json:"isca"`
+	IsValid      bool     `json:"isvalid"`
+	Issuer       Issuer   `json:"issuer"`
+}
+
+type Issuer struct {
+	CN           string   `json:"cn"`
+	Organization []string `json:"organization"`
+}
+
 type SelfSignedCertificateRequest struct {
 	CertName,
 	CommonName,
@@ -44,4 +64,8 @@ type AssignCertificateRequest struct {
 	DomainName string
 	WebServer  string `json:"webserver"`
 	CertName   string `json:"certname"`
+}
+
+type CertificatesRequest struct {
+	Guid string
 }

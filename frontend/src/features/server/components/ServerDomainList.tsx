@@ -1,10 +1,10 @@
 import { Badge } from 'flowbite-react';
-import { Domain } from '../types';
 import React from 'react';
 import empty from '../../../images/empty.png';
 import moment from 'moment';
-import { getSiteCertExpiredDays, isSelfSignedCertificate } from '../utils';
-import { CERT_ABOUT_TO_EXPIRE_DAYS } from '../constants';
+import { CERT_ABOUT_TO_EXPIRE_DAYS } from '../../certificate/constants';
+import { Domain } from '../../domain/types';
+import { getSiteCertExpiredDays, isSelfSignedCertificate } from '../../certificate/utils';
 
 type ServerDomainListProps = {
     domains: Domain[];

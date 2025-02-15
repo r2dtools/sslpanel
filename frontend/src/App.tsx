@@ -31,6 +31,7 @@ import useAuthToken from './features/auth/hooks';
 import RoutesContext from './app/context';
 import Error404 from './pages/Error404';
 import Domain from './pages/Domain/Domain';
+import CertificateList from './pages/CertificateList/CertificatesList';
 
 function App() {
     const { pathname } = useLocation();
@@ -140,6 +141,12 @@ function App() {
                     title: "Servers | R2DTools Control Panel",
                     name: "Servers",
                     component: <ServerList />
+                },
+                {
+                    path: "/certificates",
+                    title: "Certificates | R2DTools Control Panel",
+                    name: "Certificates",
+                    component: <CertificateList />
                 },
                 {
                     path: "/servers/:guid",

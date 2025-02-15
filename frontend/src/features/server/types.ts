@@ -34,8 +34,6 @@ export enum OsCode {
     Debian = 'debian',
 }
 
-
-
 export interface ServerSaveRequest {
     name: string;
     ipv4_address: string;
@@ -59,4 +57,3 @@ export interface ServerFetchPayload {
     guid: string;
     token: string;
 }
-

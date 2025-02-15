@@ -4,3 +4,4 @@ export { default as sectigo } from './sectigo.svg';
 export { default as comodo } from './comodo.svg';
 export { default as amazon } from './amazon.svg';
 export { default as cloudflare } from './cloudflare.svg';
+export { default as rapidssl } from './rapidssl.svg';

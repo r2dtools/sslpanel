@@ -27,18 +27,18 @@ import {
 import { FetchStatus } from "../../app/types";
 import useAuthToken from "../../features/auth/hooks";
 import moment from "moment";
-import {
-    getCertificateIssuerIcon,
-    getCertificateIssuerCode,
-    getSiteCertExpiredDays,
-    getWebServerIcon,
-} from "../../features/server/utils";
-import { CERT_ABOUT_TO_EXPIRE_DAYS } from "../../features/server/constants";
+import { getWebServerIcon } from "../../features/server/utils";
+import { CERT_ABOUT_TO_EXPIRE_DAYS } from "../../features/certificate/constants";
 import { useEffect, useState } from "react";
 import SecureDomainDrawer from "../../features/domain/components/SecureDomainDrawer";
 import { DomainSecurePayload } from "../../features/domain/types";
 import DomainSettings from "../../features/domain/components/DomainSettings";
 import DomainConfigDrawer from "../../features/domain/components/DomainConfigDrawer";
+import {
+    getCertificateIssuerCode,
+    getCertificateIssuerIcon,
+    getSiteCertExpiredDays,
+} from "../../features/certificate/utils";
 
 const emptyPlaceholder = '----------';
 
@@ -72,14 +72,14 @@ const Domain = () => {
     }, [authToken, domainName, guid]);
 
     useEffect(() => {
-        if (authToken && domain && settingsSelectStatus === FetchStatus.Idle) {
+        if (authToken && domain && settingsSelectStatus !== FetchStatus.Pending) {
             dispatch(fetchSettings({
                 guid: guid as string,
                 token: authToken,
                 domain: domain,
             }));
         }
-    }, [authToken, domain, guid]);
+    }, [authToken, domain?.servername, guid]);
 
     const confPathParts = (domain?.filepath || '').split('/');
     const confFile = confPathParts.pop() || emptyPlaceholder;

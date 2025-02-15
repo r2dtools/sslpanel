@@ -2,8 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import SidebarLinkGroup from './SidebarLinkGroup';
 import Logo from '../../images/logo/logo.png';
-import ServerIcon from '../../images/icon/icon-server.svg?react';
-import { HiOutlineServerStack } from 'react-icons/hi2';
+import { HiKey, HiOutlineServerStack } from 'react-icons/hi2';
 
 interface SidebarProps {
     sidebarOpen: boolean;
@@ -447,6 +446,20 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                 </NavLink>
                             </li>
                             {/* <!-- Menu Item Servers --> */}
+
+                            {/* <!-- Menu Item Certificate Storage --> */}
+                            <li>
+                                <NavLink
+                                    to="/certificates"
+                                    className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname.includes('certificates') &&
+                                        'bg-graydark dark:bg-meta-4'
+                                        }`}
+                                >
+                                    <HiKey />
+                                    Certificates
+                                </NavLink>
+                            </li>
+                            {/* <!-- Menu Item Certificate Storage --> */}
                         </ul>
                     </div>
 

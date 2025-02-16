@@ -3,7 +3,7 @@ import useLocalStorage from './useLocalStorage';
 import { ColorTheme } from '../types/theme';
 
 const useColorMode = () => {
-  const [colorMode, setColorMode] = useLocalStorage('color-theme', ColorTheme.Light);
+  const [colorMode, setColorMode] = useLocalStorage('color-theme', ColorTheme.Dark);
 
   useEffect(() => {
     const className = ColorTheme.Dark;

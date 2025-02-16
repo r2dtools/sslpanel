@@ -33,6 +33,7 @@ import Error404 from './pages/Error404';
 import Domain from './pages/Domain/Domain';
 import CertificateList from './pages/CertificateList/CertificatesList';
 import DomainList from './pages/DomainList/DomainList';
+import { setAppColorMode } from './app/appSlice';
 
 function App() {
     const { pathname } = useLocation();
@@ -47,6 +48,10 @@ function App() {
 
     const currentUserLoading = currentUserLoadStatus === FetchStatus.Pending;
     const loading = currentUserLoading;
+
+    useEffect(() => {
+        dispatch(setAppColorMode(colorMode as ColorTheme));
+    }, []);
 
     useEffect(() => {
         window.scrollTo(0, 0);

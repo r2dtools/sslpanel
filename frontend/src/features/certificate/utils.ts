@@ -11,6 +11,7 @@ import {
     SECTIGO_CODE,
 } from './constants';
 import { DomainCertificate } from '../domain/types';
+import { Certificate } from './types';
 
 export const getSiteCertExpiredDays = (validTo?: string | null) => {
     if (!validTo) {
@@ -37,7 +38,7 @@ export const isSelfSignedCertificate = (certificate: DomainCertificate | null) =
     return certificate.cn === issuer.cn;
 }
 
-export const getCertificateIssuerCode = (certificate: DomainCertificate | null) => {
+export const getCertificateIssuerCode = (certificate: DomainCertificate | Certificate | null) => {
     if (!certificate) {
         return null;
     }

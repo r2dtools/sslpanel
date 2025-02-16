@@ -1,8 +1,8 @@
 import { Alert, Avatar, Badge, Button, Popover, Tooltip } from 'flowbite-react';
 import Breadcrumb from '../../components/Breadcrumb';
 import { getOsIcon, getOsName } from '../../features/server/utils';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { HiMiniSignal, HiMiniPencil, HiMiniEye, HiMiniClipboard } from 'react-icons/hi2';
+import { useLocation, useParams } from 'react-router-dom';
+import { HiMiniSignal, HiMiniPencil, HiMiniEye, HiMiniClipboard, HiMiniKey, HiMiniGlobeAlt } from 'react-icons/hi2';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { toast } from 'react-toastify';
 import useAuthToken from '../../features/auth/hooks';
@@ -22,12 +22,10 @@ import { FetchStatus } from '../../app/types';
 import Loader from '../../components/Loader/Loader';
 import moment from 'moment';
 import Error404 from '../Error404';
-import ServerDomainList from '../../features/server/components/ServerDomainList';
 import ServerEditDrawer from '../../features/server/components/ServerEditDrawer';
 import { ServerSavePayload } from '../../features/server/types';
-import { domainFetched } from '../../features/domain/domainSlice';
-import { encode } from 'js-base64';
-import { Domain } from '../../features/domain/types';
+import CardStatsLink from '../../components/CardStatsLink';
+import { fetchCertificates, selectCertificates, selectCertificatesFetchStatus } from '../../features/certificate/certificatesSlice';
 
 const emptyPlaceholder = '----------';
 
@@ -42,8 +40,9 @@ const Server = () => {
     const [showServerAlert, setShowServerAlert] = useState<boolean>(false);
     const [serverFormOpen, setServerFormOpen] = useState(false);
     const serverSaveStatus = useAppSelector(selectServerSaveStatus);
+    const certificatesSelectStatus = useAppSelector(selectCertificatesFetchStatus);
+    const certificates = useAppSelector(selectCertificates);
     const [pinging, setPinging] = useState<boolean>(false);
-    const navigate = useNavigate();
     const { pathname } = useLocation();
 
     const isLoading = (serverSelectStatus === FetchStatus.Pending || serverDetailsSelectStatus === FetchStatus.Pending) && !pinging;
@@ -59,10 +58,28 @@ const Server = () => {
     }, [serverDetailsSelectStatus]);
 
     useEffect(() => {
-        if (authToken && serverSelectStatus === FetchStatus.Succeeded && serverDetailsSelectStatus !== FetchStatus.Pending) {
+        if (
+            authToken
+            && serverSelectStatus === FetchStatus.Succeeded
+            && serverDetailsSelectStatus !== FetchStatus.Pending
+        ) {
             dispatch(fetchServerDetails({ guid: guid as string, token: authToken }));
         }
-    }, [serverSelectStatus, authToken, guid, server]);
+    }, [serverSelectStatus, authToken, guid, server?.guid]);
+
+    useEffect(() => {
+        if (
+            authToken
+            && serverSelectStatus === FetchStatus.Succeeded
+            && certificatesSelectStatus !== FetchStatus.Pending
+            && certificatesSelectStatus !== FetchStatus.Succeeded
+        ) {
+            dispatch(fetchCertificates({
+                guid: guid as string,
+                token: authToken,
+            }));
+        }
+    }, [authToken, server?.guid, guid, serverSelectStatus]);
 
     const onTokenCopy = () => toast.success('Copied', {
         autoClose: 1000,
@@ -85,11 +102,6 @@ const Server = () => {
         await dispatch(fetchServerDetails({ guid: guid as string, token: authToken }));
         setPinging(false);
     };
-
-    const handleDomainSelect = (domain: Domain): void => {
-        dispatch(domainFetched(domain));
-        navigate(`${pathname}/domain/${encode(domain.servername)}`);
-    }
 
     const uptime = serverDetails?.uptime ? moment.duration(serverDetails.uptime, 'seconds').humanize() : emptyPlaceholder;
 
@@ -216,7 +228,14 @@ const Server = () => {
                             </div>
                         </div>
                     </div>
-                    <ServerDomainList domains={serverDetails?.domains || []} onDomainClick={handleDomainSelect} />
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
+                        <CardStatsLink title='Domains' total={(serverDetails?.domains || []).length} url={`${pathname}/domains`}>
+                            <HiMiniGlobeAlt />
+                        </CardStatsLink>
+                        <CardStatsLink title='Certificates' total={(Object.values(certificates).length)} url={`${pathname}/certificates`}>
+                            <HiMiniKey />
+                        </CardStatsLink>
+                    </div>
                     <ServerEditDrawer
                         open={serverFormOpen}
                         authToken={authToken || ''}

@@ -32,6 +32,7 @@ import RoutesContext from './app/context';
 import Error404 from './pages/Error404';
 import Domain from './pages/Domain/Domain';
 import CertificateList from './pages/CertificateList/CertificatesList';
+import DomainList from './pages/DomainList/DomainList';
 
 function App() {
     const { pathname } = useLocation();
@@ -155,7 +156,19 @@ function App() {
                     component: <Server />,
                 },
                 {
-                    path: "/servers/:guid/domain/:name",
+                    path: "/servers/:guid/domains",
+                    title: "Domains | R2DTools Control Panel",
+                    name: 'Domains',
+                    component: <DomainList />,
+                },
+                {
+                    path: "/servers/:guid/certificates",
+                    title: "Certificates | R2DTools Control Panel",
+                    name: 'Certificates',
+                    component: <CertificateList />,
+                },
+                {
+                    path: "/servers/:guid/domains/:name",
                     title: "Domain | R2DTools Control Panel",
                     name: 'Domain',
                     component: <Domain />,

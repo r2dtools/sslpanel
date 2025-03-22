@@ -1,29 +1,31 @@
 import { Link } from 'react-router-dom';
-import { Badge, Tooltip } from 'flowbite-react';
-import { HiMiniCloudArrowDown, HiMiniTrash } from 'react-icons/hi2';
+import { Badge, Spinner, Tooltip } from 'flowbite-react';
+import { HiMiniCloudArrowDown } from 'react-icons/hi2';
 import { getCertificateIssuerCode, getCertificateIssuerIcon, getSiteCertExpiredDays } from '../utils';
 import sslIcon from '../../../images/certificate/ca.png';
 import moment from 'moment';
 import { CERT_ABOUT_TO_EXPIRE_DAYS } from '../constants';
 import { Certificate } from '../types';
+import { useState } from 'react';
 
 interface CertificateItemProps {
+    name: string
     certificate: Certificate
+    onCertificateDownload: (name: string) => Promise<any>
 };
 
-const CertificateItem: React.FC<CertificateItemProps> = ({ certificate }) => {
-    const handleDelete = async (event: React.MouseEvent<SVGElement, MouseEvent>) => {
-        event.preventDefault();
-        event.stopPropagation();
-
-        console.log("delete");
-    };
+const CertificateItem: React.FC<CertificateItemProps> = ({ name, certificate, onCertificateDownload }) => {
+    const [actionLoading, setActionLoading] = useState<boolean>(false);
 
     const handleDownload = async (event: React.MouseEvent<SVGElement, MouseEvent>) => {
+        setActionLoading(true);
+
         event.preventDefault();
         event.stopPropagation();
 
-        console.log("download");
+        await onCertificateDownload(name);
+
+        setActionLoading(false);
     };
 
     const preventClick = (event: React.MouseEvent) => {
@@ -76,14 +78,16 @@ const CertificateItem: React.FC<CertificateItemProps> = ({ certificate }) => {
                     ) : null}
                 </div>
                 <div className="w-2/12 text-center lg:w-1/12" onClick={preventClick}>
-                    <button className="flex justify-between mx-auto block gap-2">
-                        <Tooltip content="Delete" >
-                            <HiMiniTrash size={20} className='hover:text-red-500' onClick={handleDelete} />
-                        </Tooltip>
-                        <Tooltip content="Download" >
-                            <HiMiniCloudArrowDown size={20} className='hover:text-red-500' onClick={handleDownload} />
-                        </Tooltip>
-                    </button>
+                    {actionLoading
+                        ? <Spinner />
+                        : (
+                            <button className="flex justify-between mx-auto block gap-2">
+                                <Tooltip content="Download" >
+                                    <HiMiniCloudArrowDown size={20} className='hover:text-red-500' onClick={handleDownload} />
+                                </Tooltip>
+                            </button>
+                        )
+                    }
                 </div>
             </div>
         </Link>

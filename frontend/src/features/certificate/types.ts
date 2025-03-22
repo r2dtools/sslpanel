@@ -31,3 +31,14 @@ export interface CertificatesPayload {
     guid: string;
     token: string;
 }
+
+export interface DownloadCertificateRequest {
+    guid: string;
+    token: string;
+    name: string;
+}
+
+export interface DownloadCertificateResponse {
+    name: string;
+    content: string;
+}

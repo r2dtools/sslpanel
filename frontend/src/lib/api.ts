@@ -41,5 +41,12 @@ export const configWithAuth = (token: string, config?: AxiosRequestConfig): Axio
     };
 };
 
+api.interceptors.response.use((response) => response, (error) => {
+    if (error.response.status === 401) {
+        (window as Window).location = '/auth/sigin';
+    }
+
+    return Promise.reject(error);
+});
 
 export default api;

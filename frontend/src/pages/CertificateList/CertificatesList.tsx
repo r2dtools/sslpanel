@@ -8,8 +8,9 @@ import { useEffect } from 'react';
 import { FetchStatus } from '../../app/types';
 import { useParams } from 'react-router-dom';
 import Loader from '../../components/Loader/Loader';
-import { Certificate } from '../../features/certificate/types';
 import empty from '../../images/empty.png';
+import { downloadCertificateApi } from '../../features/certificate/certificateApi';
+import { toast } from 'react-toastify';
 
 const CertificateList = () => {
     const { guid } = useParams();
@@ -19,7 +20,7 @@ const CertificateList = () => {
     const certificates = useAppSelector(selectCertificates);
 
     const isLoading = certificatesSelectStatus === FetchStatus.Pending;
-    const certs = Object.values(certificates);
+    const certNames = Object.keys(certificates);
 
     useEffect(() => {
         if (authToken && certificatesSelectStatus !== FetchStatus.Pending) {
@@ -29,6 +30,31 @@ const CertificateList = () => {
             }));
         }
     }, [authToken]);
+
+    const handleCertificateDownload = async (name: string): Promise<any> => {
+        if (!authToken || !guid) {
+            return;
+        }
+
+        try {
+            const response = await downloadCertificateApi({
+                guid,
+                name,
+                token: authToken,
+            });
+
+            const url = window.URL.createObjectURL(new Blob([response.content]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', response.name);
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+        } catch (err) {
+            const error = err as Error;
+            toast.error(error.message);
+        }
+    };
 
     return (
         isLoading
@@ -56,11 +82,16 @@ const CertificateList = () => {
                     </div>
                     <div className="p-4 md:p-6 xl:p-7.5">
                         <div className="mx-auto max-w-[80px]">
-                            {!certs.length && <img src={empty} />}
+                            {!certNames.length && <img src={empty} />}
                         </div>
                         {
-                            certs.map((certificate: Certificate) => (
-                                <CertificateItem certificate={certificate} key={certificate.cn} />
+                            Object.entries(certificates).map(([name, certificate]) => (
+                                <CertificateItem
+                                    name={name}
+                                    certificate={certificate}
+                                    key={certificate.cn}
+                                    onCertificateDownload={handleCertificateDownload}
+                                />
                             ))
                         }
                     </div>

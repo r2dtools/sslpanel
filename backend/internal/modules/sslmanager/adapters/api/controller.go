@@ -390,7 +390,9 @@ func CreateDownloadCertificateFromStorageHandler(cAuth auth.Auth, certService se
 			return
 		}
 
-		requestData := struct{ CertName string }{}
+		requestData := struct {
+			CertName string `json:"name"`
+		}{}
 
 		if err := c.ShouldBindJSON(&requestData); err != nil {
 			c.AbortWithError(http.StatusBadRequest, err)
@@ -416,8 +418,8 @@ func CreateDownloadCertificateFromStorageHandler(cAuth auth.Auth, certService se
 		}
 
 		c.JSON(http.StatusOK, gin.H{
-			"certFileName": certData.CertFileName,
-			"certContent":  certData.CertContent,
+			"name":    certData.CertFileName,
+			"content": certData.CertContent,
 		})
 	}
 }

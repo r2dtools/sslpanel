@@ -21,14 +21,15 @@ type Issuer struct {
 }
 
 type SelfSignedCertificateRequest struct {
-	CertName,
-	CommonName,
-	Email,
-	Country,
-	Province,
-	Locality,
-	Organization string
-	AltNames []string
+	ServerGuid   string
+	CertName     string   `json:"certName"`
+	CommonName   string   `json:"commonName"`
+	Email        string   `json:"email"`
+	Country      string   `json:"country"`
+	Province     string   `json:"province"`
+	Locality     string   `json:"locality"`
+	Organization string   `json:"organization"`
+	AltNames     []string `json:"altNames"`
 }
 
 type CertificateIssueRequest struct {
@@ -68,4 +69,10 @@ type AssignCertificateRequest struct {
 
 type CertificatesRequest struct {
 	Guid string
+}
+
+type CertificateUploadToStorageRequest struct {
+	ServerGuid     string
+	CertName       string
+	PemCertificate string
 }

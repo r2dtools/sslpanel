@@ -93,7 +93,7 @@ const DomainList = () => {
                                             <div className="2xsm:h-11 2xsm:w-full 2xsm:max-w-11 2xsm:rounded-full">
                                                 <img src={getWebServerIcon(domain.webserver)} />
                                             </div>
-                                            <span className="font-medium">{domain.servername}</span>
+                                            <span className="font-medium text-black dark:text-white">{domain.servername}</span>
                                         </div>
                                         <div className="w-4/12 md:w-3/12 xl:w-2/12">
                                             {cert ? (

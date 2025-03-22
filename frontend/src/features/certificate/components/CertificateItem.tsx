@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Badge, Spinner, Tooltip } from 'flowbite-react';
 import { HiMiniCloudArrowDown } from 'react-icons/hi2';
-import { getCertificateIssuerCode, getCertificateIssuerIcon, getSiteCertExpiredDays } from '../utils';
+import { getCertificateIssuerCode, getCertificateIssuerIcon, getSiteCertExpiredDays, isSelfSignedCertificate } from '../utils';
 import sslIcon from '../../../images/certificate/ca.png';
 import moment from 'moment';
 import { CERT_ABOUT_TO_EXPIRE_DAYS } from '../constants';
@@ -16,6 +16,7 @@ interface CertificateItemProps {
 
 const CertificateItem: React.FC<CertificateItemProps> = ({ name, certificate, onCertificateDownload }) => {
     const [actionLoading, setActionLoading] = useState<boolean>(false);
+    const fileName = `${name}.pem`
 
     const handleDownload = async (event: React.MouseEvent<SVGElement, MouseEvent>) => {
         setActionLoading(true);
@@ -39,6 +40,9 @@ const CertificateItem: React.FC<CertificateItemProps> = ({ name, certificate, on
     const validTo = certificate.validto;
     const expireDays = getSiteCertExpiredDays(validTo);
     const expireDuration = expireDays && expireDays > 0 ? moment.duration(expireDays, 'days').humanize() : null;
+    const dnsnames = [...new Set([certificate.cn].concat(certificate.dnsnames || []))];
+
+    const isSelfSigned = isSelfSignedCertificate(certificate);
 
     return (
         <Link to="#">
@@ -54,18 +58,20 @@ const CertificateItem: React.FC<CertificateItemProps> = ({ name, certificate, on
                                 <div className="2xsm:h-11 2xsm:max-w-11">
                                     <img src={sslIcon} />
                                 </div>
-                                <div>
+                                <div className='flex flex-col gap-1'>
                                     <span className="font-bold">Default CA</span>
+                                    {isSelfSigned && <Badge color='warning' className='inline'>Self-Signed</Badge>}
                                 </div>
                             </div>
                         )
                     }
                 </div>
                 <div className="w-4/12 flex flex-col gap-1 font-medium">
-                    {(certificate.dnsnames || []).map((name: string) => <div className='truncate' key={name}>{name}</div>)}
+                    {dnsnames.map((name: string) => <div className='truncate text-black dark:text-white' key={name}>{name}</div>)}
+                    <div className='text-sm truncate'>{`[${fileName}]`}</div>
                 </div>
                 <div className="w-3/12 md:flex md:flex-col gap-1 lg:gap-2 md:items-center lg:flex-row">
-                    <span className="font-medium hidden md:block">
+                    <span className="font-medium hidden md:block text-black dark:text-white">
                         {moment(validTo).format('LL')}
                     </span>
                     {expireDays && expireDuration ? (

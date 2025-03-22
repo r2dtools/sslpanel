@@ -92,14 +92,16 @@ func (s CertificateService) UploadCertificate(
 	return service.CreateCertificate(cert), nil
 }
 
-func (s CertificateService) UploadCertificateToStorage(
-	guid string,
-	requestData agentintegration.CertificateUploadRequestData,
-) (*agentintegration.Certificate, error) {
-	cAgent, err := s.getCertificateAgent(guid)
+func (s CertificateService) UploadCertificateToStorage(request CertificateUploadToStorageRequest) (*agentintegration.Certificate, error) {
+	cAgent, err := s.getCertificateAgent(request.ServerGuid)
 
 	if err != nil {
 		return nil, err
+	}
+
+	requestData := agentintegration.CertificateUploadRequestData{
+		CertName:       request.CertName,
+		PemCertificate: request.PemCertificate,
 	}
 
 	return cAgent.UploadPemCertificateToStorage(&requestData)
@@ -200,22 +202,22 @@ func (s CertificateService) ChangeCommonDirStatus(request ChangeCommonDirStatusR
 	return nil
 }
 
-func (s CertificateService) CreateSelfSignCertificate(guid string, requestData SelfSignedCertificateRequest) (*agentintegration.Certificate, error) {
-	cAgent, err := s.getCertificateAgent(guid)
+func (s CertificateService) CreateSelfSignCertificate(request SelfSignedCertificateRequest) (*agentintegration.Certificate, error) {
+	cAgent, err := s.getCertificateAgent(request.ServerGuid)
 
 	if err != nil {
 		return nil, err
 	}
 
 	certData := certificate.SelfSignCertificateData{
-		CertName:     requestData.CertName,
-		CommonName:   requestData.CommonName,
-		Email:        requestData.Email,
-		Country:      requestData.Country,
-		Province:     requestData.Province,
-		Locality:     requestData.Locality,
-		Organization: requestData.Organization,
-		AltNames:     requestData.AltNames,
+		CertName:     request.CertName,
+		CommonName:   request.CommonName,
+		Email:        request.Email,
+		Country:      request.Country,
+		Province:     request.Province,
+		Locality:     request.Locality,
+		Organization: request.Organization,
+		AltNames:     request.AltNames,
 	}
 	certPem, err := certificate.CreateSelfSignedCertificate(certData)
 
@@ -223,11 +225,12 @@ func (s CertificateService) CreateSelfSignCertificate(guid string, requestData S
 		return nil, fmt.Errorf("could not generate self-signed certificate: %v", err)
 	}
 
-	var uploadCertRequestData agentintegration.CertificateUploadRequestData
-	uploadCertRequestData.PemCertificate = certPem
-	uploadCertRequestData.CertName = requestData.CertName
+	requestData := agentintegration.CertificateUploadRequestData{
+		CertName:       request.CertName,
+		PemCertificate: certPem,
+	}
 
-	return cAgent.UploadPemCertificateToStorage(&uploadCertRequestData)
+	return cAgent.UploadPemCertificateToStorage(&requestData)
 }
 
 func (s CertificateService) getCertificateAgent(guid string) (*agent.CertificateAgent, error) {

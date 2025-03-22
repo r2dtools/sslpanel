@@ -44,12 +44,12 @@ const ServerItem: React.FC<ServerItemProps> = ({ server, onDelete, onEdit }: Ser
                             <img src={getOsIcon(server.os_code)} />
                         </div>
                         <div>
-                            <span className="font-bold">{server.name}</span>
+                            <span className="font-bold text-black dark:text-white">{server.name}</span>
                             <span className="mt-1 block text-sm">{getOsName(server.os_code)} {server.os_version}</span>
                         </div>
                     </div>
                 </div>
-                <div className="hidden md:block md:w-7/12 lg:w-6/12 xl:w-5/12 text-sm">
+                <div className="hidden md:block md:w-7/12 lg:w-6/12 xl:w-5/12 text-sm text-black dark:text-white">
                     {server.ipv4_address && <div className="font-medium">{server.ipv4_address}</div>}
                     {server.ipv6_address && <div className="font-medium">{server.ipv6_address}</div>}
                 </div>

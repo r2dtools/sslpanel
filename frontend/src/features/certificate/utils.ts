@@ -24,7 +24,7 @@ export const getSiteCertExpiredDays = (validTo?: string | null) => {
     return validToDate.diff(currentDate, 'd', true);
 };
 
-export const isSelfSignedCertificate = (certificate: DomainCertificate | null) => {
+export const isSelfSignedCertificate = (certificate: DomainCertificate | Certificate | null) => {
     if (!certificate || !certificate.cn) {
         return false;
     }

@@ -4,9 +4,7 @@ import (
 	"backend/internal/app/panel/adapters/api/auth"
 	"backend/internal/modules/sslmanager/service"
 	"encoding/base64"
-	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -335,7 +333,7 @@ func CreateUploadCertificateToStorageHandler(cAuth auth.Auth, certService servic
 			return
 		}
 
-		certName := c.PostForm("CertName")
+		certName := c.PostForm("name")
 
 		if certName == "" {
 			c.AbortWithError(http.StatusBadRequest, errors.New("certificate name is missed"))
@@ -354,23 +352,24 @@ func CreateUploadCertificateToStorageHandler(cAuth auth.Auth, certService servic
 			return
 		}
 
-		var requestData agentintegration.CertificateUploadRequestData
-		requestData.PemCertificate = string(pemFileBytes)
-		requestData.CertName = certName
+		request := service.CertificateUploadToStorageRequest{
+			ServerGuid:     guid,
+			CertName:       certName,
+			PemCertificate: string(pemFileBytes),
+		}
+		_, err = certService.UploadCertificateToStorage(request)
 
-		certificate, err := certService.UploadCertificateToStorage(guid, requestData)
+		var errAgentCommon service.ErrAgentCommon
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
-				c.AbortWithError(http.StatusNotFound, err)
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else if errors.As(err, &errAgentCommon) {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
 				c.AbortWithError(http.StatusInternalServerError, err)
 			}
-
-			return
 		}
-
-		c.JSON(http.StatusOK, gin.H{"certificate": certificate})
 	}
 }
 
@@ -407,9 +406,13 @@ func CreateDownloadCertificateFromStorageHandler(cAuth auth.Auth, certService se
 
 		certData, err := certService.DownloadCertificateFromStorage(guid, requestData.CertName)
 
+		var errAgentCommon service.ErrAgentCommon
+
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
-				c.AbortWithError(http.StatusNotFound, err)
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else if errors.As(err, &errAgentCommon) {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
 				c.AbortWithError(http.StatusInternalServerError, err)
 			}
@@ -560,41 +563,48 @@ func CreateAddSelfSignCertificateToStorageHandler(cAuth auth.Auth, certService s
 			return
 		}
 
-		selfSignedCertData := c.PostForm("SelfSignedCert")
+		request := service.SelfSignedCertificateRequest{}
 
-		if selfSignedCertData == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid certificate data"))
-
-			return
-		}
-
-		requestData := service.SelfSignedCertificateRequest{}
-
-		if err := json.Unmarshal([]byte(selfSignedCertData), &requestData); err != nil {
-			c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid certificate data: %v", err))
+		if err := c.ShouldBindJSON(&request); err != nil {
+			c.AbortWithError(http.StatusBadRequest, err)
 
 			return
 		}
 
-		certificate, err := certService.CreateSelfSignCertificate(guid, requestData)
+		if request.CertName == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("certificate name is missed"))
+
+			return
+		}
+
+		if request.CommonName == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("common name is missed"))
+
+			return
+		}
+
+		request.ServerGuid = guid
+		_, err := certService.CreateSelfSignCertificate(request)
+
+		var errAgentCommon service.ErrAgentCommon
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
-				c.AbortWithError(http.StatusNotFound, err)
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else if errors.As(err, &errAgentCommon) {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
 				c.AbortWithError(http.StatusInternalServerError, err)
 			}
 
 			return
 		}
-
-		c.JSON(http.StatusOK, gin.H{"certificate": certificate})
 	}
 }
 
 func getPemCertificateFromRequest(c *gin.Context) ([]byte, error) {
 	c.Request.ParseMultipartForm(10)
-	pemFile, _, err := c.Request.FormFile("PemCertificate")
+	pemFile, _, err := c.Request.FormFile("file")
 
 	if err != nil {
 		return nil, err

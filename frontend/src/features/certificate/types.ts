@@ -42,3 +42,38 @@ export interface DownloadCertificateResponse {
     name: string;
     content: string;
 }
+
+export interface UploadCertificateRequest {
+    name: string;
+    file: File;
+    token: string;
+    guid: string;
+}
+
+export interface UploadCertificatePayload {
+    name: string;
+    file: File;
+    token: string;
+    guid: string;
+}
+
+export interface SelfSignedCertificateFormData {
+    certName: string,
+    commonName: string,
+    email: string | null,
+    country: string | null,
+    province: string | null,
+    locality: string | null,
+    altNames: string[],
+    organization: string | null,
+}
+
+export interface GenerateSelfSignedCertificateRequest extends SelfSignedCertificateFormData {
+    token: string;
+    guid: string;
+}
+
+export interface GenerateSelfSignedCertificatePayload extends SelfSignedCertificateFormData {
+    token: string;
+    guid: string;
+}

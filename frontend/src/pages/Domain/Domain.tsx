@@ -61,25 +61,25 @@ const Domain = () => {
     const config = useAppSelector(selectConfig);
     const [secureFormOpen, setSecureFormOpen] = useState(false);
 
-    if (!domainName) {
+    if (!domainName || !authToken) {
         return <Error404 />
     }
 
     useEffect(() => {
-        if (authToken && domainSelectStatus !== FetchStatus.Pending) {
+        if (domainSelectStatus !== FetchStatus.Pending) {
             dispatch(fetchServerDomain({ guid: guid as string, domainname: domainName, token: authToken }));
         }
-    }, [authToken, domainName, guid]);
+    }, [domainName, guid]);
 
     useEffect(() => {
-        if (authToken && domain && settingsSelectStatus !== FetchStatus.Pending) {
+        if (domain && settingsSelectStatus !== FetchStatus.Pending) {
             dispatch(fetchSettings({
                 guid: guid as string,
                 token: authToken,
                 domain: domain,
             }));
         }
-    }, [authToken, domain?.servername, guid]);
+    }, [domain?.servername, guid]);
 
     const confPathParts = (domain?.filepath || '').split('/');
     const confFile = confPathParts.pop() || emptyPlaceholder;
@@ -87,6 +87,7 @@ const Domain = () => {
     const aliases = domain?.aliases || [];
     const certificate = domain?.certificate || null;
     const certificateDnsNames = certificate?.dnsnames || [];
+    const certificateAliases = certificateDnsNames.filter(certificateDnsName => certificateDnsName !== certificate?.cn)
     const certificateExpireDays = getSiteCertExpiredDays(certificate?.validto);
     const expireDuration = certificateExpireDays && certificateExpireDays > 0 ? moment.duration(certificateExpireDays, 'days').humanize() : null;
     const issuerCode = getCertificateIssuerCode(certificate);
@@ -109,7 +110,7 @@ const Domain = () => {
     };
 
     const handleDomainConfigOpen = async () => {
-        if (!authToken || !domain || configSelectStatus === FetchStatus.Pending) {
+        if (!domain || configSelectStatus === FetchStatus.Pending) {
             return;
         }
 
@@ -125,7 +126,7 @@ const Domain = () => {
     };
 
     const handleCommonDirChange = async (value: boolean) => {
-        if (!authToken || !domain) {
+        if (!domain) {
             return;
         }
 
@@ -138,7 +139,7 @@ const Domain = () => {
     }
 
     const handleRenewalChange = async (value: boolean) => {
-        if (!authToken || !domain) {
+        if (!domain) {
             return;
         }
 
@@ -221,10 +222,8 @@ const Domain = () => {
                                                 <dt>Alternative Names</dt>
                                                 <dd className="font-bold text-black dark:text-white flex flex-col gap-2">
                                                     {
-                                                        certificateDnsNames.length
-                                                            ? certificateDnsNames
-                                                                .filter(certificateDnsName => certificateDnsName !== certificate?.cn)
-                                                                .map(certificateDnsName => <div key={certificateDnsName}>{certificateDnsName}</div>)
+                                                        certificateAliases.length
+                                                            ? certificateAliases.map(certificateDnsName => <div key={certificateDnsName}>{certificateDnsName}</div>)
                                                             : emptyPlaceholder
                                                     }
                                                 </dd>

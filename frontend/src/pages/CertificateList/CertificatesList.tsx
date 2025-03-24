@@ -20,9 +20,10 @@ import empty from '../../images/empty.png';
 import { downloadCertificateApi } from '../../features/certificate/certificateApi';
 import { toast } from 'react-toastify';
 import CertificateAddDrawer from '../../features/certificate/components/CertificateAddDrawer';
-import { SelfSignedCertificateFormData } from '../../features/certificate/types';
+import { Certificate, SelfSignedCertificateFormData } from '../../features/certificate/types';
 import Error404 from '../Error404';
 import Error403 from '../Error403';
+import CertificateDetailsDrawer from '../../features/certificate/components/CertificateDetailsDrawer';
 
 const CertificateList = () => {
     const { guid } = useParams();
@@ -43,6 +44,9 @@ const CertificateList = () => {
     const certificates = useAppSelector(selectCertificates);
 
     const [certificateFormOpen, setCertificateFormOpen] = useState<boolean>(false);
+    const [certificateDetailsOpen, setCertificateDetailsOpen] = useState<boolean>(false);
+
+    const [selectedCertificate, setSelectedCertificate] = useState<{ name: string, certificate: Certificate } | null>(null);
 
     const isLoading = certificatesSelectStatus === FetchStatus.Pending;
     const certNames = Object.keys(certificates);
@@ -79,6 +83,16 @@ const CertificateList = () => {
 
     const handleCertificateFormOpen = (): void => {
         setCertificateFormOpen(true);
+    };
+
+    const handleCertificateDetailsClose = (): void => {
+        setCertificateDetailsOpen(false);
+        setSelectedCertificate(null);
+    };
+
+    const handleCertificateSelect = (certificate: Certificate, name: string): void => {
+        setSelectedCertificate({ name, certificate });
+        setCertificateDetailsOpen(true);
     };
 
     const handleCertificateUpload = async (name: string, file: File) => {
@@ -126,6 +140,7 @@ const CertificateList = () => {
                                     certificate={certificate}
                                     key={name}
                                     onCertificateDownload={handleCertificateDownload}
+                                    onClick={handleCertificateSelect}
                                 />
                             ))
                         }
@@ -138,6 +153,11 @@ const CertificateList = () => {
                     onClose={handleCertificateFormClose}
                     onUpload={handleCertificateUpload}
                     onGenerate={handleGenerateSelfSignedCertificate}
+                />
+                <CertificateDetailsDrawer
+                    open={certificateDetailsOpen}
+                    onClose={handleCertificateDetailsClose}
+                    certificateData={selectedCertificate}
                 />
             </>
     );

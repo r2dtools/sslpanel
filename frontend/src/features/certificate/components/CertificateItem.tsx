@@ -12,9 +12,10 @@ interface CertificateItemProps {
     name: string
     certificate: Certificate
     onCertificateDownload: (name: string) => Promise<any>
+    onClick: (certificate: Certificate, name: string) => void
 };
 
-const CertificateItem: React.FC<CertificateItemProps> = ({ name, certificate, onCertificateDownload }) => {
+const CertificateItem: React.FC<CertificateItemProps> = ({ name, certificate, onCertificateDownload, onClick }) => {
     const [actionLoading, setActionLoading] = useState<boolean>(false);
     const fileName = `${name}.pem`
 
@@ -27,6 +28,11 @@ const CertificateItem: React.FC<CertificateItemProps> = ({ name, certificate, on
         await onCertificateDownload(name);
 
         setActionLoading(false);
+    };
+
+    const handleClick = (event: React.MouseEvent<HTMLAnchorElement>): void => {
+        preventClick(event);
+        onClick(certificate, name)
     };
 
     const preventClick = (event: React.MouseEvent) => {
@@ -45,7 +51,7 @@ const CertificateItem: React.FC<CertificateItemProps> = ({ name, certificate, on
     const isSelfSigned = isSelfSignedCertificate(certificate);
 
     return (
-        <Link to="#">
+        <Link to="#" onClick={handleClick}>
             <div className="p-3 flex items-center gap-3 hover:bg-[#F8FAFD] dark:hover:bg-meta-4 hover:rounded">
                 <div className="w-3/12 md:w-4/12">
                     {

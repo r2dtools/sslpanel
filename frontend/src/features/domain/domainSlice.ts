@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { FetchStatus } from '../../app/types';
 import {
+    AssignCertificatePayload,
     ChangeSettingPayload,
     Domain,
     DomainConfigPayload,
@@ -16,9 +17,10 @@ import {
     getCommonDirApi,
     getDomainConfigApi,
     getDomainApi,
-    secureDomainApi,
+    issueCertificateApi,
     getDomainSettingsApi,
     changeSettingApi,
+    assignCertificateApi,
 } from './domainApi';
 import { COMMON_DIR_SETTING, RENEWAL_SETTING } from './constants';
 
@@ -28,6 +30,7 @@ export interface DomainState {
     config: string | null;
     domainStatus: FetchStatus;
     domainSecureStatus: FetchStatus;
+    certificateAssignStatus: FetchStatus;
     settingsStatus: FetchStatus;
     changeCommonDirStatusStatus: FetchStatus;
     changeRenewalStatus: FetchStatus;
@@ -40,6 +43,7 @@ const initialState: DomainState = {
     config: null,
     domainStatus: FetchStatus.Idle,
     domainSecureStatus: FetchStatus.Idle,
+    certificateAssignStatus: FetchStatus.Idle,
     settingsStatus: FetchStatus.Idle,
     changeCommonDirStatusStatus: FetchStatus.Idle,
     changeRenewalStatus: FetchStatus.Idle,
@@ -58,8 +62,8 @@ export const fetchServerDomain = createAsyncThunk(
     },
 );
 
-export const secureServerDomain = createAsyncThunk(
-    'secure',
+export const issueCertificate = createAsyncThunk(
+    'issoe',
     async (payload: DomainSecurePayload) => {
         const request = {
             guid: payload.guid,
@@ -72,7 +76,29 @@ export const secureServerDomain = createAsyncThunk(
             token: payload.token,
         };
 
-        await secureDomainApi(request);
+        await issueCertificateApi(request);
+
+        return await getDomainApi({
+            guid: payload.guid,
+            domainname: payload.servername,
+            webserver: payload.webserver,
+            token: payload.token,
+        });
+    },
+);
+
+export const assignCertificate = createAsyncThunk(
+    'assign',
+    async (payload: AssignCertificatePayload) => {
+        const request = {
+            guid: payload.guid,
+            servername: payload.servername,
+            webserver: payload.webserver,
+            name: payload.name,
+            token: payload.token,
+        };
+
+        await assignCertificateApi(request);
 
         return await getDomainApi({
             guid: payload.guid,
@@ -178,15 +204,28 @@ export const domainSlice = createSlice({
                 if (action.error.message) {
                     toast.error(action.error.message);
                 }
-            }).addCase(secureServerDomain.pending, state => {
+            }).addCase(issueCertificate.pending, state => {
                 state.domainSecureStatus = FetchStatus.Pending;
             })
-            .addCase(secureServerDomain.fulfilled, (state, action) => {
+            .addCase(issueCertificate.fulfilled, (state, action) => {
                 state.domainSecureStatus = FetchStatus.Succeeded;
                 state.domain = action.payload;
             })
-            .addCase(secureServerDomain.rejected, (state, action) => {
+            .addCase(issueCertificate.rejected, (state, action) => {
                 state.domainSecureStatus = FetchStatus.Failed;
+
+                if (action.error.message) {
+                    toast.error(action.error.message);
+                }
+            }).addCase(assignCertificate.pending, state => {
+                state.certificateAssignStatus = FetchStatus.Pending;
+            })
+            .addCase(assignCertificate.fulfilled, (state, action) => {
+                state.certificateAssignStatus = FetchStatus.Succeeded;
+                state.domain = action.payload;
+            })
+            .addCase(assignCertificate.rejected, (state, action) => {
+                state.certificateAssignStatus = FetchStatus.Failed;
 
                 if (action.error.message) {
                     toast.error(action.error.message);
@@ -267,5 +306,7 @@ export const selectDomainSecureStatus = (state: RootState) => state.domain.domai
 export const selectChangeCommonDirStatusStatus = (state: RootState) => state.domain.changeCommonDirStatusStatus;
 export const selectConfigFetchStatus = (state: RootState) => state.domain.configStatus;
 export const selectChangeRenewalStatus = (state: RootState) => state.domain.changeRenewalStatus;
+
+export const selectCertificateAssignStatus = (state: RootState) => state.domain.certificateAssignStatus;
 
 export default domainSlice.reducer

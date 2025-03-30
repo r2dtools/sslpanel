@@ -13,16 +13,18 @@ import {
     fetchConfig,
     fetchServerDomain,
     fetchSettings,
-    secureServerDomain,
+    issueCertificate,
     selectChangeCommonDirStatusStatus,
     selectChangeRenewalStatus,
     selectConfig,
     selectConfigFetchStatus,
     selectDomain,
+    selectCertificateAssignStatus,
     selectDomainFetchStatus,
     selectDomainSecureStatus,
     selectSettings,
     selectSettingsFetchStatus,
+    assignCertificate,
 } from "../../features/domain/domainSlice";
 import { FetchStatus } from "../../app/types";
 import useAuthToken from "../../features/auth/hooks";
@@ -31,7 +33,7 @@ import { getWebServerIcon } from "../../features/server/utils";
 import { CERT_ABOUT_TO_EXPIRE_DAYS } from "../../features/certificate/constants";
 import { useEffect, useState } from "react";
 import SecureDomainDrawer from "../../features/domain/components/SecureDomainDrawer";
-import { DomainSecurePayload } from "../../features/domain/types";
+import { AssignCertificatePayload, DomainSecurePayload } from "../../features/domain/types";
 import DomainSettings from "../../features/domain/components/DomainSettings";
 import DomainConfigDrawer from "../../features/domain/components/DomainConfigDrawer";
 import {
@@ -39,6 +41,7 @@ import {
     getCertificateIssuerIcon,
     getSiteCertExpiredDays,
 } from "../../features/certificate/utils";
+import { fetchCertificates, selectCertificates } from "../../features/certificate/certificatesSlice";
 
 const emptyPlaceholder = '----------';
 
@@ -53,28 +56,31 @@ const Domain = () => {
     const domainSelectStatus = useAppSelector(selectDomainFetchStatus);
     const settingsSelectStatus = useAppSelector(selectSettingsFetchStatus);
     const domainSecureStatus = useAppSelector(selectDomainSecureStatus);
+    const certificateAssignStatus = useAppSelector(selectCertificateAssignStatus);
     const changeCommonDirStatusStatus = useAppSelector(selectChangeCommonDirStatusStatus);
     const changeRenewalStatus = useAppSelector(selectChangeRenewalStatus);
     const configSelectStatus = useAppSelector(selectConfigFetchStatus);
     const domain = useAppSelector(selectDomain);
+    const certificates = useAppSelector(selectCertificates);
     const settings = useAppSelector(selectSettings);
     const config = useAppSelector(selectConfig);
     const [secureFormOpen, setSecureFormOpen] = useState(false);
+    const [secureFormOpenLoading, setSecureFormOpenLoading] = useState<boolean>(false);
 
-    if (!domainName || !authToken) {
+    if (!domainName || !authToken || !guid) {
         return <Error404 />
     }
 
     useEffect(() => {
         if (domainSelectStatus !== FetchStatus.Pending) {
-            dispatch(fetchServerDomain({ guid: guid as string, domainname: domainName, token: authToken }));
+            dispatch(fetchServerDomain({ guid: guid, domainname: domainName, token: authToken }));
         }
     }, [domainName, guid]);
 
     useEffect(() => {
         if (domain && settingsSelectStatus !== FetchStatus.Pending) {
             dispatch(fetchSettings({
-                guid: guid as string,
+                guid: guid,
                 token: authToken,
                 domain: domain,
             }));
@@ -97,11 +103,19 @@ const Domain = () => {
     const isLoading = domainSelectStatus === FetchStatus.Pending
         || settingsSelectStatus === FetchStatus.Pending;
 
-    const handleSubmitSecureForm = async (payload: DomainSecurePayload) => {
-        return dispatch(secureServerDomain(payload));
+    const handleIssueCertificate = async (payload: DomainSecurePayload): Promise<any> => {
+        return dispatch(issueCertificate(payload));
     };
 
-    const handleSecureFormOpen = (): void => {
+    const handleAssignCertificate = async (payload: AssignCertificatePayload): Promise<any> => {
+        return dispatch(assignCertificate(payload));
+    };
+
+    const handleSecureFormOpen = async () => {
+        setSecureFormOpenLoading(true);
+        await dispatch(fetchCertificates({ guid: guid, token: authToken }));
+        setSecureFormOpenLoading(false);
+
         setSecureFormOpen(true);
     };
 
@@ -115,7 +129,7 @@ const Domain = () => {
         }
 
         await dispatch(fetchConfig({
-            guid: guid as string,
+            guid: guid,
             token: authToken,
             domain,
         }));
@@ -133,7 +147,7 @@ const Domain = () => {
         return await dispatch(changeCommonDirStatus({
             domain,
             status: (new Boolean(value)).toString(),
-            guid: guid as string,
+            guid: guid,
             token: authToken,
         }));
     }
@@ -146,7 +160,7 @@ const Domain = () => {
         return await dispatch(changeRenewal({
             domain,
             status: (new Boolean(value)).toString(),
-            guid: guid as string,
+            guid: guid,
             token: authToken,
         }));
     }
@@ -178,8 +192,12 @@ const Domain = () => {
                                     </Avatar>
                                     <div className='flex gap-3'>
                                         <Button color='blue' onClick={handleSecureFormOpen}>
-                                            <HiMiniLockClosed className="mr-2 h-5 w-4" />
-                                            Secure
+                                            {secureFormOpenLoading ? <Spinner /> : (
+                                                <>
+                                                    <HiMiniLockClosed className="mr-2 h-5 w-4" />
+                                                    Secure
+                                                </>
+                                            )}
                                         </Button>
                                     </div>
                                 </div>
@@ -319,19 +337,22 @@ const Domain = () => {
                     )}
                 </div >
                 {
-                    domain && authToken && guid && (
+                    domain && (
                         <SecureDomainDrawer
                             authToken={authToken}
                             guid={guid}
                             domain={domain}
                             open={secureFormOpen}
+                            certificates={certificates}
                             onClose={handleSecureFormClose}
-                            onSubmit={handleSubmitSecureForm}
-                            loading={domainSecureStatus === FetchStatus.Pending}
+                            onIssueSubmit={handleIssueCertificate}
+                            onAssignSubmit={handleAssignCertificate}
+                            issueLoading={domainSecureStatus === FetchStatus.Pending}
+                            assignLoading={certificateAssignStatus === FetchStatus.Pending}
                         />)
                 }
                 {
-                    domain && authToken && guid && (
+                    domain && (
                         <DomainConfigDrawer
                             authToken={authToken}
                             domain={domain}

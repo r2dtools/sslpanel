@@ -62,6 +62,22 @@ export interface DomainSecurePayload {
     token: string;
 };
 
+export interface AssignCertificatePayload {
+    servername: string;
+    webserver: string;
+    name: string;
+    guid: string;
+    token: string;
+}
+
+export interface AssignCertificateRequest {
+    servername: string;
+    webserver: string;
+    name: string;
+    guid: string;
+    token: string;
+}
+
 export interface DomainFetchPayload {
     guid: string;
     domainname: string;

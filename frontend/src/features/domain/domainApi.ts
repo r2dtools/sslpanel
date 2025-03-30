@@ -11,9 +11,10 @@ import {
     DomainRequest,
     DomainSettingsRequest,
     DomainSettingsResponse,
+    AssignCertificateRequest,
 } from './types';
 
-export const secureDomainApi = async (request: DomainSecureRequest) => {
+export const issueCertificateApi = async (request: DomainSecureRequest) => {
     try {
         const domainname = Base64.encodeURI(request.servername);
         const data = {
@@ -24,6 +25,21 @@ export const secureDomainApi = async (request: DomainSecureRequest) => {
             assign: request.assign,
         };
         const response = await api.post(`/v1/modules/certificates/${request.guid}/domain/${domainname}/issue`, data, configWithAuth(request.token));
+
+        return response.data.certificate as DomainCertificate;
+    } catch (error) {
+        throw new Error(getErrorMessage(error))
+    }
+};
+
+export const assignCertificateApi = async (request: AssignCertificateRequest) => {
+    try {
+        const domainname = Base64.encodeURI(request.servername);
+        const data = {
+            name: request.name,
+            webserver: request.webserver,
+        };
+        const response = await api.post(`/v1/modules/certificates/${request.guid}/domain/${domainname}/assign`, data, configWithAuth(request.token));
 
         return response.data.certificate as DomainCertificate;
     } catch (error) {

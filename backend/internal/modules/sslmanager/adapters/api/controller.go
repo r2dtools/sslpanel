@@ -246,19 +246,19 @@ func CreateAssignCertificateHandler(cAuth auth.Auth, certService service.Certifi
 
 		request.ServerGuid = guid
 		request.DomainName = domainName
-		cert, err := certService.AssignCertificate(request)
+		_, err = certService.AssignCertificate(request)
+
+		var errAgentCommon service.ErrAgentCommon
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
-				c.AbortWithError(http.StatusNotFound, err)
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else if errors.As(err, &errAgentCommon) {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
 				c.AbortWithError(http.StatusInternalServerError, err)
 			}
-
-			return
 		}
-
-		c.JSON(http.StatusOK, gin.H{"certificate": cert})
 	}
 }
 

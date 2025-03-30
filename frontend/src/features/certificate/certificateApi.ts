@@ -1,5 +1,12 @@
 import api, { configWithAuth, getErrorMessage } from '../../lib/api';
-import { CertificatesRequest, CertificateMap, DownloadCertificateRequest, DownloadCertificateResponse, UploadCertificateRequest, GenerateSelfSignedCertificateRequest } from './types';
+import {
+    CertificatesRequest,
+    CertificateMap,
+    DownloadCertificateRequest,
+    DownloadCertificateResponse,
+    UploadCertificateRequest,
+    GenerateSelfSignedCertificateRequest,
+} from './types';
 
 export const getCertificatesApi = async (request: CertificatesRequest) => {
     try {

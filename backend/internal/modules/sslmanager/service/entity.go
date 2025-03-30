@@ -64,7 +64,7 @@ type AssignCertificateRequest struct {
 	ServerGuid string
 	DomainName string
 	WebServer  string `json:"webserver"`
-	CertName   string `json:"certname"`
+	CertName   string `json:"name"`
 }
 
 type CertificatesRequest struct {

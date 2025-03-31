@@ -1,11 +1,9 @@
 import { Link } from 'react-router-dom';
-import DropdownMessage from './DropdownMessage';
-import DropdownNotification from './DropdownNotification';
 import DropdownUser from './DropdownUser';
 import LogoIcon from '../../images/logo/logo-icon.png';
 import DarkModeSwitcher from './DarkModeSwitcher';
-import { useAppDispatch } from '../../app/hooks';
-import { logout } from '../../features/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { logout, selectCurrentUser } from '../../features/auth/authSlice';
 
 interface HeaderProps {
     sidebarOpen: string | boolean | undefined;
@@ -14,6 +12,7 @@ interface HeaderProps {
 };
 
 const Header = (props: HeaderProps) => {
+    const currentUser = useAppSelector(selectCurrentUser);
     const dispatch = useAppDispatch();
 
     const handleSignOut = () => {
@@ -73,17 +72,9 @@ const Header = (props: HeaderProps) => {
                         {/* <!-- Dark Mode Toggler --> */}
                         <DarkModeSwitcher />
                         {/* <!-- Dark Mode Toggler --> */}
-
-                        {/* <!-- Notification Menu Area --> */}
-                        <DropdownNotification />
-                        {/* <!-- Notification Menu Area --> */}
-
-                        {/* <!-- Chat Notification Area --> */}
-                        <DropdownMessage />
-                        {/* <!-- Chat Notification Area --> */}
                     </ul>
 
-                    <DropdownUser onSignOut={handleSignOut} />
+                    <DropdownUser user={currentUser} onSignOut={handleSignOut} />
                 </div>
             </div>
         </header>

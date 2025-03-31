@@ -6,8 +6,6 @@ import App from './App';
 import { store } from './app/store';
 import './css/style.css';
 import './css/satoshi.css';
-import 'jsvectormap/dist/css/jsvectormap.css';
-import 'flatpickr/dist/flatpickr.min.css';
 import { Flowbite } from 'flowbite-react';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(

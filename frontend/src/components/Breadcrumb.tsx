@@ -50,7 +50,7 @@ const Breadcrumb = ({ pageName, children }: BreadcrumbProps) => {
                 <ol className="flex items-center gap-2">
                     <li>
                         <Link className="font-medium" to="/">
-                            Dashboard /
+                            Home /
                         </Link>
                     </li>
                     {breadcrumbs.map(({ name, url }) => <Link className='font-medium' to={url} key={name}>{`${name} /`}</Link>)}

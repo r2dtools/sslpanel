@@ -6,16 +6,7 @@ import DefaultLayout from './layout/DefaultLayout';
 import AuthContext from './features/auth/context';
 import SignIn from "./pages/Authentication/SignIn";
 import SignUp from "./pages/Authentication/SignUp";
-import Calendar from "./pages/Calendar";
-import Chart from "./pages/Chart";
-import ECommerce from "./pages/Dashboard/ECommerce";
-import FormElements from "./pages/Form/FormElements";
-import FormLayout from "./pages/Form/FormLayout";
-import Profile from "./pages/Profile";
-import Settings from "./pages/Settings";
-import Tables from "./pages/Tables";
-import Alerts from "./pages/UiElements/Alerts";
-import Buttons from "./pages/UiElements/Buttons";
+import Account from "./pages/Account";
 import useLocalStorage from './hooks/useLocalStorage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -45,9 +36,6 @@ function App() {
     const [authToken, setAuthToken] = useAuthToken();
     const [authTokenExpire, setAuthTokenExpire] = useLocalStorage<string | null>("r2panel-token-expire", null);
     const dispatch = useAppDispatch();
-
-    const currentUserLoading = currentUserLoadStatus === FetchStatus.Pending;
-    const loading = currentUserLoading;
 
     useEffect(() => {
         dispatch(setAppColorMode(colorMode as ColorTheme));
@@ -98,49 +86,9 @@ function App() {
                     component: <Error404 />
                 },
                 {
-                    path: '/auth/*',
-                    title: "eCommerce Dashboard | TailAdmin - Tailwind CSS Admin Dashboard Template",
-                    component: <ECommerce />
-                },
-                {
-                    index: true,
-                    title: "eCommerce Dashboard | TailAdmin - Tailwind CSS Admin Dashboard Template",
-                    component: <ECommerce />
-                },
-                {
-                    path: "/calendar",
-                    title: "Calendar | TailAdmin - Tailwind CSS Admin Dashboard Template",
-                    component: <Calendar />
-                },
-                {
-                    path: "/profile",
-                    title: "Profile | TailAdmin - Tailwind CSS Admin Dashboard Template",
-                    component: <Profile />
-                },
-                {
-                    path: "/forms/form-elements",
-                    title: "Form Elements | TailAdmin - Tailwind CSS Admin Dashboard Template",
-                    component: <FormElements />
-                },
-                {
-                    path: "/forms/form-layout",
-                    title: "Form Layout | TailAdmin - Tailwind CSS Admin Dashboard Template",
-                    component: <FormLayout />
-                },
-                {
-                    path: "/tables",
-                    title: "Tables | TailAdmin - Tailwind CSS Admin Dashboard Template",
-                    component: <Tables />
-                },
-                {
-                    path: "/settings",
-                    title: "Settings | TailAdmin - Tailwind CSS Admin Dashboard Template",
-                    component: <Settings />
-                },
-                {
-                    path: "/chart",
-                    title: "Basic Chart | TailAdmin - Tailwind CSS Admin Dashboard Template",
-                    component: <Chart />
+                    path: "/account",
+                    title: "Account | R2DTools Control Panel",
+                    component: <Account />
                 },
                 {
                     path: "/servers",
@@ -177,16 +125,6 @@ function App() {
                     title: "Domain | R2DTools Control Panel",
                     name: 'Domain',
                     component: <Domain />,
-                },
-                {
-                    path: "/ui/alerts",
-                    title: "Alerts | TailAdmin - Tailwind CSS Admin Dashboard Template",
-                    component: <Alerts />
-                },
-                {
-                    path: "/ui/buttons",
-                    title: "Buttons | TailAdmin - Tailwind CSS Admin Dashboard Template",
-                    component: <Buttons />
                 },
             ],
         },
@@ -231,12 +169,16 @@ function App() {
 
         const isAuthRoute = authRoutes.includes(currentRoute?.path || "");
 
-        if ((currentUser !== null && isAuthRoute) || currentRoute === null) {
-            navigate("/");
+        if ((currentUser !== null && isAuthRoute) || currentRoute === null || pathname === '/') {
+            navigate("/servers");
         }
-    }, [currentUser, routes, authRoutes]);
+    }, [currentUser, routes, authRoutes, pathname]);
 
     const filterRoutes = (item: RouteItem) => (currentUser !== null && !authRoutes.includes(item.path || "")) || (currentUser === null && item.public);
+
+    const loading = currentUserLoadStatus === FetchStatus.Pending
+        || (currentUser !== null && authRoutes.includes(pathname))
+        || pathname === '/';
 
     return loading ? (
         <Loader />

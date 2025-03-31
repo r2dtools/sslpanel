@@ -15,7 +15,7 @@ export const me = async (token: string) => {
     try {
         const response = await api.post("/v1/auth/me", null, configWithAuth(token));
 
-        return response.data as User;
+        return response.data.user as User;
     } catch (error) {
         throw new Error(`Authorization failed: ${getErrorMessage(error)}`)
     }

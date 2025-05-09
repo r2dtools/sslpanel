@@ -6,6 +6,7 @@ import serversReducer from '../features/server/serversSlice';
 import serverReducer from '../features/server/serverSlice';
 import domainReducer from '../features/domain/domainSlice';
 import certificatesReducer from '../features/certificate/certificatesSlice';
+import accountReducer from '../features/account/accountSlice';
 
 export const store = configureStore({
     reducer: {
@@ -15,6 +16,7 @@ export const store = configureStore({
         server: serverReducer,
         domain: domainReducer,
         certificates: certificatesReducer,
+        account: accountReducer,
     }
 })
 

@@ -88,7 +88,7 @@ func CreateChangePasswordHandler(appAuth auth.Auth, uService userService.UserSer
 			if errors.Is(err, userService.ErrUserNotFound) {
 				c.AbortWithError(http.StatusNotFound, err)
 			} else if errors.Is(err, userService.ErrInvalidPassword) {
-				c.AbortWithError(http.StatusBadRequest, err)
+				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			} else {
 				c.AbortWithError(http.StatusInternalServerError, err)
 			}

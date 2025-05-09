@@ -6,6 +6,7 @@ import { RouteItem } from '../app/types';
 interface BreadcrumbProps {
     pageName: string;
     children?: React.ReactNode;
+    hideNavigation?: boolean;
 }
 
 const createBreadcrumbs = (pathname: string, routes: RouteItem[], params: {} | undefined): { name: string, url: string }[] => {
@@ -31,7 +32,7 @@ const createBreadcrumbs = (pathname: string, routes: RouteItem[], params: {} | u
     return breadcrumbs;
 };
 
-const Breadcrumb = ({ pageName, children }: BreadcrumbProps) => {
+const Breadcrumb = ({ pageName, children, hideNavigation = false }: BreadcrumbProps) => {
     const routes = useContext(RoutesContext);
     const { pathname } = useLocation();
     const params = useParams();
@@ -46,17 +47,20 @@ const Breadcrumb = ({ pageName, children }: BreadcrumbProps) => {
                 {children}
             </div>
 
-            <nav>
-                <ol className="flex items-center gap-2">
-                    <li>
-                        <Link className="font-medium" to="/">
-                            Home /
-                        </Link>
-                    </li>
-                    {breadcrumbs.map(({ name, url }) => <Link className='font-medium' to={url} key={name}>{`${name} /`}</Link>)}
-                    <li className="font-medium text-primary">{pageName}</li>
-                </ol>
-            </nav>
+            {!hideNavigation && (
+                <nav>
+                    <ol className="flex items-center gap-2">
+                        <li>
+                            <Link className="font-medium" to="/">
+                                Home /
+                            </Link>
+                        </li>
+                        {breadcrumbs.map(({ name, url }) => <Link className='font-medium' to={url} key={name}>{`${name} /`}</Link>)}
+                        <li className="font-medium text-primary">{pageName}</li>
+                    </ol>
+                </nav>
+            )}
+
         </div>
     );
 };

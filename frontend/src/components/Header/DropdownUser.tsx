@@ -54,7 +54,7 @@ const DropdownUser = ({ user, onSignOut }: DropdownUserProps) => {
                     <ul className="flex flex-col gap-5 border-b border-stroke px-6 py-7.5 dark:border-strokedark">
                         <li>
                             <Link
-                                to="/account"
+                                to="/settings"
                                 onClick={() => setDropdownOpen(!dropdownOpen)}
                                 className="flex items-center gap-3.5 text-sm font-medium duration-300 ease-in-out hover:text-primary lg:text-base"
                             >
@@ -75,7 +75,7 @@ const DropdownUser = ({ user, onSignOut }: DropdownUserProps) => {
                                         fill=""
                                     />
                                 </svg>
-                                Account
+                                Settings
                             </Link>
                         </li>
                     </ul>

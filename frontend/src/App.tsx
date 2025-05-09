@@ -6,7 +6,7 @@ import DefaultLayout from './layout/DefaultLayout';
 import AuthContext from './features/auth/context';
 import SignIn from "./pages/Authentication/SignIn";
 import SignUp from "./pages/Authentication/SignUp";
-import Account from "./pages/Account";
+import Settings from "./pages/Settings";
 import useLocalStorage from './hooks/useLocalStorage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -86,9 +86,9 @@ function App() {
                     component: <Error404 />
                 },
                 {
-                    path: "/account",
-                    title: "Account | R2DTools Control Panel",
-                    component: <Account />
+                    path: "/settings",
+                    title: "Settings | R2DTools Control Panel",
+                    component: <Settings />
                 },
                 {
                     path: "/servers",

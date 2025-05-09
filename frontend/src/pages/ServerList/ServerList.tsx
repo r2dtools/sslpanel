@@ -58,7 +58,7 @@ const ServerList = () => {
     return (
         serversSelectStatus !== FetchStatus.Pending ?
             <>
-                <Breadcrumb pageName='Servers'>
+                <Breadcrumb pageName='Servers' hideNavigation>
                     <Button color='blue' onClick={handleServerFormOpen}>Add</Button>
                 </Breadcrumb>
                 <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">

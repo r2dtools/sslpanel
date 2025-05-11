@@ -4,9 +4,9 @@ import { HiMiniCodeBracketSquare } from "react-icons/hi2";
 import SyntaxHighlighter from 'react-syntax-highlighter';
 import { dracula, a11yLight } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 import { Domain } from "../types";
-import { ColorTheme } from "../../../types/theme";
 import { useAppSelector } from "../../../app/hooks";
 import { selectColorMode } from "../../../app/appSlice";
+import { ColorTheme } from "../../account/types";
 
 type DomainConfigDrawerProps = {
     domain: Domain;

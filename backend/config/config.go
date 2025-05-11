@@ -19,6 +19,7 @@ var config *Config
 
 type Config struct {
 	DatabaseURI      string
+	PanelHost        string
 	ServerAddress    string
 	ServerHost       string
 	LogFile          string
@@ -68,6 +69,7 @@ func GetConfig() (*Config, error) {
 
 	conf := Config{
 		DbName:           viper.GetString("CP_DB_NAME"),
+		PanelHost:        viper.GetString("CP_HOST"),
 		DbHost:           viper.GetString("CP_DB_HOST"),
 		DbPort:           viper.GetString("CP_DB_PORT"),
 		DbUser:           viper.GetString("CP_DB_USER"),

@@ -1,6 +1,6 @@
 Hi!
 
-Please confirm your email address before your password is reset. Here is the code to verify your email address.
-Code: {{.Code}}
+Please confirm your email address before your password is reset. Follow the link below to verify your email address.
+Link: {{.Link}}
 
-If you have problems, please do not hesitate to contact us at support@r2dtools.com.
+If you have problems, please do not hesitate to contact us at support@sslpanel.com.ru.

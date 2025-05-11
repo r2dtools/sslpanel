@@ -80,7 +80,7 @@ export const serversSlice = createSlice({
             })
             .addCase(fetchServers.fulfilled, (state, action) => {
                 state.serversStatus = FetchStatus.Succeeded;
-                state.servers = action.payload;
+                state.servers = action.payload || [];
             })
             .addCase(fetchServers.rejected, (state, action) => {
                 state.serversStatus = FetchStatus.Failed;

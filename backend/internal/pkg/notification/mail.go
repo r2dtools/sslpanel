@@ -20,6 +20,10 @@ func (n EmailNotificationService) SendPlainNotification(recepient, subject, mess
 	return n.sendNotification(recepient, subject, message, "text/plain")
 }
 
+func (n EmailNotificationService) SendHtmlNotification(recepient, subject, message string) error {
+	return n.sendNotification(recepient, subject, message, "text/html")
+}
+
 func (n *EmailNotificationService) sendNotification(recepient, subject, message, bType string) error {
 	m := gomail.NewMessage()
 	m.SetHeader("From", n.Config.AmsEmailAddress)
@@ -38,29 +42,53 @@ func (n *EmailNotificationService) sendNotification(recepient, subject, message,
 }
 
 func (n EmailNotificationService) CreateAndSendPlainNotification(name, tplPath, email, subject string, data interface{}) error {
-	tplContent, err := n.readTemplateFile(tplPath)
+	message, err := n.createNotification(name, tplPath, email, subject, data)
 
 	if err != nil {
 		return err
+	}
+
+	if err = n.SendPlainNotification(email, subject, message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (n EmailNotificationService) CreateAndSendHtmlNotification(name, tplPath, email, subject string, data interface{}) error {
+	message, err := n.createNotification(name, tplPath, email, subject, data)
+
+	if err != nil {
+		return err
+	}
+
+	if err = n.SendHtmlNotification(email, subject, message); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (n EmailNotificationService) createNotification(name, tplPath, email, subject string, data interface{}) (string, error) {
+	tplContent, err := n.readTemplateFile(tplPath)
+
+	if err != nil {
+		return "", err
 	}
 
 	report, err := template.New(name).Parse(string(tplContent))
 
 	if err != nil {
-		return fmt.Errorf("could not parse notification template: %v", err)
+		return "", fmt.Errorf("could not parse notification template: %v", err)
 	}
 
 	var tpl bytes.Buffer
 
 	if err = report.Execute(&tpl, data); err != nil {
-		return err
+		return "", err
 	}
 
-	if err = n.SendPlainNotification(email, subject, tpl.String()); err != nil {
-		return err
-	}
-
-	return nil
+	return tpl.String(), nil
 }
 
 func (n EmailNotificationService) readTemplateFile(subpath string) (string, error) {

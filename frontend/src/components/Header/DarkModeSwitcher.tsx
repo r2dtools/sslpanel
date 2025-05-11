@@ -1,7 +1,7 @@
 import { selectColorMode, setAppColorMode } from '../../app/appSlice';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
+import { ColorTheme } from '../../features/account/types';
 import useColorMode from '../../hooks/useColorMode';
-import { ColorTheme } from '../../types/theme';
 
 const DarkModeSwitcher = () => {
     const dispatch = useAppDispatch();

@@ -9,6 +9,7 @@ import (
 	domainApi "backend/internal/app/panel/adapters/api/domain"
 	serverApi "backend/internal/app/panel/adapters/api/server"
 	userApi "backend/internal/app/panel/adapters/api/user"
+	authAccount "backend/internal/app/panel/auth/account"
 	authService "backend/internal/app/panel/auth/service"
 	domainService "backend/internal/app/panel/domain/service"
 	domainStorage "backend/internal/app/panel/domain/storage"
@@ -49,6 +50,8 @@ func newEngine(config *config.Config, logger logger.Logger) (*gin.Engine, error)
 	appAccountStorage := accountStorage.NewAccountSqlStorage(database)
 	appAccountService := accountService.NewAccountService(appAccountStorage)
 
+	appAccountCreater := authAccount.NewAccountCreater(database)
+
 	appUserStorage := userStorage.NewUserSqlStorage(database)
 	appUserService := userService.NewUserService(appUserStorage)
 
@@ -60,7 +63,14 @@ func newEngine(config *config.Config, logger logger.Logger) (*gin.Engine, error)
 
 	authMiddleware := authApi.AuthMiddleware(config, appUserStorage)
 
-	appAuthService := authService.NewAuthService(appUserStorage, emailNotifocation)
+	appAuthService := authService.NewAuthService(
+		config,
+		appUserStorage,
+		appAccountStorage,
+		appAccountCreater,
+		emailNotifocation,
+		logger,
+	)
 
 	appAuth := authApi.NewAuth(appUserService)
 
@@ -68,9 +78,9 @@ func newEngine(config *config.Config, logger logger.Logger) (*gin.Engine, error)
 	{
 		v1.POST("/login", authMiddleware.LoginHandler)
 		v1.POST("/register", authApi.CreateRegisterHandler(appAuthService))
-		v1.POST("/confirm-email", authApi.CreateConfirmEmailHandler(appAuthService))
-		v1.POST("/recover-password", authApi.CreateRecoverPasswordHandler(appAuthService))
-		v1.POST("/reset-password", authApi.CreateResetPasswordHandler(appAuthService))
+		v1.POST("/confirm", authApi.CreateConfirmEmailHandler(appAuthService))
+		v1.POST("/recover", authApi.CreateRecoverPasswordHandler(appAuthService))
+		v1.POST("/reset", authApi.CreateResetPasswordHandler(appAuthService))
 
 		userGroup := v1.Group("users")
 		{

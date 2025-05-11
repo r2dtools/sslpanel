@@ -20,3 +20,19 @@ export const me = async (token: string) => {
         throw new Error(`Authorization failed: ${getErrorMessage(error)}`)
     }
 };
+
+export const signUp = async (email: string, password: string) => {
+    try {
+        await api.post("/v1/register", { email, password });
+    } catch (error) {
+        throw new Error(getErrorMessage(error))
+    }
+};
+
+export const confirm = async (token: string) => {
+    try {
+        await api.post("/v1/confirm", { token });
+    } catch (error) {
+        throw new Error(getErrorMessage(error))
+    }
+};

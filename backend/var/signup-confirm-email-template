@@ -1,6 +1,6 @@
-Hi!
+<h3>Hi!</h3>
 
-Thanks for getting started with R2Dtools! Here is the code to verify your email address.
-Code: {{.Code}}
+<p>Thanks for getting started with <b>SSLPanel</b>! Follow the link below to verify your email address.</p>
+<p><b><a href='{{.Link}}'>Verify my email</a></b></p>
 
-If you have problems, please do not hesitate to contact us at support@r2dtools.com.
+<p>If you any have problems, please do not hesitate to contact us at <a href='mailto:support@sslpanel.com.ru'>support@sslpanel.com.ru</a>.</p>

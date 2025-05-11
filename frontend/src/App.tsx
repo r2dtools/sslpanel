@@ -14,7 +14,6 @@ import { useAppDispatch, useAppSelector } from './app/hooks';
 import { fetchCurrentUser, selectCurrentUser, selectCurrentUserFetchStatus } from './features/auth/authSlice';
 import useColorMode from './hooks/useColorMode';
 import { FetchStatus, RouteItem } from './app/types';
-import { ColorTheme } from './types/theme';
 import AuthLayout from './layout/AuthLayout';
 import ServerList from './pages/ServerList/ServerList';
 import Server from './pages/Server/Server';
@@ -25,6 +24,8 @@ import Domain from './pages/Domain/Domain';
 import CertificateList from './pages/CertificateList/CertificatesList';
 import DomainList from './pages/DomainList/DomainList';
 import { setAppColorMode } from './app/appSlice';
+import { ColorTheme } from './features/account/types';
+import Confirm from './pages/Authentication/Confirm';
 
 function App() {
     const { pathname } = useLocation();
@@ -144,6 +145,12 @@ function App() {
                     title: "Signup | R2DTools - Tailwind CSS Admin Dashboard Template",
                     component: <SignUp />
                 },
+                {
+                    path: "/auth/confirm",
+                    public: true,
+                    title: "Email confirmation | R2DTools - Tailwind CSS Admin Dashboard Template",
+                    component: <Confirm />
+                },
             ],
         },
     ];
@@ -151,7 +158,7 @@ function App() {
     let allRoutes: RouteItem[] = [];
     routes.forEach(({ routes }) => allRoutes = allRoutes.concat(routes));
 
-    const authRoutes = ["/auth/signin", "/auth/signup"];
+    const authRoutes = ["/auth/signin", "/auth/signup", "/auth/confirm"];
 
     useEffect(() => {
         const currentRoute = allRoutes.find((item: RouteItem) => item.path === pathname);

@@ -9,3 +9,8 @@ export interface ChangePasswordPayload {
     newPassword: string;
     token: string;
 };
+
+export enum ColorTheme {
+    Light = 'light',
+    Dark = 'dark',
+};

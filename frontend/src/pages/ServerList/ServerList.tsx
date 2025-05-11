@@ -17,6 +17,7 @@ import Loader from '../../components/Loader/Loader';
 import { Button } from 'flowbite-react';
 import { Server, ServerSavePayload } from '../../features/server/types';
 import ServerEditDrawer from '../../features/server/components/ServerEditDrawer';
+import empty from '../../images/empty.png';
 
 const ServerList = () => {
     const [serverFormOpen, setServerFormOpen] = useState(false);
@@ -83,6 +84,9 @@ const ServerList = () => {
                     </div>
 
                     <div className="p-4 md:p-6 xl:p-7.5">
+                        <div className="mx-auto max-w-[80px]">
+                            {!servers.length && <img src={empty} />}
+                        </div>
                         <div className="flex flex-col gap-7">
                             {
                                 servers.map(server => (

@@ -42,7 +42,9 @@ export const configWithAuth = (token: string, config?: AxiosRequestConfig): Axio
 };
 
 api.interceptors.response.use((response) => response, (error) => {
-    if (error.response.status === 401) {
+    const isAuthPage = window.location.pathname.startsWith('/auth/');
+
+    if (error.response.status === 401 && !isAuthPage) {
         (window as Window).location = '/auth/sigin';
     }
 

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import useLocalStorage from './useLocalStorage';
-import { ColorTheme } from '../types/theme';
+import { ColorTheme } from '../features/account/types';
 
 const useColorMode = () => {
   const [colorMode, setColorMode] = useLocalStorage('color-theme', ColorTheme.Dark);

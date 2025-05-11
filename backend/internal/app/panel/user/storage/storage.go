@@ -18,16 +18,16 @@ func comparePasswordHash(hashedPassword, givenPassword []byte) bool {
 }
 
 type User struct {
-	ID               uint                   `gorm:"AUTO_INCREMENT" gorm:"primary_key" json:"id"`
-	Email            string                 `gorm:"size:255" json:"email"`
-	Password         []byte                 `gorm:"size:512" json:"-"`
-	Active           uint                   `json:"is_active"`
-	AccountOwner     uint                   `json:"account_owner"`
-	AccountID        uint                   `gorm:"index:UserAccountID" json:"account_id"`
-	Account          accountStorage.Account `json:"-"`
-	ConfirmationCode uint                   `json:"confirmation_code"`
-	CreatedAt        time.Time              `json:"created_at"`
-	UpdatedAt        time.Time              `json:"updated_at"`
+	ID                uint                   `gorm:"AUTO_INCREMENT" gorm:"primary_key" json:"id"`
+	Email             string                 `gorm:"size:255" json:"email"`
+	Password          []byte                 `gorm:"size:512" json:"-"`
+	Active            uint                   `json:"is_active"`
+	AccountOwner      uint                   `json:"account_owner"`
+	AccountID         uint                   `gorm:"index:UserAccountID" json:"account_id"`
+	Account           accountStorage.Account `json:"-"`
+	ConfirmationToken string                 `json:"confirmation_token"`
+	CreatedAt         time.Time              `json:"created_at"`
+	UpdatedAt         time.Time              `json:"updated_at"`
 }
 
 func (u *User) IsAccountOwner() bool {
@@ -52,10 +52,6 @@ func (u *User) SetPassword(password string) error {
 
 func (u *User) CheckPassword(password string) bool {
 	return comparePasswordHash(u.Password, []byte(password))
-}
-
-func (u *User) VerifyCode(code int) bool {
-	return int(u.ConfirmationCode) == code
 }
 
 type UserStorage interface {

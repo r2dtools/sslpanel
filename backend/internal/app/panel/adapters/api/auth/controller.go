@@ -4,15 +4,9 @@ import (
 	authService "backend/internal/app/panel/auth/service"
 	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
-
-type confirmEmailData struct {
-	Code   string
-	UserID int
-}
 
 type registerData struct {
 	Email, Password string
@@ -32,56 +26,46 @@ func CreateMeHandler(appAuth Auth) func(c *gin.Context) {
 
 func CreateResetPasswordHandler(appAuthService authService.AuthService) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		var data confirmEmailData
+		token := c.Query("token")
 
-		if err := c.ShouldBindJSON(&data); err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
-
-			return
-		}
-
-		code, err := strconv.Atoi(data.Code)
-
-		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+		if token == "" {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid token"})
 
 			return
 		}
 
-		err = appAuthService.ResetPassword(data.UserID, code)
+		err := appAuthService.ResetPassword(token)
 
 		if err != nil {
-			if errors.Is(err, authService.ErrInvalidConfirmationCode) {
-				c.AbortWithError(http.StatusBadRequest, err)
+			if errors.Is(err, authService.ErrInvalidConfirmationToken) {
+				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			} else if errors.Is(err, authService.ErrUserNotFound) {
-				c.AbortWithError(http.StatusNotFound, err)
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 			} else {
 				c.AbortWithError(http.StatusInternalServerError, err)
 			}
-
-			return
 		}
-
 	}
 }
 
 func CreateRegisterHandler(appAuthService authService.AuthService) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		rData := struct {
-			Email, Password string
+		request := struct {
+			Email    string `json:"email"`
+			Password string `json:"password"`
 		}{}
 
-		if err := c.ShouldBindJSON(&rData); err != nil {
+		if err := c.ShouldBindJSON(&request); err != nil {
 			c.AbortWithError(http.StatusBadRequest, err)
 
 			return
 		}
 
-		err := appAuthService.Register(rData.Email, rData.Password)
+		err := appAuthService.Register(request.Email, request.Password)
 
 		if err != nil {
 			if errors.Is(err, authService.ErrAccountAlreadyExists) {
-				c.AbortWithError(http.StatusBadRequest, err)
+				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			} else {
 				c.AbortWithError(http.StatusInternalServerError, err)
 			}
@@ -91,29 +75,29 @@ func CreateRegisterHandler(appAuthService authService.AuthService) func(c *gin.C
 
 func CreateConfirmEmailHandler(appAuthService authService.AuthService) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		var data confirmEmailData
+		request := struct {
+			Token string `json:"token"`
+		}{}
 
-		if err := c.ShouldBindJSON(&data); err != nil {
+		if err := c.ShouldBindJSON(&request); err != nil {
 			c.AbortWithError(http.StatusBadRequest, err)
 
 			return
 		}
 
-		code, err := strconv.Atoi(data.Code)
-
-		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+		if request.Token == "" {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid token"})
 
 			return
 		}
 
-		err = appAuthService.ConfirmEmail(data.UserID, code)
+		err := appAuthService.ConfirmEmail(request.Token)
 
 		if err != nil {
-			if errors.Is(err, authService.ErrInvalidConfirmationCode) {
-				c.AbortWithError(http.StatusBadRequest, err)
+			if errors.Is(err, authService.ErrInvalidConfirmationToken) {
+				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			} else if errors.Is(err, authService.ErrUserNotFound) {
-				c.AbortWithError(http.StatusNotFound, err)
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 			} else {
 				c.AbortWithError(http.StatusInternalServerError, err)
 			}
@@ -123,7 +107,9 @@ func CreateConfirmEmailHandler(appAuthService authService.AuthService) func(c *g
 
 func CreateRecoverPasswordHandler(appAuthService authService.AuthService) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		recoverData := struct{ Email string }{}
+		recoverData := struct {
+			Email string `json:"email"`
+		}{}
 
 		if err := c.ShouldBindJSON(&recoverData); err != nil {
 			c.AbortWithError(http.StatusBadRequest, err)
@@ -131,7 +117,7 @@ func CreateRecoverPasswordHandler(appAuthService authService.AuthService) func(c
 			return
 		}
 
-		user, err := appAuthService.RecoverPassword(recoverData.Email)
+		err := appAuthService.RecoverPassword(recoverData.Email)
 
 		if err != nil {
 			if errors.Is(err, authService.ErrUserNotFound) {
@@ -141,10 +127,6 @@ func CreateRecoverPasswordHandler(appAuthService authService.AuthService) func(c
 			} else {
 				c.AbortWithError(http.StatusInternalServerError, err)
 			}
-
-			return
 		}
-
-		c.JSON(http.StatusOK, gin.H{"user": user})
 	}
 }

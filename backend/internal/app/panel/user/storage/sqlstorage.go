@@ -28,7 +28,7 @@ func (s *sqlStorage) FindById(id int) (*User, error) {
 
 func (s *sqlStorage) FindByEmail(email string) (*User, error) {
 	var user User
-	err := s.db.First(&user, "email = ?", email).Error
+	err := s.db.Preload("Account").First(&user, "email = ?", email).Error
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

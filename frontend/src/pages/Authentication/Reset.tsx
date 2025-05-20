@@ -4,9 +4,9 @@ import LogoDark from '../../images/logo/logo-dark.png';
 import Logo from '../../images/logo/logo.png';
 import { Spinner } from 'flowbite-react';
 import { toast } from 'react-toastify';
-import { confirm } from '../../features/auth/authApi';
+import { reset } from '../../features/auth/authApi';
 
-const Confirm: React.FC = () => {
+const Reset: React.FC = () => {
     const { search } = useLocation();
     const navigate = useNavigate();
 
@@ -14,10 +14,10 @@ const Confirm: React.FC = () => {
     const token = query.get('token') || '';
 
     useEffect(() => {
-        confirmEmail(token);
+        resetPassword(token);
     }, [token]);
 
-    const confirmEmail = async (token: string) => {
+    const resetPassword = async (token: string) => {
         if (!token) {
             toast.error('Invalid token');
             navigate('/auth/sigin');
@@ -26,8 +26,8 @@ const Confirm: React.FC = () => {
         }
 
         try {
-            await confirm(token);
-            toast.success('Email successfully verified!');
+            await reset(token);
+            toast.success('Please check your email for a new password!');
         } catch (error) {
             toast.error((error as Error).message);
         } finally {
@@ -175,7 +175,7 @@ const Confirm: React.FC = () => {
                     <div className="w-full border-stroke dark:border-strokedark xl:w-1/2 xl:border-l-2">
                         <div className="w-full p-4 sm:p-12.5 xl:p-17.5">
                             <h2 className="mb-9 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
-                                Email confirmation
+                                Password reset
                             </h2>
                             <div className='flex gap-2'>
                                 <div className='font-medium text-xl'>Please wait ...</div>
@@ -189,4 +189,4 @@ const Confirm: React.FC = () => {
     );
 };
 
-export default Confirm;
+export default Reset;

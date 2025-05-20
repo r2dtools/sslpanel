@@ -26,6 +26,8 @@ import DomainList from './pages/DomainList/DomainList';
 import { setAppColorMode } from './app/appSlice';
 import { ColorTheme } from './features/account/types';
 import Confirm from './pages/Authentication/Confirm';
+import Recover from './pages/Authentication/Recover';
+import Reset from './pages/Authentication/Reset';
 
 function App() {
     const { pathname } = useLocation();
@@ -150,6 +152,18 @@ function App() {
                     public: true,
                     title: "Email confirmation | R2DTools - Tailwind CSS Admin Dashboard Template",
                     component: <Confirm />
+                },
+                {
+                    path: "/auth/recover",
+                    public: true,
+                    title: "Password recovery | R2DTools - Tailwind CSS Admin Dashboard Template",
+                    component: <Recover />
+                },
+                {
+                    path: "/auth/reset",
+                    public: true,
+                    title: "Password reset | R2DTools - Tailwind CSS Admin Dashboard Template",
+                    component: <Reset />
                 },
             ],
         },

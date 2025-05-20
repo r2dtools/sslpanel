@@ -26,15 +26,23 @@ func CreateMeHandler(appAuth Auth) func(c *gin.Context) {
 
 func CreateResetPasswordHandler(appAuthService authService.AuthService) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		token := c.Query("token")
+		request := struct {
+			Token string `json:"token"`
+		}{}
 
-		if token == "" {
+		if err := c.ShouldBindJSON(&request); err != nil {
+			c.AbortWithError(http.StatusBadRequest, err)
+
+			return
+		}
+
+		if request.Token == "" {
 			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid token"})
 
 			return
 		}
 
-		err := appAuthService.ResetPassword(token)
+		err := appAuthService.ResetPassword(request.Token)
 
 		if err != nil {
 			if errors.Is(err, authService.ErrInvalidConfirmationToken) {
@@ -107,23 +115,27 @@ func CreateConfirmEmailHandler(appAuthService authService.AuthService) func(c *g
 
 func CreateRecoverPasswordHandler(appAuthService authService.AuthService) func(c *gin.Context) {
 	return func(c *gin.Context) {
-		recoverData := struct {
+		request := struct {
 			Email string `json:"email"`
 		}{}
 
-		if err := c.ShouldBindJSON(&recoverData); err != nil {
+		if err := c.ShouldBindJSON(&request); err != nil {
 			c.AbortWithError(http.StatusBadRequest, err)
 
 			return
 		}
 
-		err := appAuthService.RecoverPassword(recoverData.Email)
+		if request.Email == "" {
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Invalid email"})
+
+			return
+		}
+
+		err := appAuthService.RecoverPassword(request.Email)
 
 		if err != nil {
 			if errors.Is(err, authService.ErrUserNotFound) {
-				c.AbortWithError(http.StatusNotFound, err)
-			} else if errors.Is(err, authService.ErrUserNotFound) {
-				c.AbortWithError(http.StatusNotFound, err)
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 			} else {
 				c.AbortWithError(http.StatusInternalServerError, err)
 			}

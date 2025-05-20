@@ -36,3 +36,19 @@ export const confirm = async (token: string) => {
         throw new Error(getErrorMessage(error))
     }
 };
+
+export const recover = async (email: string) => {
+    try {
+        await api.post("/v1/recover", { email });
+    } catch (error) {
+        throw new Error(getErrorMessage(error))
+    }
+};
+
+export const reset = async (token: string) => {
+    try {
+        await api.post("/v1/reset", { token });
+    } catch (error) {
+        throw new Error(getErrorMessage(error))
+    }
+};

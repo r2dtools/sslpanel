@@ -142,11 +142,11 @@ func (a AuthService) RecoverPassword(email string) error {
 	link := fmt.Sprintf("%s/auth/reset?token=%s", a.config.PanelHost, linkToken)
 	data := struct{ Link string }{link}
 
-	err = a.emailNotification.CreateAndSendPlainNotification(
+	err = a.emailNotification.CreateAndSendHtmlNotification(
 		"confirmEmail",
 		"recover-confirm-email-template",
 		email,
-		"Email confirmation",
+		"Password recovery",
 		data,
 	)
 
@@ -191,7 +191,7 @@ func (a AuthService) ResetPassword(token string) error {
 
 	tplData := struct{ Password string }{password}
 
-	err = a.emailNotification.CreateAndSendPlainNotification(
+	err = a.emailNotification.CreateAndSendHtmlNotification(
 		"passwordReset",
 		"reset-password-email-template",
 		user.Email,

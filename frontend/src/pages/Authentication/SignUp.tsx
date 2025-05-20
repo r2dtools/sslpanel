@@ -218,7 +218,7 @@ const SignUp: React.FC = () => {
                         </h2>
                         {accountCreated && (
                             <>
-                                <div className='font-medium text-xl'>To complete registration, follow the link sent to the email address you specified</div>
+                                <div className='font-medium text-xl'>To complete registration, follow the link sent to the email address you provided</div>
                                 <div className='mt-6'>
                                     <Link to='/auth/signin' className='text-primary'>
                                         Sign in

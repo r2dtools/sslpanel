@@ -262,6 +262,11 @@ const SignIn: React.FC<SignInProps> = ({ onSignIn }: SignInProps) => {
                                             Sign Up
                                         </Link>
                                     </p>
+                                    <p>
+                                        <Link to="/auth/recover" className="text-primary">
+                                            Forgot password?
+                                        </Link>
+                                    </p>
                                 </div>
                             </form>
                         </div>

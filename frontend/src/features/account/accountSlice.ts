@@ -35,7 +35,7 @@ export const accountSlice = createSlice({
             })
             .addCase(changePassword.fulfilled, state => {
                 state.passwordChangeStatus = FetchStatus.Succeeded;
-                toast.success('Password changed successfully');
+                toast.success('Password successfully changed!');
             })
             .addCase(changePassword.rejected, (state, action) => {
                 state.passwordChangeStatus = FetchStatus.Failed;

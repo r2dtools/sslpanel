@@ -76,6 +76,8 @@ function App() {
         setAuthTokenExpire(null);
     }
 
+    const getPageTitle = (title: string) => `${title} | SSL Control Panel`;
+
     const routes: { layout: React.FC<any>, props?: React.ComponentProps<any>, routes: RouteItem[] }[] = [
         {
             layout: DefaultLayout,
@@ -90,42 +92,36 @@ function App() {
                 },
                 {
                     path: "/settings",
-                    title: "Settings | R2DTools Control Panel",
+                    title: getPageTitle('Settings'),
                     component: <Settings />
                 },
                 {
                     path: "/servers",
-                    title: "Servers | R2DTools Control Panel",
+                    title: getPageTitle('Servers'),
                     name: "Servers",
                     component: <ServerList />
                 },
                 {
-                    path: "/certificates",
-                    title: "Certificates | R2DTools Control Panel",
-                    name: "Certificates",
-                    component: <CertificateList />
-                },
-                {
                     path: "/servers/:guid",
-                    title: "Server | R2DTools Control Panel",
+                    title: getPageTitle('Server'),
                     name: 'Server',
                     component: <Server />,
                 },
                 {
                     path: "/servers/:guid/domains",
-                    title: "Domains | R2DTools Control Panel",
+                    title: getPageTitle('Domains'),
                     name: 'Domains',
                     component: <DomainList />,
                 },
                 {
                     path: "/servers/:guid/certificates",
-                    title: "Certificates | R2DTools Control Panel",
+                    title: getPageTitle('Certificates'),
                     name: 'Certificates',
                     component: <CertificateList />,
                 },
                 {
                     path: "/servers/:guid/domains/:name",
-                    title: "Domain | R2DTools Control Panel",
+                    title: getPageTitle('Domain'),
                     name: 'Domain',
                     component: <Domain />,
                 },
@@ -138,31 +134,31 @@ function App() {
                 {
                     path: "/auth/signin",
                     public: true,
-                    title: "Signin | R2DTools - Tailwind CSS Admin Dashboard Template",
+                    title: getPageTitle('Sign In'),
                     component: <SignIn onSignIn={handleSignIn} />
                 },
                 {
                     path: "/auth/signup",
                     public: true,
-                    title: "Signup | R2DTools - Tailwind CSS Admin Dashboard Template",
+                    title: getPageTitle('Sign Up'),
                     component: <SignUp />
                 },
                 {
                     path: "/auth/confirm",
                     public: true,
-                    title: "Email confirmation | R2DTools - Tailwind CSS Admin Dashboard Template",
+                    title: getPageTitle('Email confirmation'),
                     component: <Confirm />
                 },
                 {
                     path: "/auth/recover",
                     public: true,
-                    title: "Password recovery | R2DTools - Tailwind CSS Admin Dashboard Template",
+                    title: getPageTitle('Password recovery'),
                     component: <Recover />
                 },
                 {
                     path: "/auth/reset",
                     public: true,
-                    title: "Password reset | R2DTools - Tailwind CSS Admin Dashboard Template",
+                    title: getPageTitle('Password reset'),
                     component: <Reset />
                 },
             ],

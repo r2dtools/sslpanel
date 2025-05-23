@@ -24,4 +24,4 @@ build-front:
 	npm run build
 
 build-image:
-	docker build -t r2dtools-panel .
+	docker build -t sslpanel .

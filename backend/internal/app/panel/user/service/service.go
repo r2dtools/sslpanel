@@ -81,7 +81,6 @@ func CreateUser(userModel *storage.User) *User {
 		IsAccountOwner: userModel.IsAccountOwner(),
 		Account: accountService.Account{
 			ID:        userModel.Account.ID,
-			Confirmed: userModel.Account.Confirmed,
 			CreatedAt: userModel.Account.CreatedAt,
 		},
 	}

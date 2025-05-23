@@ -19,7 +19,6 @@ func (s *AccountService) FindAccount(id uint) (*Account, error) {
 
 	return &Account{
 		ID:        modelAccount.ID,
-		Confirmed: modelAccount.Confirmed,
 		CreatedAt: modelAccount.CreatedAt,
 	}, nil
 }

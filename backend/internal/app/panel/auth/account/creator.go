@@ -7,15 +7,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type AccountCreater interface {
+type AccountCreator interface {
 	Create(email string, password string, confirmationToken string) (*userStorage.User, error)
 }
 
-type accountCreater struct {
+type accountCreator struct {
 	db *gorm.DB
 }
 
-func (a accountCreater) Create(email string, password string, confirmationToken string) (*userStorage.User, error) {
+func (a accountCreator) Create(email string, password string, confirmationToken string) (*userStorage.User, error) {
 	db := a.db.Begin()
 
 	account := new(accountStorage.Account)
@@ -53,8 +53,8 @@ func (a accountCreater) Create(email string, password string, confirmationToken 
 	return user, nil
 }
 
-func NewAccountCreater(db *gorm.DB) AccountCreater {
-	return accountCreater{
+func NewAccountCreator(db *gorm.DB) AccountCreator {
+	return accountCreator{
 		db: db,
 	}
 }

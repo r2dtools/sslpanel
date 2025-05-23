@@ -1,5 +1,5 @@
 {
-    "name": "r2dtools-pcontrol-anel",
+    "name": "sslpanel",
     "type": "module",
     "scripts": {
         "dev": "vite",
@@ -7,9 +7,9 @@
         "preview": "vite preview"
     },
     "author": {
-        "name": "R2DToolsControlPanel",
-        "email": "support@r2dtools.com",
-        "url": "https://r2dtools.com"
+        "name": "SSLPanel",
+        "email": "support@sslpanel.com.ru",
+        "url": "https://sslpanel.com.ru"
     },
     "dependencies": {
         "@reduxjs/toolkit": "^2.3.0",

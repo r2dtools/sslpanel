@@ -10,8 +10,8 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "r2panel",
-	Short: "R2DTools Control Panel",
+	Use:   "sslpanel",
+	Short: "SSL Control Panel",
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Usage()
 	},

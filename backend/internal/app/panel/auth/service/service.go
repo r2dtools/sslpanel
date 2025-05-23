@@ -32,7 +32,7 @@ type AuthService struct {
 	config            *config.Config
 	userStorage       userStorage.UserStorage
 	accountStorage    accountStorage.AccountStorage
-	accountCreater    account.AccountCreater
+	accountCreator    account.AccountCreator
 	emailNotification notification.EmailNotificationService
 	logger            logger.Logger
 }
@@ -47,7 +47,7 @@ func (a AuthService) Register(email, password string) error {
 	confirmationToken := token.GenerateRandomToken(tokenLength)
 
 	if user == nil {
-		user, err = a.accountCreater.Create(email, password, confirmationToken)
+		user, err = a.accountCreator.Create(email, password, confirmationToken)
 
 		if err != nil {
 			return err
@@ -55,7 +55,7 @@ func (a AuthService) Register(email, password string) error {
 	} else {
 		account := &user.Account
 
-		if !user.IsAccountOwner() || account.IsConfirmed() {
+		if !user.IsAccountOwner() {
 			return ErrAccountAlreadyExists
 		}
 
@@ -111,13 +111,7 @@ func (a AuthService) ConfirmEmail(token string) error {
 
 	user.Active = 1
 
-	if err = a.userStorage.Save(user); err != nil {
-		return err
-	}
-
-	account.Confirmed = 1
-
-	return a.accountStorage.Save(&account)
+	return a.userStorage.Save(user)
 }
 
 func (a AuthService) RecoverPassword(email string) error {
@@ -257,7 +251,7 @@ func NewAuthService(
 	config *config.Config,
 	userStorage userStorage.UserStorage,
 	accountStorage accountStorage.AccountStorage,
-	accountCreater account.AccountCreater,
+	accountCreator account.AccountCreator,
 	emailNotification notification.EmailNotificationService,
 	logger logger.Logger,
 ) AuthService {
@@ -265,7 +259,7 @@ func NewAuthService(
 		config:            config,
 		userStorage:       userStorage,
 		accountStorage:    accountStorage,
-		accountCreater:    accountCreater,
+		accountCreator:    accountCreator,
 		emailNotification: emailNotification,
 		logger:            logger,
 	}

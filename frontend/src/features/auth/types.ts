@@ -1,6 +1,5 @@
 export interface Account {
     id: number
-    is_confirmed: 0 | 1
     created_at: string
 };
 

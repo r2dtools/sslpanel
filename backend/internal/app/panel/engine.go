@@ -50,7 +50,7 @@ func newEngine(config *config.Config, logger logger.Logger) (*gin.Engine, error)
 	appAccountStorage := accountStorage.NewAccountSqlStorage(database)
 	appAccountService := accountService.NewAccountService(appAccountStorage)
 
-	appAccountCreater := authAccount.NewAccountCreater(database)
+	appAccountCreator := authAccount.NewAccountCreator(database)
 
 	appUserStorage := userStorage.NewUserSqlStorage(database)
 	appUserService := userService.NewUserService(appUserStorage)
@@ -67,7 +67,7 @@ func newEngine(config *config.Config, logger logger.Logger) (*gin.Engine, error)
 		config,
 		appUserStorage,
 		appAccountStorage,
-		appAccountCreater,
+		appAccountCreator,
 		emailNotifocation,
 		logger,
 	)

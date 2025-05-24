@@ -14,7 +14,7 @@ func CreateGetAccountByIdHandler(aService accountService.AccountService) func(c 
 		id, err := strconv.Atoi(c.Param("id"))
 
 		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid account ID"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid account ID")) // nolint:errcheck
 
 			return
 		}
@@ -22,13 +22,13 @@ func CreateGetAccountByIdHandler(aService accountService.AccountService) func(c 
 		account, err := aService.FindAccount(uint(id))
 
 		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError, err)
+			c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 
 			return
 		}
 
 		if account == nil {
-			c.AbortWithError(http.StatusNotFound, errors.New("account not found"))
+			c.AbortWithError(http.StatusNotFound, errors.New("account not found")) // nolint:errcheck
 		}
 
 		c.JSON(http.StatusOK, gin.H{"account": account})

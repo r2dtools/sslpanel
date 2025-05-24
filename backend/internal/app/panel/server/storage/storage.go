@@ -11,7 +11,7 @@ import (
 const guidPrefix = "server_guid_prefix"
 
 type Server struct {
-	ID           uint      `gorm:"AUTO_INCREMENT" gorm:"primary_key" json:"id"`
+	ID           uint      `gorm:"AUTO_INCREMENT;primary_key" json:"id"`
 	Guid         string    `gorm:"-" json:"guid"`
 	Name         string    `gorm:"size:64" json:"name"`
 	OsCode       string    `gorm:"size:64" json:"os_code"`

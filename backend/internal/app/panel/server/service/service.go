@@ -3,7 +3,6 @@ package service
 import (
 	"backend/config"
 	domainService "backend/internal/app/panel/domain/service"
-	"backend/internal/app/panel/server/storage"
 	serverStorage "backend/internal/app/panel/server/storage"
 	"backend/internal/pkg/agent"
 	"backend/internal/pkg/logger"
@@ -83,7 +82,7 @@ func (s ServerService) GetServerDetailsByGuid(guid string) (*ServerDetails, erro
 
 		if errors.As(err, &connErr) {
 			serverModel.IsActive = 0
-			s.serverStorage.Save(serverModel)
+			s.serverStorage.Save(serverModel) // nolint:errcheck
 
 			return nil, ErrAgentConnection
 		}
@@ -291,7 +290,7 @@ func createDomains(vhosts []agentintegration.VirtualHost) []domainService.Domain
 	return domains
 }
 
-func NewServerService(config *config.Config, serverStorage storage.ServerStorage, logger logger.Logger) ServerService {
+func NewServerService(config *config.Config, serverStorage serverStorage.ServerStorage, logger logger.Logger) ServerService {
 	return ServerService{
 		config:        config,
 		serverStorage: serverStorage,

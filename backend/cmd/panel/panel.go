@@ -5,17 +5,7 @@ import (
 	"backend/internal/app/panel"
 	"backend/internal/pkg/logger"
 	"log"
-
-	"github.com/spf13/cobra"
 )
-
-var rootCmd = &cobra.Command{
-	Use:   "sslpanel",
-	Short: "SSL Control Panel",
-	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Usage()
-	},
-}
 
 func main() {
 	config, err := config.GetConfig()

@@ -64,7 +64,7 @@ func AuthMiddleware(config *config.Config, appUserStorage appUserStorage.UserSto
 			}
 
 			if user == nil {
-				return nil, fmt.Errorf("user with email '%s' doest not exist", email)
+				return nil, fmt.Errorf("user with email '%s' does not exist", email)
 			}
 
 			if !user.IsActive() {

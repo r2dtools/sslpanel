@@ -18,7 +18,7 @@ func comparePasswordHash(hashedPassword, givenPassword []byte) bool {
 }
 
 type User struct {
-	ID                uint                   `gorm:"AUTO_INCREMENT" gorm:"primary_key" json:"id"`
+	ID                uint                   `gorm:"AUTO_INCREMENT;primary_key" json:"id"`
 	Email             string                 `gorm:"size:255" json:"email"`
 	Password          []byte                 `gorm:"size:512" json:"-"`
 	Active            uint                   `json:"is_active"`

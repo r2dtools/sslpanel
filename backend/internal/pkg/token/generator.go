@@ -5,9 +5,13 @@ import (
 	"fmt"
 )
 
-func GenerateRandomToken(length int) string {
+func GenerateRandomToken(length int) (string, error) {
 	b := make([]byte, length)
-	rand.Read(b)
+	_, err := rand.Read(b)
 
-	return fmt.Sprintf("%x", b)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", b), nil
 }

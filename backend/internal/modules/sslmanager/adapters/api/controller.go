@@ -29,7 +29,7 @@ func CreateIssueCertificateHandler(cAuth auth.Auth, certService service.Certific
 		guid := c.Param("serverId")
 
 		if guid == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID")) // nolint:errcheck
 
 			return
 		}
@@ -37,7 +37,7 @@ func CreateIssueCertificateHandler(cAuth auth.Auth, certService service.Certific
 		domainName := c.Param("domainName")
 
 		if domainName == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name")) // nolint:errcheck
 
 			return
 		}
@@ -45,7 +45,7 @@ func CreateIssueCertificateHandler(cAuth auth.Auth, certService service.Certific
 		decodedDomainName, err := base64.RawStdEncoding.DecodeString(domainName)
 
 		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name")) // nolint:errcheck
 
 			return
 		}
@@ -55,7 +55,7 @@ func CreateIssueCertificateHandler(cAuth auth.Auth, certService service.Certific
 		var request service.CertificateIssueRequest
 
 		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+			c.AbortWithError(http.StatusBadRequest, err) // nolint:errcheck
 
 			return
 		}
@@ -72,7 +72,7 @@ func CreateIssueCertificateHandler(cAuth auth.Auth, certService service.Certific
 			} else if errors.As(err, &errAgentCommon) {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err)
+				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}
 
 			return
@@ -93,7 +93,7 @@ func CreateGetCommonDirStatusHandler(cAuth auth.Auth, certService service.Certif
 		guid := c.Param("serverId")
 
 		if guid == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID")) // nolint:errcheck
 
 			return
 		}
@@ -101,7 +101,7 @@ func CreateGetCommonDirStatusHandler(cAuth auth.Auth, certService service.Certif
 		domainName := c.Param("domainName")
 
 		if domainName == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name")) // nolint:errcheck
 
 			return
 		}
@@ -109,7 +109,7 @@ func CreateGetCommonDirStatusHandler(cAuth auth.Auth, certService service.Certif
 		decodedDomainName, err := base64.RawStdEncoding.DecodeString(domainName)
 
 		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name")) // nolint:errcheck
 
 			return
 		}
@@ -119,7 +119,7 @@ func CreateGetCommonDirStatusHandler(cAuth auth.Auth, certService service.Certif
 		var request service.CommonDirStatusRequest
 
 		if err := c.ShouldBind(&request); err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+			c.AbortWithError(http.StatusBadRequest, err) // nolint:errcheck
 
 			return
 		}
@@ -132,7 +132,7 @@ func CreateGetCommonDirStatusHandler(cAuth auth.Auth, certService service.Certif
 			if errors.Is(err, service.ErrServerNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err)
+				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}
 
 			return
@@ -153,7 +153,7 @@ func CreateChangeCommonDirStatusHandler(cAuth auth.Auth, certService service.Cer
 		guid := c.Param("serverId")
 
 		if guid == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID")) // nolint:errcheck
 
 			return
 		}
@@ -161,7 +161,7 @@ func CreateChangeCommonDirStatusHandler(cAuth auth.Auth, certService service.Cer
 		domainName := c.Param("domainName")
 
 		if domainName == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name")) // nolint:errcheck
 
 			return
 		}
@@ -169,7 +169,7 @@ func CreateChangeCommonDirStatusHandler(cAuth auth.Auth, certService service.Cer
 		decodedDomainName, err := base64.RawStdEncoding.DecodeString(domainName)
 
 		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name")) // nolint:errcheck
 
 			return
 		}
@@ -179,7 +179,7 @@ func CreateChangeCommonDirStatusHandler(cAuth auth.Auth, certService service.Cer
 		var request service.ChangeCommonDirStatusRequest
 
 		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+			c.AbortWithError(http.StatusBadRequest, err) // nolint:errcheck
 
 			return
 		}
@@ -196,7 +196,7 @@ func CreateChangeCommonDirStatusHandler(cAuth auth.Auth, certService service.Cer
 			} else if errors.As(err, &errAgentCommon) {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err)
+				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}
 		}
 	}
@@ -213,7 +213,7 @@ func CreateAssignCertificateHandler(cAuth auth.Auth, certService service.Certifi
 		guid := c.Param("serverId")
 
 		if guid == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID")) // nolint:errcheck
 
 			return
 		}
@@ -221,7 +221,7 @@ func CreateAssignCertificateHandler(cAuth auth.Auth, certService service.Certifi
 		domainName := c.Param("domainName")
 
 		if domainName == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name")) // nolint:errcheck
 
 			return
 		}
@@ -229,7 +229,7 @@ func CreateAssignCertificateHandler(cAuth auth.Auth, certService service.Certifi
 		decodedDomainName, err := base64.RawStdEncoding.DecodeString(domainName)
 
 		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid domain name")) // nolint:errcheck
 
 			return
 		}
@@ -239,7 +239,7 @@ func CreateAssignCertificateHandler(cAuth auth.Auth, certService service.Certifi
 		var request service.AssignCertificateRequest
 
 		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+			c.AbortWithError(http.StatusBadRequest, err) // nolint:errcheck
 
 			return
 		}
@@ -256,7 +256,7 @@ func CreateAssignCertificateHandler(cAuth auth.Auth, certService service.Certifi
 			} else if errors.As(err, &errAgentCommon) {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err)
+				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}
 		}
 	}
@@ -273,7 +273,7 @@ func CreateUploadCertificateHandler(cAuth auth.Auth, certService service.Certifi
 		guid := c.Param("serverId")
 
 		if guid == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID")) // nolint:errcheck
 
 			return
 		}
@@ -282,7 +282,7 @@ func CreateUploadCertificateHandler(cAuth auth.Auth, certService service.Certifi
 		webServer := c.PostForm("WebServer")
 
 		if serverName == "" || webServer == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid request data"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid request data")) // nolint:errcheck
 
 			return
 		}
@@ -290,7 +290,7 @@ func CreateUploadCertificateHandler(cAuth auth.Auth, certService service.Certifi
 		pemFileBytes, err := getPemCertificateFromRequest(c)
 
 		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+			c.AbortWithError(http.StatusBadRequest, err) // nolint:errcheck
 
 			return
 		}
@@ -305,9 +305,9 @@ func CreateUploadCertificateHandler(cAuth auth.Auth, certService service.Certifi
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
-				c.AbortWithError(http.StatusNotFound, err)
+				c.AbortWithError(http.StatusNotFound, err) // nolint:errcheck
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err)
+				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}
 
 			return
@@ -328,7 +328,7 @@ func CreateUploadCertificateToStorageHandler(cAuth auth.Auth, certService servic
 		guid := c.Param("serverId")
 
 		if guid == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID")) // nolint:errcheck
 
 			return
 		}
@@ -336,7 +336,7 @@ func CreateUploadCertificateToStorageHandler(cAuth auth.Auth, certService servic
 		certName := c.PostForm("name")
 
 		if certName == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("certificate name is missed"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("certificate name is missed")) // nolint:errcheck
 
 			return
 		}
@@ -347,7 +347,7 @@ func CreateUploadCertificateToStorageHandler(cAuth auth.Auth, certService servic
 		pemFileBytes, err := getPemCertificateFromRequest(c)
 
 		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+			c.AbortWithError(http.StatusBadRequest, err) // nolint:errcheck
 
 			return
 		}
@@ -367,7 +367,7 @@ func CreateUploadCertificateToStorageHandler(cAuth auth.Auth, certService servic
 			} else if errors.As(err, &errAgentCommon) {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err)
+				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}
 		}
 	}
@@ -384,7 +384,7 @@ func CreateDownloadCertificateFromStorageHandler(cAuth auth.Auth, certService se
 		guid := c.Param("serverId")
 
 		if guid == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID")) // nolint:errcheck
 
 			return
 		}
@@ -394,13 +394,13 @@ func CreateDownloadCertificateFromStorageHandler(cAuth auth.Auth, certService se
 		}{}
 
 		if err := c.ShouldBindJSON(&requestData); err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+			c.AbortWithError(http.StatusBadRequest, err) // nolint:errcheck
 
 			return
 		}
 
 		if requestData.CertName == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("certificate name is missed"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("certificate name is missed")) // nolint:errcheck
 			return
 		}
 
@@ -414,7 +414,7 @@ func CreateDownloadCertificateFromStorageHandler(cAuth auth.Auth, certService se
 			} else if errors.As(err, &errAgentCommon) {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err)
+				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}
 
 			return
@@ -438,7 +438,7 @@ func CreateGetStorageCertificatesHandler(cAuth auth.Auth, certService service.Ce
 		guid := c.Param("serverId")
 
 		if guid == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID")) // nolint:errcheck
 
 			return
 		}
@@ -453,7 +453,7 @@ func CreateGetStorageCertificatesHandler(cAuth auth.Auth, certService service.Ce
 			} else if errors.As(err, &errAgentCommon) {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err)
+				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}
 
 			return
@@ -474,7 +474,7 @@ func CreateGetStorageCertificateHandler(cAuth auth.Auth, certService service.Cer
 		guid := c.Param("serverId")
 
 		if guid == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID")) // nolint:errcheck
 
 			return
 		}
@@ -482,7 +482,7 @@ func CreateGetStorageCertificateHandler(cAuth auth.Auth, certService service.Cer
 		certName, ok := c.GetQuery("certName")
 
 		if !ok {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid certificate name"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid certificate name")) // nolint:errcheck
 
 			return
 		}
@@ -491,9 +491,9 @@ func CreateGetStorageCertificateHandler(cAuth auth.Auth, certService service.Cer
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
-				c.AbortWithError(http.StatusNotFound, err)
+				c.AbortWithError(http.StatusNotFound, err) // nolint:errcheck
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err)
+				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}
 
 			return
@@ -514,7 +514,7 @@ func CreateRemoveCertificateFromStorageHandler(cAuth auth.Auth, certService serv
 		guid := c.Param("serverId")
 
 		if guid == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID")) // nolint:errcheck
 
 			return
 		}
@@ -522,13 +522,13 @@ func CreateRemoveCertificateFromStorageHandler(cAuth auth.Auth, certService serv
 		requestData := struct{ CertName string }{}
 
 		if err := c.ShouldBindJSON(&requestData); err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+			c.AbortWithError(http.StatusBadRequest, err) // nolint:errcheck
 
 			return
 		}
 
 		if requestData.CertName == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("certificate name is missed"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("certificate name is missed")) // nolint:errcheck
 
 			return
 		}
@@ -537,9 +537,9 @@ func CreateRemoveCertificateFromStorageHandler(cAuth auth.Auth, certService serv
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
-				c.AbortWithError(http.StatusNotFound, err)
+				c.AbortWithError(http.StatusNotFound, err) // nolint:errcheck
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err)
+				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}
 
 			return
@@ -558,7 +558,7 @@ func CreateAddSelfSignCertificateToStorageHandler(cAuth auth.Auth, certService s
 		guid := c.Param("serverId")
 
 		if guid == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID")) // nolint:errcheck
 
 			return
 		}
@@ -566,19 +566,19 @@ func CreateAddSelfSignCertificateToStorageHandler(cAuth auth.Auth, certService s
 		request := service.SelfSignedCertificateRequest{}
 
 		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+			c.AbortWithError(http.StatusBadRequest, err) // nolint:errcheck
 
 			return
 		}
 
 		if request.CertName == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("certificate name is missed"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("certificate name is missed")) // nolint:errcheck
 
 			return
 		}
 
 		if request.CommonName == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("common name is missed"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("common name is missed")) // nolint:errcheck
 
 			return
 		}
@@ -594,7 +594,7 @@ func CreateAddSelfSignCertificateToStorageHandler(cAuth auth.Auth, certService s
 			} else if errors.As(err, &errAgentCommon) {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err)
+				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}
 
 			return
@@ -603,14 +603,19 @@ func CreateAddSelfSignCertificateToStorageHandler(cAuth auth.Auth, certService s
 }
 
 func getPemCertificateFromRequest(c *gin.Context) ([]byte, error) {
-	c.Request.ParseMultipartForm(10)
+	err := c.Request.ParseMultipartForm(10)
+
+	if err != nil {
+		return nil, err
+	}
+
 	pemFile, _, err := c.Request.FormFile("file")
 
 	if err != nil {
 		return nil, err
 	}
 
-	defer pemFile.Close()
+	defer pemFile.Close() // nolint:errcheck
 
 	return io.ReadAll(pemFile)
 }

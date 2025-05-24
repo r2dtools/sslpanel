@@ -16,7 +16,7 @@ func (a *Auth) GetCurrentUser(c *gin.Context) *userService.User {
 	data, exists := c.Get(IdentityKey)
 
 	if !exists {
-		c.AbortWithError(http.StatusUnauthorized, ErrorUnauthorized)
+		c.AbortWithError(http.StatusUnauthorized, ErrorUnauthorized) // nolint:errcheck
 
 		return nil
 	}
@@ -24,7 +24,7 @@ func (a *Auth) GetCurrentUser(c *gin.Context) *userService.User {
 	identity, ok := data.(*User)
 
 	if !ok {
-		c.AbortWithError(http.StatusUnauthorized, ErrorInvalidUserData)
+		c.AbortWithError(http.StatusUnauthorized, ErrorInvalidUserData) // nolint:errcheck
 
 		return nil
 	}
@@ -32,13 +32,13 @@ func (a *Auth) GetCurrentUser(c *gin.Context) *userService.User {
 	user, err := a.userService.FindUserByEmail(identity.Email)
 
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 
 		return nil
 	}
 
 	if user == nil {
-		c.AbortWithError(http.StatusNotFound, errors.New("user not found"))
+		c.AbortWithError(http.StatusNotFound, errors.New("user not found")) // nolint:errcheck
 	}
 
 	return user

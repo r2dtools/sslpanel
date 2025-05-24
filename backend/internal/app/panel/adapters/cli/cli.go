@@ -4,10 +4,6 @@ import (
 	"backend/config"
 	"backend/internal/app/panel/adapters/cli/fixture"
 	"backend/internal/app/panel/adapters/cli/migration"
-	userStorage "backend/internal/app/panel/user/storage"
-	"backend/internal/modules"
-	"backend/internal/pkg/db"
-	"backend/internal/pkg/logger"
 
 	"github.com/spf13/cobra"
 )
@@ -35,20 +31,6 @@ func GetApp() (*App, error) {
 		return nil, err
 	}
 
-	log, err := logger.NewLogger(config)
-
-	if err != nil {
-		return nil, err
-	}
-
-	database, err := db.GetDB(config)
-
-	if err != nil {
-		return nil, err
-	}
-
-	appUserStorage := userStorage.NewUserSqlStorage(database)
-
 	migrationsCmd := migration.GetMigrationsCmd()
 
 	rootCmd.AddCommand(migrationsCmd)
@@ -58,8 +40,6 @@ func GetApp() (*App, error) {
 	migrationsCmd.AddCommand(migration.GetMigrateForceCmd(config))
 
 	rootCmd.AddCommand(fixture.GetFixturesCmd(config))
-
-	modules.InitModulesCli(rootCmd, database, appUserStorage, log)
 
 	return &App{
 		cli: rootCmd,

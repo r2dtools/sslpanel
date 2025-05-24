@@ -33,7 +33,13 @@ func (a accountCreator) Create(email string, password string, confirmationToken 
 	user.AccountID = account.ID
 	user.AccountOwner = 1
 	user.Email = email
-	user.SetPassword(password)
+
+	err = user.SetPassword(password)
+
+	if err != nil {
+		return nil, err
+	}
+
 	user.Account = *account
 
 	err = db.Create(user).Error

@@ -36,7 +36,8 @@ func GetX509CertificateFromRequest(domain string) ([]*x509.Certificate, error) {
 		return nil, err
 	}
 
-	defer conn.Close()
+	defer conn.Close() // nolint:errcheck
+
 	return conn.ConnectionState().PeerCertificates, nil
 }
 

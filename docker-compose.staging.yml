@@ -1,0 +1,40 @@
+services:
+  sslpanel-web:
+    image: nginx
+    container_name: sslpanelweb
+    depends_on:
+      - sslpanel-back
+      - sslpanel-db
+    healthcheck:
+      test: "curl -s -I http://localhost | head -n 1 | grep 200"
+      interval: 1m30s
+      timeout: 30s
+      retries: 3
+      start_period: 30s
+    volumes:
+    - ./templates:/etc/nginx/templates
+    - ./frontend:/usr/share/nginx/html
+    ports:
+    - "5173:80"
+  sslpanel-back:
+    image: ghcr.io/r2dtools/sslpanel:${IMAGE_VERSION}
+    container_name: sslpanelback
+    depends_on:
+      - sslpanel-db
+    restart: always
+    env_file:
+      - .env.staging
+    expose:
+      - 8088
+    volumes:
+      - /var/r2dtools/sslpanel:/var/r2dtools/sslpanel
+      - /var/log/sslpanel:/var/log
+  sslpanel-db:
+    image: mysql
+    restart: always
+    env_file:
+      - .env.staging
+    expose:
+      - 3306
+    volumes:
+      - ./dbdata:/var/lib/mysql/

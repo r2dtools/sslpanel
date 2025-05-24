@@ -52,7 +52,7 @@ func (c client) Request(data []byte) ([]byte, error) {
 			err:  err,
 		}
 	}
-	defer conn.Close()
+	defer conn.Close() // nolint:errcheck
 
 	if err = writeData(conn, data); err != nil {
 		return nil, err

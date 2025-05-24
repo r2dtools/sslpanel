@@ -1,0 +1,32 @@
+name: push
+on:
+  push:
+    branches-ignore:
+      - master
+jobs:
+  backend:
+    name: Check backend
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Check out code
+      uses: actions/checkout@v2
+
+    - name: Install Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '~1.23.1'
+
+    - name: Download dependencies
+      working-directory: ./backend
+      run: go mod download
+
+    - name: Lint code
+      working-directory: ./backend
+      run: |
+          wget -O- -nv https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v2.1.6
+          ./bin/golangci-lint --timeout=10m run ./...
+
+    - name: Run tests
+      working-directory: ./backend
+      run: go test ./...

@@ -1,0 +1,14 @@
+services:
+  app:
+    image: ghcr.io/r2dtools/sslpanel:${IMAGE_VERSION}
+    container_name: sslpanelapp
+    restart: always
+    env_file:
+      - .env.prod
+    expose:
+      - 8088
+    ports:
+      - "8088:8088"
+    volumes:
+      - /var/r2dtools/sslpanel:/var/r2dtools/sslpanel
+      - /var/log/sslpanel:/var/log

@@ -8,10 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type registerData struct {
-	Email, Password string
-}
-
 func CreateMeHandler(appAuth Auth) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		user := appAuth.GetCurrentUser(c)
@@ -31,7 +27,7 @@ func CreateResetPasswordHandler(appAuthService authService.AuthService) func(c *
 		}{}
 
 		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+			c.AbortWithError(http.StatusBadRequest, err) // nolint:errcheck
 
 			return
 		}
@@ -50,7 +46,7 @@ func CreateResetPasswordHandler(appAuthService authService.AuthService) func(c *
 			} else if errors.Is(err, authService.ErrUserNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err)
+				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}
 		}
 	}
@@ -64,7 +60,7 @@ func CreateRegisterHandler(appAuthService authService.AuthService) func(c *gin.C
 		}{}
 
 		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+			c.AbortWithError(http.StatusBadRequest, err) // nolint:errcheck
 
 			return
 		}
@@ -75,7 +71,7 @@ func CreateRegisterHandler(appAuthService authService.AuthService) func(c *gin.C
 			if errors.Is(err, authService.ErrAccountAlreadyExists) {
 				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err)
+				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}
 		}
 	}
@@ -88,7 +84,7 @@ func CreateConfirmEmailHandler(appAuthService authService.AuthService) func(c *g
 		}{}
 
 		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+			c.AbortWithError(http.StatusBadRequest, err) // nolint:errcheck
 
 			return
 		}
@@ -107,7 +103,7 @@ func CreateConfirmEmailHandler(appAuthService authService.AuthService) func(c *g
 			} else if errors.Is(err, authService.ErrUserNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err)
+				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}
 		}
 	}
@@ -120,7 +116,7 @@ func CreateRecoverPasswordHandler(appAuthService authService.AuthService) func(c
 		}{}
 
 		if err := c.ShouldBindJSON(&request); err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+			c.AbortWithError(http.StatusBadRequest, err) // nolint:errcheck
 
 			return
 		}
@@ -137,7 +133,7 @@ func CreateRecoverPasswordHandler(appAuthService authService.AuthService) func(c
 			if errors.Is(err, authService.ErrUserNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err)
+				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}
 		}
 	}

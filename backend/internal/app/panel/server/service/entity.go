@@ -37,19 +37,19 @@ type ServerDetails struct {
 }
 
 type NewServerRequest struct {
-	Name        string `json:"name" validate:nonzero`
+	Name        string `json:"name" validate:"nonzero"`
 	Ipv4Address string `json:"ipv4_address"`
 	Ipv6Address string `json:"ipv6_address"`
-	AgentPort   int    `json:"agent_port" validate:nonzero`
-	Token       string `json:"token" validate:nonzero`
+	AgentPort   int    `json:"agent_port" validate:"nonzero"`
+	Token       string `json:"token" validate:"nonzero"`
 	AccountID   int
 }
 
 type UpdateServerRequest struct {
-	ID          int    `json:"id" validate:nonzero`
-	Name        string `json:"name" validate:nonzero`
+	ID          int    `json:"id" validate:"nonzero"`
+	Name        string `json:"name" validate:"nonzero"`
 	Ipv4Address string `json:"ipv4_address"`
 	Ipv6Address string `json:"ipv6_address"`
-	AgentPort   int    `json:"agent_port" validate:nonzero`
-	Token       string `json:"token" validate:nonzero`
+	AgentPort   int    `json:"agent_port" validate:"nonzero"`
+	Token       string `json:"token" validate:"nonzero"`
 }

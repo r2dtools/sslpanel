@@ -1,0 +1,162 @@
+name: deploy-release
+on:
+  release:
+    types: [released]
+env:
+  IMAGE_VERSION: ${{ github.event.release.tag_name }}
+
+jobs:
+  frontend:
+    name: Build frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Install nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
+      - name: Build
+        working-directory: ./frontend
+        run: |
+          npm install
+          npm run build
+          tar -czvf frontend.tar.gz -C dist/ .
+      
+      - name: Save artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend_artifact
+          path: frontend/frontend.tar.gz
+
+  backend:
+    name: Build backend
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Check out code
+      uses: actions/checkout@v2
+    
+    - name: Create .env file
+      run: |
+        echo "Generating .env.prod file"
+
+        sed -i "s/CP_DB_HOST=.*/CP_DB_HOST=${{ secrets.CP_DB_HOST }}/g" .env.prod
+        sed -i "s/CP_DB_NAME=.*/CP_DB_NAME=${{ secrets.CP_DB_NAME }}/g" .env.prod
+        sed -i "s/CP_DB_PASSWORD=.*/CP_DB_PASSWORD=${{ secrets.CP_DB_PASSWORD }}/g" .env.prod
+        sed -i "s/CP_DB_ROOT_PASSWORD=.*/CP_DB_ROOT_PASSWORD=${{ secrets.CP_DB_PASSWORD }}/g" .env.prod
+        sed -i "s/CP_DB_USER=.*/CP_DB_USER=${{ secrets.CP_DB_USER }}/g" .env.prod
+        sed -i "s/CP_EMAIL_ADDRESS=.*/CP_EMAIL_ADDRESS=${{ secrets.CP_EMAIL_ADDRESS }}/g" .env.prod
+        sed -i "s/CP_EMAIL_PASSWORD=.*/CP_EMAIL_PASSWORD=${{ secrets.CP_EMAIL_PASSWORD }}/g" .env.prod
+        sed -i "s/CP_SERVER_KEY=.*/CP_SERVER_KEY=${{ secrets.CP_SERVER_KEY }}/g" .env.prod
+        sed -i "s/CP_SMTP_HOST=.*/CP_SMTP_HOST=${{ secrets.CP_SMTP_HOST }}/g" .env.prod
+        echo "IMAGE_VERSION=${{ env.IMAGE_VERSION }}" >> .env.prod
+
+    - name: Copy files to target server via scp
+      uses: appleboy/scp-action@v1.0.0
+      with:
+        host: ${{ secrets.DEPLOY_HOST }}
+        username: ${{ secrets.DEPLOY_USERNAME }}
+        port: 22
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        source: "./docker-compose.prod.yml,./.env.prod"
+        target: ${{ secrets.DEPLOY_BACK_PATH }}
+        overwrite: true
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Build and push image
+      uses: docker/build-push-action@v6
+      with:
+        push: true
+        tags: "ghcr.io/r2dtools/sslpanel:${{ env.IMAGE_VERSION }}"
+        provenance: false
+  deploy:
+    name: Deploy app
+    needs:
+      - frontend
+      - backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy backend
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          envs: IMAGE_VERSION
+          script: |
+            export IMAGE_VERSION=${{ env.IMAGE_VERSION }}
+            echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            cd ${{ secrets.DEPLOY_BACK_PATH }}
+            docker compose -f -f ./docker-compose.prod.yml pull
+            docker compose -f ./docker-compose.prod.yml up -d --build
+
+      - name: Download frontend artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend_artifact
+      
+      - name: Unpack frontend
+        run: |
+          mkdir -p dist
+          tar -xvzf frontend.tar.gz -C dist
+      
+      - name: Deploy frontend
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "dist/"
+          target: ${{ secrets.DEPLOY_FRONTEND_PATH }}
+          overwrite: true
+          strip_components: 1     
+  
+  package:
+    name: Create package
+    needs:
+      - frontend
+      - backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+      
+      - name: Install nodejs
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: |
+          npm install
+          npm run build-staging
+
+      - name: Prepare package files
+        run: |
+          mkdir -p build/frontend
+          cp -r docker-compose.staging.yml .env.staging LICENSE templates scripts/run.sh build
+          cp -r frontend/dist/* build/frontend
+          sed -i "s/\${IMAGE_VERSION}/${{ env.IMAGE_VERSION }}/g" build/docker-compose.staging.yml
+          tar -czvf sslpanel-${{ env.IMAGE_VERSION }}.tar.gz -C build/ .
+      
+      - name: Release package
+        uses: softprops/action-gh-release@v2
+        with:
+          files: sslpanel-${{ env.IMAGE_VERSION }}.tar.gz

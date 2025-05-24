@@ -15,7 +15,7 @@ func CreateGetUserByIdHandler(uService userService.UserService) func(c *gin.Cont
 		id, err := strconv.Atoi(c.Param("id"))
 
 		if err != nil {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid user ID"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid user ID")) // nolint:errcheck
 
 			return
 		}
@@ -23,13 +23,13 @@ func CreateGetUserByIdHandler(uService userService.UserService) func(c *gin.Cont
 		user, err := uService.FindUserByID(id)
 
 		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError, err)
+			c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 
 			return
 		}
 
 		if user == nil {
-			c.AbortWithError(http.StatusNotFound, errors.New("user not found"))
+			c.AbortWithError(http.StatusNotFound, errors.New("user not found")) // nolint:errcheck
 
 			return
 		}
@@ -43,7 +43,7 @@ func CreateGetUserByEmailHandler(uService userService.UserService) func(c *gin.C
 		email := c.Param("email")
 
 		if email == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid user email"))
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid user email")) // nolint:errcheck
 
 			return
 		}
@@ -51,13 +51,13 @@ func CreateGetUserByEmailHandler(uService userService.UserService) func(c *gin.C
 		user, err := uService.FindUserByEmail(email)
 
 		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError, err)
+			c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 
 			return
 		}
 
 		if user == nil {
-			c.AbortWithError(http.StatusNotFound, errors.New("user not found"))
+			c.AbortWithError(http.StatusNotFound, errors.New("user not found")) // nolint:errcheck
 
 			return
 		}
@@ -77,7 +77,7 @@ func CreateChangePasswordHandler(appAuth auth.Auth, uService userService.UserSer
 		data := struct{ Password, NewPassword string }{}
 
 		if err := c.ShouldBindJSON(&data); err != nil {
-			c.AbortWithError(http.StatusBadRequest, err)
+			c.AbortWithError(http.StatusBadRequest, err) // nolint:errcheck
 
 			return
 		}
@@ -86,11 +86,11 @@ func CreateChangePasswordHandler(appAuth auth.Auth, uService userService.UserSer
 
 		if err != nil {
 			if errors.Is(err, userService.ErrUserNotFound) {
-				c.AbortWithError(http.StatusNotFound, err)
+				c.AbortWithError(http.StatusNotFound, err) // nolint:errcheck
 			} else if errors.Is(err, userService.ErrInvalidPassword) {
 				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err)
+				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}
 		}
 	}

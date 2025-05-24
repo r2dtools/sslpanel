@@ -3,7 +3,7 @@ package storage
 import "time"
 
 type DomainSetting struct {
-	ID           int `gorm:"AUTO_INCREMENT" gorm:"primary_key"`
+	ID           int `gorm:"AUTO_INCREMENT;primary_key"`
 	ServerId     int
 	DomainName   string `gorm:"size:64"`
 	SettingName  string `gorm:"size:64"`

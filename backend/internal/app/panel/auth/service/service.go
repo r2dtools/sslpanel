@@ -44,7 +44,11 @@ func (a AuthService) Register(email, password string) error {
 		return err
 	}
 
-	confirmationToken := token.GenerateRandomToken(tokenLength)
+	confirmationToken, err := token.GenerateRandomToken(tokenLength)
+
+	if err != nil {
+		return err
+	}
 
 	if user == nil {
 		user, err = a.accountCreator.Create(email, password, confirmationToken)
@@ -125,7 +129,12 @@ func (a AuthService) RecoverPassword(email string) error {
 		return ErrUserNotFound
 	}
 
-	confirmationToken := token.GenerateRandomToken(tokenLength)
+	confirmationToken, err := token.GenerateRandomToken(tokenLength)
+
+	if err != nil {
+		return err
+	}
+
 	user.ConfirmationToken = confirmationToken
 
 	if err = a.userStorage.Save(user); err != nil {

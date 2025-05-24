@@ -2,7 +2,10 @@ package migration
 
 import (
 	"backend/config"
+	"errors"
+	"fmt"
 
+	"github.com/golang-migrate/migrate/v4"
 	"github.com/spf13/cobra"
 )
 
@@ -17,7 +20,15 @@ func GetMigrateUpCmd(config *config.Config) *cobra.Command {
 				return err
 			}
 
-			return m.Up()
+			err = m.Up()
+
+			if errors.Is(err, migrate.ErrNoChange) {
+				fmt.Println("migrations: no changes")
+
+				return nil
+			}
+
+			return err
 		},
 	}
 

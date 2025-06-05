@@ -12,16 +12,26 @@ import (
 	gomail "gopkg.in/mail.v2"
 )
 
+type ErrSendEmail struct {
+	Message string
+}
+
+func (e ErrSendEmail) Error() string {
+	return e.Message
+}
+
 type EmailNotificationService struct {
 	Config *config.Config
 }
 
-func (n EmailNotificationService) SendPlainNotification(recepient, subject, message string) error {
-	return n.sendNotification(recepient, subject, message, "text/plain")
-}
-
 func (n EmailNotificationService) SendHtmlNotification(recepient, subject, message string) error {
-	return n.sendNotification(recepient, subject, message, "text/html")
+	err := n.sendNotification(recepient, subject, message, "text/html")
+
+	if err != nil {
+		return ErrSendEmail{Message: fmt.Sprintf("failed to send email notification: %v", err)}
+	}
+
+	return nil
 }
 
 func (n *EmailNotificationService) sendNotification(recepient, subject, message, bType string) error {
@@ -34,42 +44,20 @@ func (n *EmailNotificationService) sendNotification(recepient, subject, message,
 	d := gomail.NewDialer(n.Config.SMTPHost, n.Config.SMTPPort, n.Config.AmsEmailAddress, n.Config.AmsEmailPassword)
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
-	if err := d.DialAndSend(m); err != nil {
-		return fmt.Errorf("could not send notification to recepient '%s': %v", recepient, err)
-	}
-
-	return nil
-}
-
-func (n EmailNotificationService) CreateAndSendPlainNotification(name, tplPath, email, subject string, data interface{}) error {
-	message, err := n.createNotification(name, tplPath, email, subject, data)
-
-	if err != nil {
-		return err
-	}
-
-	if err = n.SendPlainNotification(email, subject, message); err != nil {
-		return err
-	}
-
-	return nil
+	return d.DialAndSend(m)
 }
 
 func (n EmailNotificationService) CreateAndSendHtmlNotification(name, tplPath, email, subject string, data interface{}) error {
-	message, err := n.createNotification(name, tplPath, email, subject, data)
+	message, err := n.createNotification(name, tplPath, subject, data)
 
 	if err != nil {
 		return err
 	}
 
-	if err = n.SendHtmlNotification(email, subject, message); err != nil {
-		return err
-	}
-
-	return nil
+	return n.SendHtmlNotification(email, subject, message)
 }
 
-func (n EmailNotificationService) createNotification(name, tplPath, email, subject string, data interface{}) (string, error) {
+func (n EmailNotificationService) createNotification(name, tplPath, subject string, data interface{}) (string, error) {
 	tplContent, err := n.readTemplateFile(tplPath)
 
 	if err != nil {
@@ -79,7 +67,7 @@ func (n EmailNotificationService) createNotification(name, tplPath, email, subje
 	report, err := template.New(name).Parse(string(tplContent))
 
 	if err != nil {
-		return "", fmt.Errorf("could not parse notification template: %v", err)
+		return "", err
 	}
 
 	var tpl bytes.Buffer
@@ -96,7 +84,7 @@ func (n EmailNotificationService) readTemplateFile(subpath string) (string, erro
 	content, err := os.ReadFile(tplPath)
 
 	if err != nil {
-		return "", fmt.Errorf("could not read file '%s': %v", tplPath, err)
+		return "", err
 	}
 
 	return string(content), nil

@@ -2,11 +2,15 @@ package auth
 
 import (
 	authService "backend/internal/app/panel/auth/service"
+	"backend/internal/pkg/notification"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
+
+const errSendEmailMessage = "Failed to send email. Check your SMTP server settings"
 
 func CreateMeHandler(appAuth Auth) func(c *gin.Context) {
 	return func(c *gin.Context) {
@@ -39,12 +43,15 @@ func CreateResetPasswordHandler(appAuthService authService.AuthService) func(c *
 		}
 
 		err := appAuthService.ResetPassword(request.Token)
+		var errSendEmail notification.ErrSendEmail
 
 		if err != nil {
 			if errors.Is(err, authService.ErrInvalidConfirmationToken) {
 				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 			} else if errors.Is(err, authService.ErrUserNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else if errors.As(err, &errSendEmail) {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("%s: %v", errSendEmailMessage, err)})
 			} else {
 				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}
@@ -66,10 +73,13 @@ func CreateRegisterHandler(appAuthService authService.AuthService) func(c *gin.C
 		}
 
 		err := appAuthService.Register(request.Email, request.Password)
+		var errSendEmail notification.ErrSendEmail
 
 		if err != nil {
 			if errors.Is(err, authService.ErrAccountAlreadyExists) {
 				c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+			} else if errors.As(err, &errSendEmail) {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("%s: %v", errSendEmailMessage, err)})
 			} else {
 				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}
@@ -128,10 +138,13 @@ func CreateRecoverPasswordHandler(appAuthService authService.AuthService) func(c
 		}
 
 		err := appAuthService.RecoverPassword(request.Email)
+		var errSendEmail notification.ErrSendEmail
 
 		if err != nil {
 			if errors.Is(err, authService.ErrUserNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else if errors.As(err, &errSendEmail) {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": fmt.Sprintf("%s: %v", errSendEmailMessage, err)})
 			} else {
 				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
 			}

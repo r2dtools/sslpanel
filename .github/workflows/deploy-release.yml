@@ -81,7 +81,9 @@ jobs:
       uses: docker/build-push-action@v6
       with:
         push: true
-        tags: "ghcr.io/r2dtools/sslpanel:${{ env.IMAGE_VERSION }}"
+        tags: |
+          "ghcr.io/r2dtools/sslpanel:${{ env.IMAGE_VERSION }}"
+          "ghcr.io/r2dtools/sslpanel:latest"
         provenance: false
   deploy:
     name: Deploy app

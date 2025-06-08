@@ -5,7 +5,7 @@ import Logo from '../images/logo/logo.png';
 const AuthSide: React.FC = () => {
     return (
         <div className="py-17.5 px-26 text-center">
-            <Link className="mb-5.5 inline-block" to="/">
+            <Link className="mb-5.5 inline-block" to="https://sslpanel.com.ru">
                 <img className="h-8 hidden dark:block" src={Logo} alt="Logo" />
                 <img className="h-8 dark:hidden" src={LogoDark} alt="Logo" />
             </Link>

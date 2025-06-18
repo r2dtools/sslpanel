@@ -117,7 +117,7 @@ const Server = () => {
                     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
                         {showServerAlert && (
                             <Alert color="failure" onDismiss={() => setShowServerAlert(false)} className='mb-4 rounded-sm'>
-                                Failed to connect to the server agent. Please check server IP address, port and token provided.
+                                Failed to connect to the server agent. Please check server IP address, port and token provided. Ensure no firewall is blocking SSLBot port.
                             </Alert>
                         )}
                         <div className="border-b border-stroke px-4 py-5 dark:border-strokedark md:px-6 xl:px-9">

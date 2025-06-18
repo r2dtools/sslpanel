@@ -28,6 +28,7 @@ import { ColorTheme } from './features/account/types';
 import Confirm from './pages/Authentication/Confirm';
 import Recover from './pages/Authentication/Recover';
 import Reset from './pages/Authentication/Reset';
+import InstallSslBot from './pages/Help/InstallSslBot';
 
 function App() {
     const { pathname } = useLocation();
@@ -124,6 +125,12 @@ function App() {
                     title: getPageTitle('Domain'),
                     name: 'Domain',
                     component: <Domain />,
+                },
+                {
+                    path: "/documentation/install-sslbot",
+                    title: getPageTitle('Install SSLBot '),
+                    name: 'Install SSLBot',
+                    component: <InstallSslBot />,
                 },
             ],
         },

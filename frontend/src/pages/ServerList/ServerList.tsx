@@ -14,10 +14,13 @@ import {
 import useAuthToken from '../../features/auth/hooks';
 import { FetchStatus } from '../../app/types';
 import Loader from '../../components/Loader/Loader';
-import { Button } from 'flowbite-react';
+import { Banner, BannerCollapseButton, Button } from 'flowbite-react';
 import { Server, ServerSavePayload } from '../../features/server/types';
 import ServerEditDrawer from '../../features/server/components/ServerEditDrawer';
 import empty from '../../images/empty.png';
+import { HiX } from "react-icons/hi";
+import { Link } from 'react-router-dom';
+import { HiMiniExclamationCircle } from 'react-icons/hi2';
 
 const ServerList = () => {
     const [serverFormOpen, setServerFormOpen] = useState(false);
@@ -100,6 +103,25 @@ const ServerList = () => {
                             }
                         </div>
                     </div>
+                    {!servers.length &&
+                        <Banner>
+                            <div className="flex w-full justify-between border-b border-gray-200 bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-700">
+                                <div className="mx-auto flex items-center">
+                                    <p className="flex items-center font-normal text-gray-500 dark:text-gray-400">
+                                        <HiMiniExclamationCircle className="mr-2 h-5 w-5" />
+                                        <span className="[&_p]:inline">
+                                            Hi! Looks like you haven't registered any servers yet. Follow the&nbsp;
+                                            <Link to='/documentation/install-sslbot' className="text-blue-600 inline font-medium underline decoration-solid underline-offset-2 hover:no-underlin">instructions</Link>
+                                            &nbsp;to install SSLBot and register a server
+                                        </span>
+                                    </p>
+                                </div>
+                                <BannerCollapseButton color="gray" className="border-0 bg-transparent text-gray-500 dark:text-gray-400">
+                                    <HiX className="h-4 w-4" />
+                                </BannerCollapseButton>
+                            </div>
+                        </Banner>
+                    }
                 </div>
                 <ServerEditDrawer
                     open={serverFormOpen}

@@ -27,7 +27,7 @@ const ServerEditDrawer: React.FC<ServerEditProps> = ({
     const [ipv6, setIpv6] = useState<string>(server?.ipv6_address || '');
     const [token, setToken] = useState<string>(server?.token || '');
     const [port, setPort] = useState<number>(server?.agent_port || defaultPort);
-    const [ipError, setIpError] = useState<string>('');
+    const [ipError] = useState<string>('');
 
     useEffect(() => {
         setName(open ? server?.name || '' : '');
@@ -43,12 +43,6 @@ const ServerEditDrawer: React.FC<ServerEditProps> = ({
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-
-        if (ipv4 === '' && ipv6 === '') {
-            setIpError('At leat one IP must be specified');
-
-            return;
-        }
 
         const saveServerPayload: ServerSavePayload = {
             authToken,
@@ -91,22 +85,9 @@ const ServerEditDrawer: React.FC<ServerEditProps> = ({
                             id="ipv4"
                             name="ipv4"
                             placeholder="Server agent ipv4 address"
+                            required
                             value={ipv4}
                             onChange={(event: React.ChangeEvent<HTMLInputElement>) => setIpv4(event.target.value)}
-                            helperText={<>{ipError}</>}
-                            color={ipError ? 'failure' : undefined}
-                        />
-                    </div>
-                    <div className="mb-6">
-                        <Label htmlFor="ipv6" className="mb-2 block">
-                            IPv6
-                        </Label>
-                        <TextInput
-                            id="ipv6"
-                            name="ipv6"
-                            placeholder="Server agent ipv6 address"
-                            value={ipv6}
-                            onChange={(event: React.ChangeEvent<HTMLInputElement>) => setIpv6(event.target.value)}
                             helperText={<>{ipError}</>}
                             color={ipError ? 'failure' : undefined}
                         />

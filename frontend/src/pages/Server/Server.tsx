@@ -178,10 +178,6 @@ const Server = () => {
                                                 <dd className="font-bold text-black dark:text-white">{server?.ipv4_address || emptyPlaceholder}</dd>
                                             </div>
                                             <div>
-                                                <dt>IPv6 Address</dt>
-                                                <dd className="font-bold text-black dark:text-white">{server?.ipv6_address || emptyPlaceholder}</dd>
-                                            </div>
-                                            <div>
                                                 <dt>Uptime</dt>
                                                 <dd className="font-bold text-black dark:text-white">{uptime}</dd>
                                             </div>

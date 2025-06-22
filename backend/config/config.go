@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	developmentEnv = "developement"
+	developmentEnv = "development"
 	productionEnv  = "production"
 )
 
@@ -57,14 +57,6 @@ func GetConfig() (*Config, error) {
 
 	if environment == "" {
 		environment = developmentEnv
-	}
-
-	fileBaseDir := viper.GetString("CP_FILE_BASE_DIR")
-
-	if _, err := os.Stat(fileBaseDir); os.IsNotExist(err) {
-		if err = os.MkdirAll(fileBaseDir, 0755); err != nil {
-			return nil, err
-		}
 	}
 
 	conf := Config{

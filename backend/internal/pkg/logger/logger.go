@@ -38,24 +38,21 @@ func (l *logger) Debug(message string, args ...interface{}) {
 }
 
 func NewLogger(config *config.Config) (Logger, error) {
-	logDir := path.Dir(config.LogFile)
-
-	if _, err := os.Stat(logDir); os.IsNotExist(err) {
-		err := os.MkdirAll(logDir, 0755)
-
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	var loggerConfig zap.Config
-	outputPaths := []string{config.LogFile}
+	outputPaths := []string{}
 
 	if config.IsDevMode {
 		loggerConfig = zap.NewDevelopmentConfig()
 		outputPaths = append(outputPaths, "stderr")
 	} else {
+		err := createLogDirIfNeeded(config.LogFile)
+
+		if err != nil {
+			return nil, err
+		}
+
 		loggerConfig = zap.NewProductionConfig()
+		outputPaths = append(outputPaths, config.LogFile)
 	}
 
 	loggerConfig.OutputPaths = outputPaths
@@ -69,4 +66,18 @@ func NewLogger(config *config.Config) (Logger, error) {
 	}
 
 	return &logger{zapLogger: zLogger.Sugar()}, nil
+}
+
+func createLogDirIfNeeded(logFilePath string) error {
+	logDir := path.Dir(logFilePath)
+
+	if _, err := os.Stat(logDir); os.IsNotExist(err) {
+		err := os.MkdirAll(logDir, 0755)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

@@ -156,9 +156,9 @@ jobs:
           cp -r docker-compose.staging.yml .env.staging LICENSE templates scripts/run.sh build
           cp -r frontend/dist/* build/frontend
           sed -i "s/\${IMAGE_VERSION}/${{ env.IMAGE_VERSION }}/g" build/docker-compose.staging.yml
-          tar -czvf sslpanel-${{ env.IMAGE_VERSION }}.tar.gz -C build/ .
+          tar -czvf sslpanel.tar.gz -C build/ .
       
       - name: Release package
         uses: softprops/action-gh-release@v2
         with:
-          files: sslpanel-${{ env.IMAGE_VERSION }}.tar.gz
+          files: sslpanel.tar.gz

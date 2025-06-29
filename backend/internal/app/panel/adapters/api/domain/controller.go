@@ -68,12 +68,6 @@ func CreateGetDomainHandler(cAuth auth.Auth, appDomainService domainService.Doma
 			return
 		}
 
-		if domain == nil {
-			c.AbortWithError(http.StatusNotFound, err) // nolint:errcheck
-
-			return
-		}
-
 		c.JSON(http.StatusOK, gin.H{"domain": domain})
 	}
 }

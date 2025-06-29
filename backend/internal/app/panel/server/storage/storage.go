@@ -30,6 +30,7 @@ type Server struct {
 
 type ServerStorage interface {
 	FindAllByAccountID(accountID int) ([]Server, error)
+	FindAll() ([]Server, error)
 	FindByID(id int) (*Server, error)
 	FindByGuid(guid string) (*Server, error)
 	FindCountByIP(ipv4, ipv6 string, excludeIds []int) (int, error)

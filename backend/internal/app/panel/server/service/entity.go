@@ -1,7 +1,7 @@
 package service
 
 import (
-	domainService "backend/internal/app/panel/domain/service"
+	domainDto "backend/internal/app/panel/domain/dto"
 	"time"
 )
 
@@ -25,15 +25,15 @@ type Server struct {
 type ServerDetails struct {
 	Server
 
-	HostName       string                 `json:"hostname"`
-	Os             string                 `json:"os"`
-	PlatformFamily string                 `json:"platform_family"`
-	KernelVersion  string                 `json:"kernal_version"`
-	KernelArch     string                 `json:"kernal_arch"`
-	Virtualization string                 `json:"virtualization"`
-	Uptime         uint64                 `json:"uptime"`
-	BootTime       uint64                 `json:"boottime"`
-	Domains        []domainService.Domain `json:"domains"`
+	HostName       string             `json:"hostname"`
+	Os             string             `json:"os"`
+	PlatformFamily string             `json:"platform_family"`
+	KernelVersion  string             `json:"kernal_version"`
+	KernelArch     string             `json:"kernal_arch"`
+	Virtualization string             `json:"virtualization"`
+	Uptime         uint64             `json:"uptime"`
+	BootTime       uint64             `json:"boottime"`
+	Domains        []domainDto.Domain `json:"domains"`
 }
 
 type NewServerRequest struct {

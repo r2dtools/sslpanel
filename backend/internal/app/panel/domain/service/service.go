@@ -2,14 +2,14 @@ package service
 
 import (
 	"backend/config"
+	"backend/internal/app/panel/domain/dto"
+	"backend/internal/app/panel/domain/provider"
 	"backend/internal/app/panel/domain/storage"
 	serverStorage "backend/internal/app/panel/server/storage"
 	"backend/internal/pkg/agent"
 	"backend/internal/pkg/logger"
 	"errors"
 	"fmt"
-	"strconv"
-	"strings"
 
 	"github.com/r2dtools/agentintegration"
 )
@@ -30,55 +30,27 @@ type DomainService struct {
 	config         *config.Config
 	settingStorage storage.DomainSettingStorage
 	serverStorage  serverStorage.ServerStorage
+	domainProvider provider.DomainProvider
 	logger         logger.Logger
 }
 
-func (s DomainService) GetDomain(request DomainRequest) (*Domain, error) {
-	serverModel, err := s.serverStorage.FindByGuid(request.ServerGuid)
+func (s DomainService) GetDomain(request DomainRequest) (dto.Domain, error) {
+	var rDomain dto.Domain
+	domains, err := s.domainProvider.GetServerDomains(request.ServerGuid)
 
-	if err != nil {
-		return nil, err
+	if err == provider.ErrServerNotFound {
+		return rDomain, ErrServerNotFound
 	}
 
-	if serverModel == nil {
-		return nil, ErrServerNotFound
-	}
-
-	nAgent, err := s.getServerAgent(serverModel)
-
-	if err != nil {
-		return nil, err
-	}
-
-	vhosts, err := nAgent.GetVhosts()
-
-	if err != nil {
-		return nil, err
-	}
-
-	var dVhost *agentintegration.VirtualHost
-
-	for _, vhost := range vhosts {
-		if vhost.ServerName == request.DomainName {
-			if request.WebServer == "" || request.WebServer == vhost.WebServer {
-				dVhost = &vhost
-
-				break
+	for _, domain := range domains {
+		if domain.ServerName == request.DomainName {
+			if request.WebServer == "" || request.WebServer == domain.WebServer {
+				return domain, nil
 			}
 		}
 	}
 
-	if dVhost == nil {
-		return nil, ErrDomainNotFound
-	}
-
-	domain := CreateDomain(dVhost)
-
-	if domain == nil {
-		return nil, ErrDomainNotFound
-	}
-
-	return domain, nil
+	return rDomain, ErrDomainNotFound
 }
 
 func (s DomainService) GetDomainConfig(request DomainConfigRequest) (string, error) {
@@ -161,43 +133,6 @@ func (s DomainService) getServerAgent(server *serverStorage.Server) (*agent.Agen
 	)
 }
 
-func CreateDomain(vhost *agentintegration.VirtualHost) *Domain {
-	serverName := strings.Trim(vhost.ServerName, ".")
-	serverNameParts := strings.Split(serverName, ".")
-
-	// skip vhost names like 'domain'
-	if len(serverNameParts) <= 1 {
-		return nil
-	}
-
-	var addresses []DomainAddress
-
-	for _, address := range vhost.Addresses {
-		port, err := strconv.Atoi(address.Port)
-
-		if err != nil {
-			continue
-		}
-
-		addresses = append(addresses, DomainAddress{
-			IsIpv6: address.IsIpv6,
-			Host:   address.Host,
-			Port:   port,
-		})
-	}
-
-	return &Domain{
-		FilePath:    vhost.FilePath,
-		ServerName:  vhost.ServerName,
-		DocRoot:     vhost.DocRoot,
-		WebServer:   vhost.WebServer,
-		Aliases:     vhost.Aliases,
-		Ssl:         vhost.Ssl,
-		Addresses:   addresses,
-		Certificate: CreateCertificate(vhost.Certificate),
-	}
-}
-
 func createDomainSetting(settingModel storage.DomainSetting) DomainSetting {
 	return DomainSetting{
 		ID:           settingModel.ID,
@@ -206,37 +141,18 @@ func createDomainSetting(settingModel storage.DomainSetting) DomainSetting {
 	}
 }
 
-func CreateCertificate(cert *agentintegration.Certificate) *DomainCertificate {
-	if cert == nil {
-		return nil
-	}
-
-	return &DomainCertificate{
-		CN:             cert.CN,
-		ValidFrom:      cert.ValidFrom,
-		ValidTo:        cert.ValidTo,
-		DNSNames:       cert.DNSNames,
-		EmailAddresses: cert.EmailAddresses,
-		Organization:   cert.Organization,
-		Country:        cert.Country,
-		Locality:       cert.Locality,
-		Province:       cert.Province,
-		IsValid:        cert.IsValid,
-		IsCA:           cert.IsCA,
-		Issuer:         Issuer(cert.Issuer),
-	}
-}
-
 func NewDomainService(
 	config *config.Config,
 	settingStorage storage.DomainSettingStorage,
 	serverStorage serverStorage.ServerStorage,
+	domainProvider provider.DomainProvider,
 	logger logger.Logger,
 ) DomainService {
 	return DomainService{
 		config:         config,
 		settingStorage: settingStorage,
 		serverStorage:  serverStorage,
+		domainProvider: domainProvider,
 		logger:         logger,
 	}
 }

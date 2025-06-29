@@ -6,41 +6,46 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/spf13/viper"
 )
 
 const (
-	developmentEnv = "development"
-	productionEnv  = "production"
+	developmentEnv                   = "development"
+	productionEnv                    = "production"
+	defaultCertRenewalInterval       = 3
+	defaultCertAboutToExpireInterval = 14
 )
 
 var config *Config
 
 type Config struct {
-	DatabaseURI      string
-	PanelHost        string
-	ServerAddress    string
-	ServerHost       string
-	LogFile          string
-	SecretKey        string
-	AgentPort        int
-	LogLevel         int
-	AmsEmailAddress  string
-	AmsEmailPassword string
-	SMTPHost         string
-	SMTPPort         int
-	DbName           string
-	DbHost           string
-	DbPort           string
-	DbUser           string
-	DbPassword       string
-	DbType           string
-	BaseDir          string
-	DbDsn            string
-	AllowedHosts     []string
-	Environment      string
-	IsDevMode        bool
+	DatabaseURI               string
+	PanelHost                 string
+	ServerAddress             string
+	ServerHost                string
+	LogFile                   string
+	SecretKey                 string
+	AgentPort                 int
+	LogLevel                  int
+	AmsEmailAddress           string
+	AmsEmailPassword          string
+	SMTPHost                  string
+	SMTPPort                  int
+	DbName                    string
+	DbHost                    string
+	DbPort                    string
+	DbUser                    string
+	DbPassword                string
+	DbType                    string
+	BaseDir                   string
+	DbDsn                     string
+	CertRenewalInterval       time.Duration
+	CertAboutToExpireInterval time.Duration
+	AllowedHosts              []string
+	Environment               string
+	IsDevMode                 bool
 }
 
 func (c *Config) GetVarDirAbsPath() string {
@@ -59,26 +64,40 @@ func GetConfig() (*Config, error) {
 		environment = developmentEnv
 	}
 
+	certRenewalInterval := viper.GetInt("CP_CERT_RENEWAL_INTERVAL_HOURS")
+
+	if certRenewalInterval == 0 {
+		certRenewalInterval = defaultCertRenewalInterval
+	}
+
+	certAboutToExpireInterval := viper.GetInt("CP_CERT_ABOUT_TO_EXPIRE_INTERVAL_DAYS")
+
+	if certAboutToExpireInterval == 0 {
+		certAboutToExpireInterval = defaultCertAboutToExpireInterval
+	}
+
 	conf := Config{
-		DbName:           viper.GetString("CP_DB_NAME"),
-		PanelHost:        viper.GetString("CP_HOST"),
-		DbHost:           viper.GetString("CP_DB_HOST"),
-		DbPort:           viper.GetString("CP_DB_PORT"),
-		DbUser:           viper.GetString("CP_DB_USER"),
-		DbPassword:       viper.GetString("CP_DB_PASSWORD"),
-		DbType:           viper.GetString("CP_DB_TYPE"),
-		SecretKey:        viper.GetString("CP_SERVER_KEY"),
-		ServerAddress:    viper.GetString("CP_API_HOST"),
-		AgentPort:        viper.GetInt("CP_AGENT_PORT"),
-		LogLevel:         viper.GetInt("CP_LOG_LEVEL"),
-		LogFile:          viper.GetString("CP_LOG_FILE"),
-		AmsEmailAddress:  viper.GetString("CP_EMAIL_ADDRESS"),
-		AmsEmailPassword: viper.GetString("CP_EMAIL_PASSWORD"),
-		SMTPHost:         viper.GetString("CP_SMTP_HOST"),
-		SMTPPort:         viper.GetInt("CP_SMTP_PORT"),
-		AllowedHosts:     getAllowedHosts(),
-		Environment:      environment,
-		IsDevMode:        environment == developmentEnv,
+		DbName:                    viper.GetString("CP_DB_NAME"),
+		PanelHost:                 viper.GetString("CP_HOST"),
+		DbHost:                    viper.GetString("CP_DB_HOST"),
+		DbPort:                    viper.GetString("CP_DB_PORT"),
+		DbUser:                    viper.GetString("CP_DB_USER"),
+		DbPassword:                viper.GetString("CP_DB_PASSWORD"),
+		DbType:                    viper.GetString("CP_DB_TYPE"),
+		SecretKey:                 viper.GetString("CP_SERVER_KEY"),
+		ServerAddress:             viper.GetString("CP_API_HOST"),
+		AgentPort:                 viper.GetInt("CP_AGENT_PORT"),
+		LogLevel:                  viper.GetInt("CP_LOG_LEVEL"),
+		LogFile:                   viper.GetString("CP_LOG_FILE"),
+		AmsEmailAddress:           viper.GetString("CP_EMAIL_ADDRESS"),
+		AmsEmailPassword:          viper.GetString("CP_EMAIL_PASSWORD"),
+		SMTPHost:                  viper.GetString("CP_SMTP_HOST"),
+		SMTPPort:                  viper.GetInt("CP_SMTP_PORT"),
+		CertRenewalInterval:       time.Duration(certRenewalInterval) * time.Hour,
+		CertAboutToExpireInterval: time.Duration(certAboutToExpireInterval*24) * time.Hour,
+		AllowedHosts:              getAllowedHosts(),
+		Environment:               environment,
+		IsDevMode:                 environment == developmentEnv,
 	}
 
 	path, err := getBasePath(environment)

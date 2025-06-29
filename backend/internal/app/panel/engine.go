@@ -11,6 +11,7 @@ import (
 	userApi "backend/internal/app/panel/adapters/api/user"
 	authAccount "backend/internal/app/panel/auth/account"
 	authService "backend/internal/app/panel/auth/service"
+	domainProvider "backend/internal/app/panel/domain/provider"
 	domainService "backend/internal/app/panel/domain/service"
 	domainStorage "backend/internal/app/panel/domain/storage"
 	serverService "backend/internal/app/panel/server/service"
@@ -18,16 +19,20 @@ import (
 	userService "backend/internal/app/panel/user/service"
 	userStorage "backend/internal/app/panel/user/storage"
 	"backend/internal/modules"
-	"backend/internal/pkg/db"
 	"backend/internal/pkg/logger"
 	"backend/internal/pkg/notification"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/gzip"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
-func newEngine(config *config.Config, logger logger.Logger) (*gin.Engine, error) {
+func newEngine(
+	config *config.Config,
+	logger logger.Logger,
+	database *gorm.DB,
+) (*gin.Engine, error) {
 	engine := gin.New()
 	engine.Use(gin.Logger(), gin.Recovery())
 	engine.Use(gzip.Gzip(gzip.DefaultCompression))
@@ -36,12 +41,6 @@ func newEngine(config *config.Config, logger logger.Logger) (*gin.Engine, error)
 	corsConfig.AddAllowHeaders("Authorization")
 	corsConfig.AllowAllOrigins = true
 	engine.Use(cors.New(corsConfig))
-
-	database, err := db.GetDB(config)
-
-	if err != nil {
-		return nil, err
-	}
 
 	emailNotifocation := notification.EmailNotificationService{
 		Config: config,
@@ -58,8 +57,10 @@ func newEngine(config *config.Config, logger logger.Logger) (*gin.Engine, error)
 	appServerStorage := serverStorage.NewServerSqlStorage(database)
 	appServerSevice := serverService.NewServerService(config, appServerStorage, logger)
 
+	appDomainProvider := domainProvider.CreateDomainProvider(appServerStorage, logger)
+
 	appDomainSettingStorage := domainStorage.NewDomainSettingSqlStorage(database)
-	appDomainSevice := domainService.NewDomainService(config, appDomainSettingStorage, appServerStorage, logger)
+	appDomainSevice := domainService.NewDomainService(config, appDomainSettingStorage, appServerStorage, appDomainProvider, logger)
 
 	authMiddleware := authApi.AuthMiddleware(config, appUserStorage)
 
@@ -127,7 +128,7 @@ func newEngine(config *config.Config, logger logger.Logger) (*gin.Engine, error)
 
 		modulesGroup := v1.Group("modules")
 		{
-			modules.InitModulesRouter(modulesGroup, database, authMiddleware, appAuth, appServerStorage, logger)
+			modules.InitModulesRouter(modulesGroup, database, authMiddleware, appAuth, appServerStorage, appDomainSettingStorage, logger)
 		}
 	}
 

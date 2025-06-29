@@ -53,6 +53,17 @@ func (s sqlStorage) FindAllByAccountID(accountID int) ([]Server, error) {
 	return servers, nil
 }
 
+func (s sqlStorage) FindAll() ([]Server, error) {
+	var servers []Server
+	err := s.db.Order("id desc").Find(&servers).Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return servers, nil
+}
+
 func (s sqlStorage) Save(server *Server) error {
 	if server.ID == 0 {
 		return s.db.Create(server).Error

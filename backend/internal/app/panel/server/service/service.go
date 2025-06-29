@@ -2,7 +2,8 @@ package service
 
 import (
 	"backend/config"
-	domainService "backend/internal/app/panel/domain/service"
+	"backend/internal/app/panel/domain/dto"
+	domainFactory "backend/internal/app/panel/domain/factory"
 	serverStorage "backend/internal/app/panel/server/storage"
 	"backend/internal/pkg/agent"
 	"backend/internal/pkg/logger"
@@ -274,11 +275,11 @@ func (s ServerService) getServerAgent(server *serverStorage.Server) (*agent.Agen
 	)
 }
 
-func createDomains(vhosts []agentintegration.VirtualHost) []domainService.Domain {
-	var domains []domainService.Domain
+func createDomains(vhosts []agentintegration.VirtualHost) []dto.Domain {
+	var domains []dto.Domain
 
 	for _, vhost := range vhosts {
-		domain := domainService.CreateDomain(&vhost)
+		domain := domainFactory.CreateDomain(vhost)
 
 		if domain == nil {
 			continue

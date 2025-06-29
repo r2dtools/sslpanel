@@ -2,6 +2,7 @@ package modules
 
 import (
 	"backend/internal/app/panel/adapters/api/auth"
+	domainStorage "backend/internal/app/panel/domain/storage"
 	serverStorage "backend/internal/app/panel/server/storage"
 	sslManagerModule "backend/internal/modules/sslmanager"
 	"backend/internal/pkg/logger"
@@ -17,11 +18,12 @@ func InitModulesRouter(
 	authMiddleware *jwt.GinJWTMiddleware,
 	cAuth auth.Auth,
 	appServerStorage serverStorage.ServerStorage,
+	appDomainSettingStorage domainStorage.DomainSettingStorage,
 	logger logger.Logger,
 ) {
 	certificatesGroup := group.Group("certificates")
 	{
 		certificatesGroup.Use(authMiddleware.MiddlewareFunc())
-		sslManagerModule.InitRouter(certificatesGroup, cAuth, appServerStorage, logger)
+		sslManagerModule.InitRouter(certificatesGroup, cAuth, appServerStorage, appDomainSettingStorage, logger)
 	}
 }

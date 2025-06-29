@@ -1,7 +1,9 @@
 package service
 
 import (
-	"backend/internal/app/panel/domain/service"
+	"backend/internal/app/panel/domain/dto"
+	domainFactory "backend/internal/app/panel/domain/factory"
+	domainStorage "backend/internal/app/panel/domain/storage"
 	serverStorage "backend/internal/app/panel/server/storage"
 	"backend/internal/modules/sslmanager/agent"
 	"errors"
@@ -25,12 +27,30 @@ func (err ErrAgentCommon) Error() string {
 var ErrServerNotFound = errors.New("server not found")
 
 type CertificateService struct {
-	serverStorage serverStorage.ServerStorage
-	logger        logger.Logger
+	serverStorage         serverStorage.ServerStorage
+	domainSettingsStorage domainStorage.DomainSettingStorage
+	logger                logger.Logger
 }
 
-func (s CertificateService) IssueCertificate(request CertificateIssueRequest) (*service.DomainCertificate, error) {
+func (s CertificateService) IssueCertificate(request CertificateIssueRequest) (*dto.DomainCertificate, error) {
 	cAgent, err := s.getCertificateAgent(request.ServerGuid)
+
+	if err != nil {
+		return nil, err
+	}
+
+	emailSetting, err := s.domainSettingsStorage.FindByDomain(request.DomainName, request.ServerGuid, "email")
+
+	if err != nil {
+		return nil, err
+	}
+
+	if emailSetting == nil {
+		err = s.domainSettingsStorage.Create(request.DomainName, request.ServerGuid, "email", request.Email)
+	} else {
+		emailSetting.SettingValue = request.Email
+		err = s.domainSettingsStorage.Save(emailSetting)
+	}
 
 	if err != nil {
 		return nil, err
@@ -50,10 +70,10 @@ func (s CertificateService) IssueCertificate(request CertificateIssueRequest) (*
 		return nil, ErrAgentCommon{message: err.Error()}
 	}
 
-	return service.CreateCertificate(cert), nil
+	return domainFactory.CreateCertificate(cert), nil
 }
 
-func (s CertificateService) AssignCertificate(request AssignCertificateRequest) (*service.DomainCertificate, error) {
+func (s CertificateService) AssignCertificate(request AssignCertificateRequest) (*dto.DomainCertificate, error) {
 	cAgent, err := s.getCertificateAgent(request.ServerGuid)
 
 	if err != nil {
@@ -70,13 +90,13 @@ func (s CertificateService) AssignCertificate(request AssignCertificateRequest) 
 		return nil, err
 	}
 
-	return service.CreateCertificate(cert), nil
+	return domainFactory.CreateCertificate(cert), nil
 }
 
 func (s CertificateService) UploadCertificate(
 	guid string,
 	requestData agentintegration.CertificateUploadRequestData,
-) (*service.DomainCertificate, error) {
+) (*dto.DomainCertificate, error) {
 	cAgent, err := s.getCertificateAgent(guid)
 
 	if err != nil {
@@ -89,7 +109,7 @@ func (s CertificateService) UploadCertificate(
 		return nil, err
 	}
 
-	return service.CreateCertificate(cert), nil
+	return domainFactory.CreateCertificate(cert), nil
 }
 
 func (s CertificateService) UploadCertificateToStorage(request CertificateUploadToStorageRequest) (*agentintegration.Certificate, error) {
@@ -259,10 +279,15 @@ func (s CertificateService) getCertificateAgent(guid string) (*agent.Certificate
 	return agent.NewCertificateAgent(sAgent), nil
 }
 
-func NewCertificateService(serverStorage serverStorage.ServerStorage, logger logger.Logger) CertificateService {
+func NewCertificateService(
+	serverStorage serverStorage.ServerStorage,
+	domainSettingStorage domainStorage.DomainSettingStorage,
+	logger logger.Logger,
+) CertificateService {
 	return CertificateService{
-		serverStorage: serverStorage,
-		logger:        logger,
+		serverStorage:         serverStorage,
+		domainSettingsStorage: domainSettingStorage,
+		logger:                logger,
 	}
 }
 

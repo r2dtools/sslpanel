@@ -9,6 +9,10 @@ import (
 	"github.com/r2dtools/agentintegration"
 )
 
+const (
+	HttpChallenge = "http"
+)
+
 type CertificateAgent struct {
 	serverAgent *serverAgent.Agent
 }

@@ -18,14 +18,6 @@ var ErrServerNotFound = errors.New("server not found")
 var ErrDomainNotFound = errors.New("domain not found")
 var ErrAgentConnection = errors.New("failed to connect to the server agent")
 
-type ErrAgentCommon struct {
-	message string
-}
-
-func (err ErrAgentCommon) Error() string {
-	return err.message
-}
-
 type DomainService struct {
 	config         *config.Config
 	settingStorage storage.DomainSettingStorage
@@ -76,7 +68,7 @@ func (s DomainService) GetDomainConfig(request DomainConfigRequest) (string, err
 	})
 
 	if err != nil {
-		return "", ErrAgentCommon{message: err.Error()}
+		return "", err
 	}
 
 	return config.Content, nil

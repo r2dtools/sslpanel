@@ -22,13 +22,13 @@ func CreateGetAccountByIdHandler(aService accountService.AccountService) func(c 
 		account, err := aService.FindAccount(uint(id))
 
 		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 
 			return
 		}
 
 		if account == nil {
-			c.AbortWithError(http.StatusNotFound, errors.New("account not found")) // nolint:errcheck
+			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": "account not found"})
 		}
 
 		c.JSON(http.StatusOK, gin.H{"account": account})

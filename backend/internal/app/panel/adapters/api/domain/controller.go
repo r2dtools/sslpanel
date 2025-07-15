@@ -62,7 +62,7 @@ func CreateGetDomainHandler(cAuth auth.Auth, appDomainService domainService.Doma
 			} else if errors.Is(err, domainService.ErrAgentConnection) {
 				c.AbortWithStatusJSON(http.StatusGatewayTimeout, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			}
 
 			return
@@ -115,15 +115,12 @@ func CreateGetDomainConfigHandler(cAuth auth.Auth, appService domainService.Doma
 		request.ServerGuid = guid
 		request.DomainName = string(decodedDomainName)
 		config, err := appService.GetDomainConfig(request)
-		var errAgentCommon domainService.ErrAgentCommon
 
 		if err != nil {
 			if errors.Is(err, domainService.ErrServerNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
-			} else if errors.As(err, &errAgentCommon) {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			}
 
 			return
@@ -173,7 +170,7 @@ func CreateFindDomainSettingsHandler(cAuth auth.Auth, appDomainService domainSer
 		settings, err := appDomainService.FindDomainSettings(request)
 
 		if err != nil {
-			c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 
 			return
 		}

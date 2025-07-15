@@ -18,22 +18,6 @@ const (
 	serverTokenLength = 24
 )
 
-type ErrServerService struct {
-	message string
-}
-
-func (e ErrServerService) Error() string {
-	return e.message
-}
-
-type ErrAgentCommon struct {
-	message string
-}
-
-func (err ErrAgentCommon) Error() string {
-	return err.message
-}
-
 var ErrServerNotFound = errors.New("server not found")
 var ErrAgentConnection = errors.New("failed to connect to the server agent")
 
@@ -154,7 +138,7 @@ func (s ServerService) RemoveServer(id int) error {
 
 func (s ServerService) AddServer(request NewServerRequest) error {
 	if request.Ipv4Address == "" && request.Ipv6Address == "" {
-		return ErrServerService{"ipv4 or ipv6 address must be specified"}
+		return errors.New("ipv4 or ipv6 address must be specified")
 	}
 
 	count, err := s.serverStorage.FindCountByIP(request.Ipv4Address, request.Ipv6Address, nil)
@@ -164,7 +148,7 @@ func (s ServerService) AddServer(request NewServerRequest) error {
 	}
 
 	if count > 0 {
-		return ErrServerService{"server with the specified ipv4 or ipv6 address already exists"}
+		return errors.New("server with the specified ipv4 or ipv6 address already exists")
 	}
 
 	serverModel := &serverStorage.Server{
@@ -196,7 +180,7 @@ func (s ServerService) AddServer(request NewServerRequest) error {
 
 func (s ServerService) UpdateServer(request UpdateServerRequest) error {
 	if request.Ipv4Address == "" && request.Ipv6Address == "" {
-		return ErrServerService{"ipv4 or ipv6 address must be specified"}
+		return errors.New("ipv4 or ipv6 address must be specified")
 	}
 
 	count, err := s.serverStorage.FindCountByIP(request.Ipv4Address, request.Ipv6Address, []int{request.ID})
@@ -206,7 +190,7 @@ func (s ServerService) UpdateServer(request UpdateServerRequest) error {
 	}
 
 	if count > 0 {
-		return ErrServerService{"server with the specified ipv4 or ipv6 address already exists"}
+		return errors.New("server with the specified ipv4 or ipv6 address already exists")
 	}
 
 	serverModel, err := s.serverStorage.FindByID(request.ID)

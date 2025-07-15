@@ -16,14 +16,6 @@ import (
 	"github.com/r2dtools/agentintegration"
 )
 
-type ErrAgentCommon struct {
-	message string
-}
-
-func (err ErrAgentCommon) Error() string {
-	return err.message
-}
-
 var ErrServerNotFound = errors.New("server not found")
 
 type CertificateService struct {
@@ -67,7 +59,7 @@ func (s CertificateService) IssueCertificate(request CertificateIssueRequest) (*
 	})
 
 	if err != nil {
-		return nil, ErrAgentCommon{message: err.Error()}
+		return nil, err
 	}
 
 	return domainFactory.CreateCertificate(cert), nil
@@ -148,7 +140,7 @@ func (s CertificateService) GetStorageCertificates(request CertificatesRequest) 
 	certsMap, err := cAgent.GetStorageCertificates()
 
 	if err != nil {
-		return result, ErrAgentCommon{message: err.Error()}
+		return result, err
 	}
 
 	for name, cert := range certsMap {
@@ -207,19 +199,11 @@ func (s CertificateService) ChangeCommonDirStatus(request ChangeCommonDirStatusR
 		return err
 	}
 
-	err = cAgent.ChangeCommonDirStatus(agentintegration.CommonDirChangeStatusRequestData{
+	return cAgent.ChangeCommonDirStatus(agentintegration.CommonDirChangeStatusRequestData{
 		WebServer:  request.WebServer,
 		ServerName: request.DomainName,
 		Status:     request.Status,
 	})
-
-	if err != nil {
-		return ErrAgentCommon{
-			message: err.Error(),
-		}
-	}
-
-	return nil
 }
 
 func (s CertificateService) CreateSelfSignCertificate(request SelfSignedCertificateRequest) (*agentintegration.Certificate, error) {

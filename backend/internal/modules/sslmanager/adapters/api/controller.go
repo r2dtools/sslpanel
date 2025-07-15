@@ -63,16 +63,13 @@ func CreateIssueCertificateHandler(cAuth auth.Auth, certService service.Certific
 		request.ServerGuid = guid
 		request.DomainName = domainName
 
-		var errAgentCommon service.ErrAgentCommon
 		cert, err := certService.IssueCertificate(request)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
-			} else if errors.As(err, &errAgentCommon) {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			}
 
 			return
@@ -132,7 +129,7 @@ func CreateGetCommonDirStatusHandler(cAuth auth.Auth, certService service.Certif
 			if errors.Is(err, service.ErrServerNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			}
 
 			return
@@ -188,15 +185,11 @@ func CreateChangeCommonDirStatusHandler(cAuth auth.Auth, certService service.Cer
 		request.ServerGuid = guid
 		err = certService.ChangeCommonDirStatus(request)
 
-		var errAgentCommon service.ErrAgentCommon
-
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
-			} else if errors.As(err, &errAgentCommon) {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			}
 		}
 	}
@@ -248,15 +241,11 @@ func CreateAssignCertificateHandler(cAuth auth.Auth, certService service.Certifi
 		request.DomainName = domainName
 		_, err = certService.AssignCertificate(request)
 
-		var errAgentCommon service.ErrAgentCommon
-
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
-			} else if errors.As(err, &errAgentCommon) {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			}
 		}
 	}
@@ -305,9 +294,9 @@ func CreateUploadCertificateHandler(cAuth auth.Auth, certService service.Certifi
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
-				c.AbortWithError(http.StatusNotFound, err) // nolint:errcheck
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			}
 
 			return
@@ -359,15 +348,11 @@ func CreateUploadCertificateToStorageHandler(cAuth auth.Auth, certService servic
 		}
 		_, err = certService.UploadCertificateToStorage(request)
 
-		var errAgentCommon service.ErrAgentCommon
-
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
-			} else if errors.As(err, &errAgentCommon) {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			}
 		}
 	}
@@ -406,15 +391,11 @@ func CreateDownloadCertificateFromStorageHandler(cAuth auth.Auth, certService se
 
 		certData, err := certService.DownloadCertificateFromStorage(guid, requestData.CertName)
 
-		var errAgentCommon service.ErrAgentCommon
-
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
-			} else if errors.As(err, &errAgentCommon) {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			}
 
 			return
@@ -443,17 +424,14 @@ func CreateGetStorageCertificatesHandler(cAuth auth.Auth, certService service.Ce
 			return
 		}
 
-		var errAgentCommon service.ErrAgentCommon
 		request := service.CertificatesRequest{Guid: guid}
 		certsMap, err := certService.GetStorageCertificates(request)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
-			} else if errors.As(err, &errAgentCommon) {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			}
 
 			return
@@ -491,9 +469,9 @@ func CreateGetStorageCertificateHandler(cAuth auth.Auth, certService service.Cer
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
-				c.AbortWithError(http.StatusNotFound, err) // nolint:errcheck
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			}
 
 			return
@@ -537,12 +515,10 @@ func CreateRemoveCertificateFromStorageHandler(cAuth auth.Auth, certService serv
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
-				c.AbortWithError(http.StatusNotFound, err) // nolint:errcheck
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			}
-
-			return
 		}
 	}
 }
@@ -586,15 +562,11 @@ func CreateAddSelfSignCertificateToStorageHandler(cAuth auth.Auth, certService s
 		request.ServerGuid = guid
 		_, err := certService.CreateSelfSignCertificate(request)
 
-		var errAgentCommon service.ErrAgentCommon
-
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
-			} else if errors.As(err, &errAgentCommon) {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			} else {
-				c.AbortWithError(http.StatusInternalServerError, err) // nolint:errcheck
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			}
 
 			return

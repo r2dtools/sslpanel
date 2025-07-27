@@ -8,6 +8,7 @@ import (
 	"backend/internal/modules/sslmanager/agent"
 	"errors"
 	"fmt"
+	"strings"
 
 	serverAgent "backend/internal/pkg/agent"
 	"backend/internal/pkg/certificate"
@@ -24,7 +25,7 @@ type CertificateService struct {
 	logger                logger.Logger
 }
 
-func (s CertificateService) IssueCertificate(request CertificateIssueRequest) (*dto.DomainCertificate, error) {
+func (s CertificateService) IssueCertificate(request IssueCertificateRequest) (*dto.DomainCertificate, error) {
 	cAgent, err := s.getCertificateAgent(request.ServerGuid)
 
 	if err != nil {
@@ -73,9 +74,10 @@ func (s CertificateService) AssignCertificate(request AssignCertificateRequest) 
 	}
 
 	cert, err := cAgent.AssignCertificateToDomain(&agentintegration.CertificateAssignRequestData{
-		ServerName: request.DomainName,
-		WebServer:  request.WebServer,
-		CertName:   request.CertName,
+		ServerName:  request.DomainName,
+		WebServer:   request.WebServer,
+		CertName:    request.CertName,
+		StorageType: request.Storage,
 	})
 
 	if err != nil {
@@ -104,7 +106,7 @@ func (s CertificateService) UploadCertificate(
 	return domainFactory.CreateCertificate(cert), nil
 }
 
-func (s CertificateService) UploadCertificateToStorage(request CertificateUploadToStorageRequest) (*agentintegration.Certificate, error) {
+func (s CertificateService) UploadCertificateToStorage(request UploadCertificateToStorageRequest) (*agentintegration.Certificate, error) {
 	cAgent, err := s.getCertificateAgent(request.ServerGuid)
 
 	if err != nil {
@@ -119,55 +121,66 @@ func (s CertificateService) UploadCertificateToStorage(request CertificateUpload
 	return cAgent.UploadPemCertificateToStorage(&requestData)
 }
 
-func (s CertificateService) DownloadCertificateFromStorage(guid string, certName string) (*agentintegration.CertificateDownloadResponseData, error) {
-	cAgent, err := s.getCertificateAgent(guid)
+func (s CertificateService) DownloadCertificateFromStorage(request DownloadCertificateRequest) (*agentintegration.CertificateDownloadResponseData, error) {
+	cAgent, err := s.getCertificateAgent(request.ServerGuid)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return cAgent.DownloadtStorageCertificate(certName)
+	requestData := agentintegration.CertificateDownloadRequestData{
+		CertName:    request.CertName,
+		StorageType: request.Storage,
+	}
+
+	return cAgent.DownloadtStorageCertificate(requestData)
 }
 
-func (s CertificateService) GetStorageCertificates(request CertificatesRequest) (map[string]Certificate, error) {
-	result := map[string]Certificate{}
+func (s CertificateService) GetStorageCertificates(request CertificatesRequest) ([]StorageCertificateItem, error) {
 	cAgent, err := s.getCertificateAgent(request.Guid)
 
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 
 	certsMap, err := cAgent.GetStorageCertificates()
 
 	if err != nil {
-		return result, err
+		return nil, err
 	}
 
+	result := []StorageCertificateItem{}
+
 	for name, cert := range certsMap {
-		result[name] = createCertificate(cert)
+		parts := strings.Split(name, "__")
+
+		if len(parts) != 2 {
+			return nil, errors.New("invalid certificate data")
+		}
+
+		result = append(result, StorageCertificateItem{
+			Storage:     parts[0],
+			CertName:    parts[1],
+			Certificate: createCertificate(cert),
+		})
 	}
 
 	return result, nil
 }
 
-func (s CertificateService) GetStorageCertificate(guid string, certName string) (*agentintegration.Certificate, error) {
-	cAgent, err := s.getCertificateAgent(guid)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return cAgent.GetStorageCertificate(certName)
-}
-
-func (s CertificateService) RemoveCertificateFromStorage(guid string, certName string) error {
-	cAgent, err := s.getCertificateAgent(guid)
+func (s CertificateService) RemoveCertificateFromStorage(request RemoveCertificateFromStorageRequest) error {
+	cAgent, err := s.getCertificateAgent(request.ServerGuid)
 
 	if err != nil {
 		return err
 	}
 
-	return cAgent.RemoveCertificatefromStorage(certName)
+	requestData := agentintegration.CertificateRemoveRequestData{
+		CertName:    request.CertName,
+		StorageType: request.Storage,
+	}
+
+	return cAgent.RemoveCertificateFromStorage(requestData)
 }
 
 func (s CertificateService) GetCommonDirStatus(request CommonDirStatusRequest) (CommonDirStatusResponse, error) {

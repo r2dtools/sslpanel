@@ -37,6 +37,7 @@ export const assignCertificateApi = async (request: AssignCertificateRequest) =>
         const domainname = Base64.encodeURI(request.servername);
         const data = {
             name: request.name,
+            storage: request.storage,
             webserver: request.webserver,
         };
         const response = await api.post(`/v1/modules/certificates/${request.guid}/domain/${domainname}/assign`, data, configWithAuth(request.token));

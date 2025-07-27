@@ -57,8 +57,8 @@ func (a *CertificateAgent) UploadPemCertificateToStorage(certData *agentintegrat
 	return getCertificate(data)
 }
 
-func (a *CertificateAgent) RemoveCertificatefromStorage(certName string) error {
-	_, err := a.serverAgent.Request("certificates.storagecertremove", certName)
+func (a *CertificateAgent) RemoveCertificateFromStorage(request agentintegration.CertificateRemoveRequestData) error {
+	_, err := a.serverAgent.Request("certificates.storagecertremove", request)
 
 	return err
 }
@@ -85,18 +85,8 @@ func (a *CertificateAgent) GetStorageCertificates() (map[string]*agentintegratio
 	return response.Certificates, nil
 }
 
-func (a *CertificateAgent) GetStorageCertificate(certName string) (*agentintegration.Certificate, error) {
-	data, err := a.serverAgent.Request("certificates.storagecertdata", certName)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return getCertificate(data)
-}
-
-func (a *CertificateAgent) DownloadtStorageCertificate(certName string) (*agentintegration.CertificateDownloadResponseData, error) {
-	data, err := a.serverAgent.Request("certificates.storagecertdownload", certName)
+func (a *CertificateAgent) DownloadtStorageCertificate(request agentintegration.CertificateDownloadRequestData) (*agentintegration.CertificateDownloadResponseData, error) {
+	data, err := a.serverAgent.Request("certificates.storagecertdownload", request)
 
 	if err != nil {
 		return nil, err

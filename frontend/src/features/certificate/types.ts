@@ -1,3 +1,9 @@
+export interface StorageCertificateItem {
+    name: string;
+    storage: string;
+    certificate: Certificate;
+}
+
 export interface Certificate {
     cn: string;
     validfrom: string;
@@ -18,10 +24,6 @@ export interface Issuer {
     organization: string[] | null;
 }
 
-export interface CertificateMap {
-    [key: string]: Certificate,
-}
-
 export interface CertificatesRequest {
     guid: string;
     token: string;
@@ -36,6 +38,7 @@ export interface DownloadCertificateRequest {
     guid: string;
     token: string;
     name: string;
+    storage: string;
 }
 
 export interface DownloadCertificateResponse {

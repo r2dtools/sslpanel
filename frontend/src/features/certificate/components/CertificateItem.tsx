@@ -1,7 +1,12 @@
 import { Link } from 'react-router-dom';
 import { Badge, Spinner, Tooltip } from 'flowbite-react';
 import { HiMiniCloudArrowDown } from 'react-icons/hi2';
-import { getCertificateIssuerCode, getCertificateIssuerIcon, getSiteCertExpiredDays, isSelfSignedCertificate } from '../utils';
+import {
+    getCertificateIssuerCode,
+    getCertificateIssuerIcon,
+    getSiteCertExpiredDays,
+    isSelfSignedCertificate,
+} from '../utils';
 import sslIcon from '../../../images/certificate/ca.png';
 import moment from 'moment';
 import { CERT_ABOUT_TO_EXPIRE_DAYS } from '../constants';
@@ -10,12 +15,13 @@ import { useState } from 'react';
 
 interface CertificateItemProps {
     name: string
+    storage: string
     certificate: Certificate
-    onCertificateDownload: (name: string) => Promise<any>
+    onCertificateDownload: (name: string, storage: string) => Promise<any>
     onClick: (certificate: Certificate, name: string) => void
 };
 
-const CertificateItem: React.FC<CertificateItemProps> = ({ name, certificate, onCertificateDownload, onClick }) => {
+const CertificateItem: React.FC<CertificateItemProps> = ({ name, storage, certificate, onCertificateDownload, onClick }) => {
     const [actionLoading, setActionLoading] = useState<boolean>(false);
     const fileName = `${name}.pem`
 
@@ -25,7 +31,7 @@ const CertificateItem: React.FC<CertificateItemProps> = ({ name, certificate, on
         event.preventDefault();
         event.stopPropagation();
 
-        await onCertificateDownload(name);
+        await onCertificateDownload(name, storage);
 
         setActionLoading(false);
     };
@@ -93,7 +99,7 @@ const CertificateItem: React.FC<CertificateItemProps> = ({ name, certificate, on
                     {actionLoading
                         ? <Spinner />
                         : (
-                            <button className="flex justify-between mx-auto block gap-2">
+                            <button className="flex justify-between mx-auto gap-2">
                                 <Tooltip content="Download" >
                                     <HiMiniCloudArrowDown size={20} className='hover:text-red-500' onClick={handleDownload} />
                                 </Tooltip>

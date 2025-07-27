@@ -52,7 +52,7 @@ func CreateIssueCertificateHandler(cAuth auth.Auth, certService service.Certific
 
 		domainName = string(decodedDomainName)
 
-		var request service.CertificateIssueRequest
+		var request service.IssueCertificateRequest
 
 		if err := c.ShouldBindJSON(&request); err != nil {
 			c.AbortWithError(http.StatusBadRequest, err) // nolint:errcheck
@@ -341,7 +341,7 @@ func CreateUploadCertificateToStorageHandler(cAuth auth.Auth, certService servic
 			return
 		}
 
-		request := service.CertificateUploadToStorageRequest{
+		request := service.UploadCertificateToStorageRequest{
 			ServerGuid:     guid,
 			CertName:       certName,
 			PemCertificate: string(pemFileBytes),
@@ -376,6 +376,7 @@ func CreateDownloadCertificateFromStorageHandler(cAuth auth.Auth, certService se
 
 		requestData := struct {
 			CertName string `json:"name"`
+			Storage  string `json:"storage"`
 		}{}
 
 		if err := c.ShouldBindJSON(&requestData); err != nil {
@@ -386,10 +387,16 @@ func CreateDownloadCertificateFromStorageHandler(cAuth auth.Auth, certService se
 
 		if requestData.CertName == "" {
 			c.AbortWithError(http.StatusBadRequest, errors.New("certificate name is missed")) // nolint:errcheck
+
 			return
 		}
 
-		certData, err := certService.DownloadCertificateFromStorage(guid, requestData.CertName)
+		request := service.DownloadCertificateRequest{
+			ServerGuid: guid,
+			CertName:   requestData.CertName,
+			Storage:    requestData.Storage,
+		}
+		certData, err := certService.DownloadCertificateFromStorage(request)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
@@ -425,7 +432,7 @@ func CreateGetStorageCertificatesHandler(cAuth auth.Auth, certService service.Ce
 		}
 
 		request := service.CertificatesRequest{Guid: guid}
-		certsMap, err := certService.GetStorageCertificates(request)
+		certs, err := certService.GetStorageCertificates(request)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
@@ -437,47 +444,7 @@ func CreateGetStorageCertificatesHandler(cAuth auth.Auth, certService service.Ce
 			return
 		}
 
-		c.JSON(http.StatusOK, gin.H{"certificates": certsMap})
-	}
-}
-
-func CreateGetStorageCertificateHandler(cAuth auth.Auth, certService service.CertificateService) func(c *gin.Context) {
-	return func(c *gin.Context) {
-		user := cAuth.GetCurrentUser(c)
-
-		if user == nil {
-			return
-		}
-
-		guid := c.Param("serverId")
-
-		if guid == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID")) // nolint:errcheck
-
-			return
-		}
-
-		certName, ok := c.GetQuery("certName")
-
-		if !ok {
-			c.AbortWithError(http.StatusBadRequest, errors.New("invalid certificate name")) // nolint:errcheck
-
-			return
-		}
-
-		certificate, err := certService.GetStorageCertificate(guid, certName)
-
-		if err != nil {
-			if errors.Is(err, service.ErrServerNotFound) {
-				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
-			} else {
-				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-			}
-
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{"certificate": certificate})
+		c.JSON(http.StatusOK, gin.H{"certificates": certs})
 	}
 }
 
@@ -497,7 +464,10 @@ func CreateRemoveCertificateFromStorageHandler(cAuth auth.Auth, certService serv
 			return
 		}
 
-		requestData := struct{ CertName string }{}
+		requestData := struct {
+			CertName string
+			Storage  string
+		}{}
 
 		if err := c.ShouldBindJSON(&requestData); err != nil {
 			c.AbortWithError(http.StatusBadRequest, err) // nolint:errcheck
@@ -505,13 +475,12 @@ func CreateRemoveCertificateFromStorageHandler(cAuth auth.Auth, certService serv
 			return
 		}
 
-		if requestData.CertName == "" {
-			c.AbortWithError(http.StatusBadRequest, errors.New("certificate name is missed")) // nolint:errcheck
-
-			return
+		request := service.RemoveCertificateFromStorageRequest{
+			ServerGuid: guid,
+			CertName:   requestData.CertName,
+			Storage:    requestData.Storage,
 		}
-
-		err := certService.RemoveCertificateFromStorage(guid, requestData.CertName)
+		err := certService.RemoveCertificateFromStorage(request)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {

@@ -96,6 +96,7 @@ export const assignCertificate = createAsyncThunk(
             webserver: payload.webserver,
             name: payload.name,
             token: payload.token,
+            storage: payload.storage,
         };
 
         await assignCertificateApi(request);

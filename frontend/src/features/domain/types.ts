@@ -68,6 +68,7 @@ export interface AssignCertificatePayload {
     name: string;
     guid: string;
     token: string;
+    storage: string;
 }
 
 export interface AssignCertificateRequest {
@@ -76,6 +77,7 @@ export interface AssignCertificateRequest {
     name: string;
     guid: string;
     token: string;
+    storage: string;
 }
 
 export interface DomainFetchPayload {

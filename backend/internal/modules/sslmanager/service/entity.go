@@ -1,5 +1,11 @@
 package service
 
+type StorageCertificateItem struct {
+	CertName    string      `json:"name"`
+	Storage     string      `json:"storage"`
+	Certificate Certificate `json:"certificate"`
+}
+
 type Certificate struct {
 	CN           string   `json:"cn"`
 	ValidFrom    string   `json:"validfrom"`
@@ -32,7 +38,7 @@ type SelfSignedCertificateRequest struct {
 	AltNames     []string `json:"altNames"`
 }
 
-type CertificateIssueRequest struct {
+type IssueCertificateRequest struct {
 	ServerGuid       string
 	DomainName       string
 	Email            string            `json:"email"`
@@ -65,14 +71,27 @@ type AssignCertificateRequest struct {
 	DomainName string
 	WebServer  string `json:"webserver"`
 	CertName   string `json:"name"`
+	Storage    string `json:"storage"`
 }
 
 type CertificatesRequest struct {
 	Guid string
 }
 
-type CertificateUploadToStorageRequest struct {
+type UploadCertificateToStorageRequest struct {
 	ServerGuid     string
 	CertName       string
 	PemCertificate string
+}
+
+type DownloadCertificateRequest struct {
+	ServerGuid string
+	CertName   string
+	Storage    string
+}
+
+type RemoveCertificateFromStorageRequest struct {
+	ServerGuid string
+	CertName   string
+	Storage    string
 }

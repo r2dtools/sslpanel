@@ -3,22 +3,22 @@ import { RootState } from '../../app/store';
 import { FetchStatus } from '../../app/types';
 import { toast } from 'react-toastify';
 import {
-    CertificateMap,
     CertificatesPayload,
     GenerateSelfSignedCertificatePayload,
+    StorageCertificateItem,
     UploadCertificatePayload,
 } from './types';
 import { generateSelfSignedCertificateApi, getCertificatesApi, uploadCertificateApi } from './certificateApi';
 
 export interface CertificatesState {
-    certificates: CertificateMap;
+    certificates: StorageCertificateItem[];
     certificatesStatus: FetchStatus;
     certificateUploadStatus: FetchStatus;
     selfSignedCertificateGenerateStatus: FetchStatus;
 }
 
 const initialState: CertificatesState = {
-    certificates: {},
+    certificates: [],
     certificatesStatus: FetchStatus.Idle,
     certificateUploadStatus: FetchStatus.Idle,
     selfSignedCertificateGenerateStatus: FetchStatus.Idle,

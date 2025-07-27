@@ -1,6 +1,8 @@
 module backend
 
-go 1.23
+go 1.24
+
+toolchain go1.24.5
 
 require (
 	github.com/appleboy/gin-jwt/v2 v2.6.4
@@ -10,7 +12,7 @@ require (
 	github.com/go-testfixtures/testfixtures/v3 v3.13.0
 	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/mitchellh/mapstructure v1.4.1
-	github.com/r2dtools/agentintegration v1.4.4
+	github.com/r2dtools/agentintegration v1.6.1
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/viper v1.7.1
 	go.uber.org/zap v1.27.0

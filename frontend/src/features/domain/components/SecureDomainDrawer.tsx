@@ -3,7 +3,7 @@ import { Button, Checkbox, Drawer, HR, Label, Select, Spinner, Tabs, TextInput }
 import { HiMiniLockClosed, HiMiniEnvelope } from 'react-icons/hi2';
 import { AssignCertificatePayload, Domain, DomainSecurePayload } from '../types';
 import { HTTP_CHALLENGE } from '../../server/constants';
-import { Certificate, CertificateMap } from '../../certificate/types';
+import { StorageCertificateItem } from '../../certificate/types';
 
 type SecureDomainProps = {
     guid: string,
@@ -12,7 +12,7 @@ type SecureDomainProps = {
     open: boolean;
     issueLoading: boolean;
     assignLoading: boolean;
-    certificates: CertificateMap;
+    certificates: StorageCertificateItem[];
     onIssueSubmit: (payload: DomainSecurePayload) => Promise<void>;
     onAssignSubmit: (payload: AssignCertificatePayload) => Promise<void>;
     onClose: () => void;
@@ -75,14 +75,14 @@ const SecureDomainDrawer: React.FC<SecureDomainProps> = ({
         handleFormClose();
     };
 
-    const selectOption = (name: string, certificate: Certificate): string => `${certificate.cn} [${name}.pem]`;
+    const selectOption = (item: StorageCertificateItem): string => `${item.certificate.cn} [${item.name}.pem, ${item.storage} storage]`;
 
     const handleAssignSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         // @ts-ignore
         const option = event.target.certificate.value;
-        const entry = Object.entries(certificates).find(([name, certificate]) => option === selectOption(name, certificate));
+        const entry = certificates.find((item: StorageCertificateItem) => option === selectOption(item));
 
         if (!entry) {
             return;
@@ -93,7 +93,8 @@ const SecureDomainDrawer: React.FC<SecureDomainProps> = ({
             token: authToken,
             servername: domain.servername,
             webserver: domain.webserver,
-            name: entry[0],
+            name: entry.name,
+            storage: entry.storage,
         });
         handleFormClose();
     }
@@ -180,8 +181,8 @@ const SecureDomainDrawer: React.FC<SecureDomainProps> = ({
                             <div className="mb-3 mt-3">
                                 <Select id='certificate' className='cursor-pointer' required>
                                     {
-                                        Object.entries(certificates).map(([name, certificate]) => {
-                                            return <option className='cursor-pointer' key={name}>{selectOption(name, certificate)}</option>;
+                                        certificates.map((item: StorageCertificateItem) => {
+                                            return <option className='cursor-pointer' key={`${item.name}__${item.storage}`}>{selectOption(item)}</option>;
                                         })
                                     }
                                 </Select>

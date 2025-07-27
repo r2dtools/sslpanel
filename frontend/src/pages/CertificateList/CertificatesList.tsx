@@ -20,7 +20,7 @@ import empty from '../../images/empty.png';
 import { downloadCertificateApi } from '../../features/certificate/certificateApi';
 import { toast } from 'react-toastify';
 import CertificateAddDrawer from '../../features/certificate/components/CertificateAddDrawer';
-import { Certificate, SelfSignedCertificateFormData } from '../../features/certificate/types';
+import { Certificate, SelfSignedCertificateFormData, StorageCertificateItem } from '../../features/certificate/types';
 import Error404 from '../Error404';
 import Error403 from '../Error403';
 import CertificateDetailsDrawer from '../../features/certificate/components/CertificateDetailsDrawer';
@@ -60,9 +60,9 @@ const CertificateList = () => {
         }
     }, [guid, authToken]);
 
-    const handleCertificateDownload = async (name: string): Promise<any> => {
+    const handleCertificateDownload = async (name: string, storage: string): Promise<any> => {
         try {
-            const response = await downloadCertificateApi({ guid, name, token: authToken });
+            const response = await downloadCertificateApi({ guid, name, storage, token: authToken });
 
             const url = window.URL.createObjectURL(new Blob([response.content]));
             const link = document.createElement('a');
@@ -134,11 +134,12 @@ const CertificateList = () => {
                             {!certNames.length && <img src={empty} />}
                         </div>
                         {
-                            Object.entries(certificates).map(([name, certificate]) => (
+                            certificates.map((item: StorageCertificateItem) => (
                                 <CertificateItem
-                                    name={name}
-                                    certificate={certificate}
-                                    key={name}
+                                    name={item.name}
+                                    storage={item.storage}
+                                    certificate={item.certificate}
+                                    key={`${item.name}__${item.storage}`}
                                     onCertificateDownload={handleCertificateDownload}
                                     onClick={handleCertificateSelect}
                                 />

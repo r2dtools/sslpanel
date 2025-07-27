@@ -22,7 +22,7 @@ import {
     changeSettingApi,
     assignCertificateApi,
 } from './domainApi';
-import { COMMON_DIR_SETTING, RENEWAL_SETTING } from './constants';
+import { COMMON_DIR_SETTING, EMAIL_SETTING, RENEWAL_SETTING } from './constants';
 
 export interface DomainState {
     domain: Domain | null;
@@ -126,6 +126,7 @@ export const fetchSettings = createAsyncThunk(
         return {
             commondirstatus: status,
             renewalstatus: settings[RENEWAL_SETTING] === 'true',
+            email: settings[EMAIL_SETTING] || null,
         };
     },
 );

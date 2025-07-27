@@ -38,6 +38,7 @@ export interface Issuer {
 export interface DomainSettings {
     commondirstatus: CommonDirStatus;
     renewalstatus: boolean;
+    email: string | null;
 }
 
 export interface DomainSecureRequest {

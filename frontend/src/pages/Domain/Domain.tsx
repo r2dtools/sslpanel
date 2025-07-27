@@ -342,6 +342,7 @@ const Domain = () => {
                             authToken={authToken}
                             guid={guid}
                             domain={domain}
+                            domainEmail={settings?.email}
                             open={secureFormOpen}
                             certificates={certificates}
                             onClose={handleSecureFormClose}

@@ -8,6 +8,7 @@ import { StorageCertificateItem } from '../../certificate/types';
 type SecureDomainProps = {
     guid: string,
     authToken: string,
+    domainEmail: string | null | undefined,
     domain: Domain;
     open: boolean;
     issueLoading: boolean;
@@ -21,6 +22,7 @@ type SecureDomainProps = {
 const SecureDomainDrawer: React.FC<SecureDomainProps> = ({
     guid,
     authToken,
+    domainEmail,
     domain,
     open,
     issueLoading,
@@ -30,7 +32,7 @@ const SecureDomainDrawer: React.FC<SecureDomainProps> = ({
     onAssignSubmit,
     onClose,
 }) => {
-    const certificateEmail = (domain.certificate?.emailaddresses || [])[0] || '';
+    const certificateEmail = (domain.certificate?.emailaddresses || [])[0] || domainEmail || '';
     const [email, setEmail] = useState<string>(certificateEmail);
     const [assign, setAssign] = useState<boolean>(true);
     const [subjectsMap, setSubjectsMap] = useState<{ [key: string]: boolean }>({});

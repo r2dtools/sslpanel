@@ -157,7 +157,7 @@ const Sidebar = ({ servers, sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                                     >
                                                         <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                                                             {
-                                                                servers.map((item: ServerItem) => <DropdownMenuItem name={item.name} url={`/servers/${item.guid}`} />)
+                                                                servers.map((item: ServerItem) => <DropdownMenuItem key={item.guid} name={item.name} url={`/servers/${item.guid}`} />)
                                                             }
                                                         </ul>
                                                     </div>

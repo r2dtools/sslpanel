@@ -111,6 +111,11 @@ func newEngine(
 			serverGroup.GET("/:serverId", serverApi.CreateGetServerByGuidHandler(appAuth, appServerSevice))
 			serverGroup.GET("/:serverId/details", serverApi.CreateGetServerDetailsByGuidHandler(appAuth, appServerSevice))
 
+			serverSettingGroup := serverGroup.Group("/:serverId/settings")
+			{
+				serverSettingGroup.POST("/certbot-status", serverApi.CreateChangeCertbotStatusHandler(appAuth, appServerSevice))
+			}
+
 			domainGroup := serverGroup.Group("/:serverId/domain/:domainName")
 			{
 				domainGroup.GET("", domainApi.CreateGetDomainHandler(appAuth, appDomainSevice))

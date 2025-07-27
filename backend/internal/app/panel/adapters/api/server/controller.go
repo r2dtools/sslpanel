@@ -2,6 +2,7 @@ package server
 
 import (
 	"backend/internal/app/panel/adapters/api/auth"
+	"backend/internal/app/panel/server/service"
 	serverService "backend/internal/app/panel/server/service"
 	"errors"
 	"net/http"
@@ -202,5 +203,46 @@ func CreateUpdateServerHandler(appServerService serverService.ServerService) fun
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		}
+	}
+}
+
+func CreateChangeCertbotStatusHandler(cAuth auth.Auth, certService serverService.ServerService) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		user := cAuth.GetCurrentUser(c)
+
+		if user == nil {
+			return
+		}
+
+		guid := c.Param("serverId")
+
+		if guid == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID")) // nolint:errcheck
+
+			return
+		}
+
+		var request service.ChangeCretbotStatusRequest
+
+		if err := c.ShouldBindJSON(&request); err != nil {
+			c.AbortWithError(http.StatusBadRequest, err) // nolint:errcheck
+
+			return
+		}
+
+		request.ServerGuid = guid
+		version, err := certService.ChangeCertbotStatus(request)
+
+		if err != nil {
+			if errors.Is(err, service.ErrServerNotFound) {
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			}
+
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"version": version})
 	}
 }

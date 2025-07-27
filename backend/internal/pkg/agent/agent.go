@@ -11,11 +11,12 @@ import (
 )
 
 const (
-	refreshCommand             = "refresh"
+	serverDataCommand          = "getserverdata"
 	getVhostsCommand           = "getVhosts"
 	getVhostCertificateCommand = "getVhostCertificate"
 	commonDirStatusCommand     = "commondirdtatus"
 	getVhostConfigCommand      = "getvhostconfig"
+	changeCertbotStatusCommand = "changecertbotstatus"
 )
 
 type ErrAgentResponse struct {
@@ -45,8 +46,8 @@ type requestData struct {
 	Data interface{}
 }
 
-func (a *Agent) Refresh() (*agentintegration.ServerData, error) {
-	data, err := a.Request(refreshCommand, nil)
+func (a *Agent) GetServerData() (*agentintegration.ServerData, error) {
+	data, err := a.Request(serverDataCommand, nil)
 
 	if err != nil {
 		return nil, err
@@ -113,13 +114,30 @@ func (a *Agent) GetVhostConfig(request agentintegration.VirtualHostConfigRequest
 	err = mapstructure.Decode(data, &response)
 
 	if err != nil {
-		return response, errors.New("invalid vhost config response data")
+		return response, errors.New("invalid response data")
 	}
 
 	return response, nil
 }
 
-func (a *Agent) Request(command string, data interface{}) (interface{}, error) {
+func (a *Agent) ChangeCertbotStatus(request agentintegration.ChangeCertbotStatusRequestData) (agentintegration.ChangeCertbotStatusResponseData, error) {
+	var response agentintegration.ChangeCertbotStatusResponseData
+	data, err := a.Request(changeCertbotStatusCommand, request)
+
+	if err != nil {
+		return response, err
+	}
+
+	err = mapstructure.Decode(data, &response)
+
+	if err != nil {
+		return response, errors.New("invalid response data")
+	}
+
+	return response, nil
+}
+
+func (a *Agent) Request(command string, data any) (interface{}, error) {
 	reqData := requestData{
 		Token:   a.token,
 		Command: command,

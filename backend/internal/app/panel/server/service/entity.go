@@ -34,6 +34,7 @@ type ServerDetails struct {
 	Uptime         uint64             `json:"uptime"`
 	BootTime       uint64             `json:"boottime"`
 	Domains        []domainDto.Domain `json:"domains"`
+	Settings       map[string]string  `json:"settings"`
 }
 
 type NewServerRequest struct {
@@ -52,4 +53,9 @@ type UpdateServerRequest struct {
 	Ipv6Address string `json:"ipv6_address"`
 	AgentPort   int    `json:"agent_port" validate:"nonzero"`
 	Token       string `json:"token" validate:"nonzero"`
+}
+
+type ChangeCretbotStatusRequest struct {
+	ServerGuid string
+	Value      bool `json:"value"`
 }

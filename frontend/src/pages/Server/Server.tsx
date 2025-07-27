@@ -9,14 +9,17 @@ import useAuthToken from '../../features/auth/hooks';
 import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { useEffect, useState } from 'react';
 import {
+    changeCertbotStatus,
     editServer,
     fetchServer,
     fetchServerDetails,
+    selectChangeCertbotStatusStatus,
     selectServer,
     selectServerDetails,
     selectServerDetailsFetchStatus,
     selectServerFetchStatus,
     selectServerSaveStatus,
+    selectServerSettings,
 } from '../../features/server/serverSlice';
 import { FetchStatus } from '../../app/types';
 import Loader from '../../components/Loader/Loader';
@@ -26,6 +29,7 @@ import ServerEditDrawer from '../../features/server/components/ServerEditDrawer'
 import { ServerSavePayload } from '../../features/server/types';
 import CardStatsLink from '../../components/CardStatsLink';
 import { fetchCertificates, selectCertificates, selectCertificatesFetchStatus } from '../../features/certificate/certificatesSlice';
+import ServerSettings from '../../features/server/components/ServerSettings';
 
 const emptyPlaceholder = '----------';
 
@@ -37,6 +41,7 @@ const Server = () => {
     const serverDetailsSelectStatus = useAppSelector(selectServerDetailsFetchStatus);
     const server = useAppSelector(selectServer);
     const serverDetails = useAppSelector(selectServerDetails);
+    const serverSettings = useAppSelector(selectServerSettings);
     const [showServerAlert, setShowServerAlert] = useState<boolean>(false);
     const [serverFormOpen, setServerFormOpen] = useState(false);
     const serverSaveStatus = useAppSelector(selectServerSaveStatus);
@@ -44,12 +49,17 @@ const Server = () => {
     const certificates = useAppSelector(selectCertificates);
     const [pinging, setPinging] = useState<boolean>(false);
     const { pathname } = useLocation();
+    const changeCertbotStatusStatus = useAppSelector(selectChangeCertbotStatusStatus);
 
     const isLoading = (serverSelectStatus === FetchStatus.Pending || serverDetailsSelectStatus === FetchStatus.Pending) && !pinging;
 
+    if (!authToken || !guid) {
+        return <Error404 />
+    }
+
     useEffect(() => {
         if (authToken && serverSelectStatus !== FetchStatus.Pending) {
-            dispatch(fetchServer({ guid: guid as string, token: authToken }));
+            dispatch(fetchServer({ guid, token: authToken }));
         }
     }, [authToken, guid]);
 
@@ -63,7 +73,7 @@ const Server = () => {
             && serverSelectStatus === FetchStatus.Succeeded
             && serverDetailsSelectStatus !== FetchStatus.Pending
         ) {
-            dispatch(fetchServerDetails({ guid: guid as string, token: authToken }));
+            dispatch(fetchServerDetails({ guid, token: authToken }));
         }
     }, [serverSelectStatus, authToken, guid, server?.guid]);
 
@@ -75,7 +85,7 @@ const Server = () => {
             && certificatesSelectStatus !== FetchStatus.Succeeded
         ) {
             dispatch(fetchCertificates({
-                guid: guid as string,
+                guid,
                 token: authToken,
             }));
         }
@@ -99,9 +109,18 @@ const Server = () => {
 
     const handlePing = async (guid: string, authToken: string) => {
         setPinging(true);
-        await dispatch(fetchServerDetails({ guid: guid as string, token: authToken }));
+        await dispatch(fetchServerDetails({ guid, token: authToken }));
         setPinging(false);
     };
+
+    const handleCertbotStatusChange = async (value: boolean) => {
+        await dispatch(changeCertbotStatus({
+            value: (new Boolean(value)).toString(),
+            guid: guid,
+            token: authToken,
+        }));
+        dispatch(fetchCertificates({ guid, token: authToken }));
+    }
 
     const uptime = serverDetails?.uptime ? moment.duration(serverDetails.uptime, 'seconds').humanize() : emptyPlaceholder;
 
@@ -232,6 +251,15 @@ const Server = () => {
                             <HiMiniKey />
                         </CardStatsLink>
                     </div>
+                    {
+                        server && serverSettings && (
+                            <ServerSettings
+                                settings={serverSettings}
+                                certbotStatusLoading={changeCertbotStatusStatus === FetchStatus.Pending}
+                                onCertbotStatusChange={handleCertbotStatusChange}
+                            />
+                        )
+                    }
                     <ServerEditDrawer
                         open={serverFormOpen}
                         authToken={authToken || ''}

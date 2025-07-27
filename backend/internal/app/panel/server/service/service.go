@@ -59,7 +59,7 @@ func (s ServerService) GetServerDetailsByGuid(guid string) (*ServerDetails, erro
 		return nil, err
 	}
 
-	refData, err := nAgent.Refresh()
+	data, err := nAgent.GetServerData()
 	connErr := agent.ConnectionError{}
 
 	if err != nil {
@@ -75,9 +75,9 @@ func (s ServerService) GetServerDetailsByGuid(guid string) (*ServerDetails, erro
 		return nil, err
 	}
 
-	serverModel.OsCode = refData.Platform
-	serverModel.OsVersion = refData.PlatformVersion
-	serverModel.AgentVersion = refData.AgentVersion
+	serverModel.OsCode = data.Platform
+	serverModel.OsVersion = data.PlatformVersion
+	serverModel.AgentVersion = data.AgentVersion
 	serverModel.IsActive = 1
 
 	err = s.serverStorage.Save(serverModel)
@@ -94,15 +94,16 @@ func (s ServerService) GetServerDetailsByGuid(guid string) (*ServerDetails, erro
 
 	serverDetails := ServerDetails{
 		Server:         *createServer(serverModel),
-		PlatformFamily: refData.PlatformFamily,
-		Os:             refData.Os,
-		Virtualization: refData.Virtualization,
-		HostName:       refData.HostName,
-		KernelVersion:  refData.KernelVersion,
-		KernelArch:     refData.KernelArch,
-		Uptime:         refData.Uptime,
-		BootTime:       refData.BootTime,
+		PlatformFamily: data.PlatformFamily,
+		Os:             data.Os,
+		Virtualization: data.Virtualization,
+		HostName:       data.HostName,
+		KernelVersion:  data.KernelVersion,
+		KernelArch:     data.KernelArch,
+		Uptime:         data.Uptime,
+		BootTime:       data.BootTime,
 		Domains:        createDomains(vhosts),
+		Settings:       data.Settings,
 	}
 
 	return &serverDetails, nil
@@ -217,6 +218,36 @@ func (s ServerService) UpdateServer(request UpdateServerRequest) error {
 	serverModel.AgentPort = agentPort
 
 	return s.serverStorage.Save(serverModel)
+}
+
+func (s ServerService) ChangeCertbotStatus(request ChangeCretbotStatusRequest) (string, error) {
+	serverModel, err := s.serverStorage.FindByGuid(request.ServerGuid)
+
+	if err != nil {
+		return "", err
+	}
+
+	if serverModel == nil {
+		return "", ErrServerNotFound
+	}
+
+	nAgent, err := s.getServerAgent(serverModel)
+
+	if err != nil {
+		return "", err
+	}
+
+	requestData := agentintegration.ChangeCertbotStatusRequestData{
+		Value: request.Value,
+	}
+
+	responseData, err := nAgent.ChangeCertbotStatus(requestData)
+
+	if err != nil {
+		return "", err
+	}
+
+	return responseData.Version, nil
 }
 
 func createServer(server *serverStorage.Server) *Server {

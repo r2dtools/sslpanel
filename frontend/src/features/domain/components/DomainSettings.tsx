@@ -14,11 +14,11 @@ type DomainSettingsProps = {
 
 const DomainSettings: FC<DomainSettingsProps> = ({ settings, commonDirStatusLoading, renewalLoading, onCommonDirStatusChange, onRenewalChange }) => {
     const handleCommonDirStatusChanged = async (value: boolean) => {
-        await onCommonDirStatusChange(value);
+        onCommonDirStatusChange(value);
     };
 
     const handleRenewalStatusChanged = async (value: boolean) => {
-        await onRenewalChange(value);
+        onRenewalChange(value);
     };
 
     return (
@@ -50,7 +50,7 @@ const DomainSettings: FC<DomainSettingsProps> = ({ settings, commonDirStatusLoad
                             </div>
                         }>
                             <div className="cursor-pointer">
-                                <HiOutlineQuestionMarkCircle className='inline' />
+                                <HiOutlineQuestionMarkCircle />
                             </div>
                         </Popover>
                         {commonDirStatusLoading ? <Spinner size="sm" /> : null}

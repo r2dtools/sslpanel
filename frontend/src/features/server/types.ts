@@ -26,6 +26,11 @@ export interface ServerDetails extends Server {
     uptime: number;
     boottime: number;
     domains: Domain[];
+    settings: { [key: string]: string };
+}
+
+export interface ServerSettings {
+    certbotStatus: boolean;
 }
 
 export enum OsCode {
@@ -56,4 +61,17 @@ export interface ServerDeletePayload {
 export interface ServerFetchPayload {
     guid: string;
     token: string;
+}
+
+export interface ChangeSettingRequest {
+    guid: string;
+    name: string;
+    value: string;
+    token: string;
+}
+
+export interface ChangeSettingPayload {
+    guid: string;
+    token: string;
+    value: string;
 }

@@ -67,8 +67,10 @@ const CertificateAddDrawer: React.FC<CertificateAddProps> = ({
     };
 
     const handleFormClose = (): void => {
-        resetCertUpload();
-        onClose();
+        if (!generating) {
+            resetCertUpload();
+            onClose();
+        }
     };
 
     const changeName = (name: string): void => {

@@ -44,7 +44,9 @@ const SecureDomainDrawer: React.FC<SecureDomainProps> = ({
     }, [domain, open]);
 
     const handleFormClose = (): void => {
-        onClose();
+        if (!assignLoading && !issueLoading) {
+            onClose();
+        }
     };
 
     const handleAliasChange = (alias: string, event: React.ChangeEvent<HTMLInputElement>): void => {

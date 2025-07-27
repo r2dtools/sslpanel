@@ -38,7 +38,9 @@ const ServerEditDrawer: React.FC<ServerEditProps> = ({
     }, [server, open]);
 
     const handleFormClose = (): void => {
-        onClose();
+        if (!loading) {
+            onClose();
+        }
     };
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {

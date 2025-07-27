@@ -3,6 +3,8 @@ import { Outlet } from 'react-router-dom';
 import Header from '../components/Header/index';
 import Sidebar from '../components/Sidebar/index';
 import AuthContext from '../features/auth/context';
+import { useAppSelector } from '../app/hooks';
+import { selectServers } from '../features/server/serversSlice';
 
 interface DefaultLayoutProps {
     onSignOut: () => void;
@@ -11,12 +13,13 @@ interface DefaultLayoutProps {
 const DefaultLayout: React.FC<DefaultLayoutProps> = ({ onSignOut }) => {
     const currentUser = useContext(AuthContext);
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const servers = useAppSelector(selectServers);
 
     return (
         <div className="dark:bg-boxdark-2 dark:text-bodydark">
             {/* <!-- ===== Page Wrapper Start ===== --> */}
             <div className="flex h-screen overflow-hidden">
-                {currentUser !== null && <Sidebar sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />}
+                {currentUser !== null && <Sidebar servers={servers} sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />}
 
                 {/* <!-- ===== Content Area Start ===== --> */}
                 <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">

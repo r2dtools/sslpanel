@@ -13,6 +13,8 @@ import {
 } from 'react-icons/hi2';
 import Code from '../../components/Help/Code';
 
+const workDir = '/opt/r2dtools'
+
 const InstallSslBot: React.FC = () => {
     return (
         <div>
@@ -30,51 +32,74 @@ const InstallSslBot: React.FC = () => {
                     </div>
                     <div>
                         <h3 className="mb-5 text-xl font-bold text-black dark:text-white flex gap-2 items-center">
-                            <HiArrowDownOnSquare className='text-blue-700' />Step 2: Download the SSLBot Installer
+                            <HiArchiveBox className='text-blue-700' />Step 2: Install the SSLBot
                         </h3>
                         <p className="font-medium mb-2">
-                            Download the latest version of the SSLBot installer using one of the commands below:
+                            Download and unpack the latest SSLBot archive:
                         </p>
-                        <Code>{`wget -O installer https://github.com/r2dtools/sslbot-installer/releases/latest/download/installer`}</Code>
-                        <p className="font-medium mb-2 mt-2">
-                            Or using curl:
+                        <Code>{
+                            `wget -O sslbot.tar.gz https://github.com/r2dtools/sslbot/releases/latest/download/r2dtools-sslbot.tar.gz \\
+&& mkdir -p ${workDir} \\
+&& tar -xzf r2dtools-sslbot.tar.gz -C ${workDir}`
+                        }</Code>
+                        <p className="font-medium mt-2">
+                            The agent will be installed to the <span className='font-bold'>{workDir}</span> directory
                         </p>
-                        <Code>{`curl -o installer https://github.com/r2dtools/sslbot-installer/releases/latest/download/sslbot-installer`}</Code>
+
                     </div>
                     <div>
                         <h3 className="mb-5 text-xl font-bold text-black dark:text-white flex gap-2 items-center">
-                            <HiArchiveBox className='text-blue-700' />Step 3: Install the SSLBot
+                            <HiArrowDownOnSquare className='text-blue-700' />Step 3: Add the SSLBot service to systemd
                         </h3>
-                        <p className="font-medium mb-2">
-                            Run the installer:
-                        </p>
-                        <Code>{`chmod +x installer | ./installer install`}</Code>
+                        <Code>
+                            {`cat >/etc/systemd/system/sslbot.service <<'EOT'
+[Unit]
+Description=R2DTools SSLBot
+
+[Service]
+Type=simple
+Restart=always
+ExecStart=${workDir}/sslbot serve
+
+[Install]
+WantedBy=multi-user.target
+EOT
+`}
+                        </Code>
+                    </div>
+                    <div>
+                        <h3 className="mb-5 text-xl font-bold text-black dark:text-white flex gap-2 items-center">
+                            <HiMiniArrowPath className='text-blue-700' />Step 4: Run the SSLBot service
+                        </h3>
+                        <Code>
+                            {`systemctl daemon-reload \\
+&& systemctl start sslbot.service \\
+&& systemctl enable sslbot.service
+`}
+                        </Code>
                         <p className="font-medium mt-2 mb-2">
-                            The agent will be installed to the <span className='font-bold'>/opt/sslbot</span> directory
-                        </p>
-                        <p className="font-medium mb-2">
                             To confirm the agent is running, use:
                         </p>
                         <Code>{`systemctl status sslbot.service`}</Code>
                         <p className="font-medium mt-2">
                             You should see the service status as active
                         </p>
+                        <p className='mt-2 mb-2'>Ensure port <b>60150</b> is open (default)</p>
+                        <List ordered>
+                            <ListItem>This is required for communication with SSLPanel</ListItem>
+                            <ListItem>You can change the port in <b>{workDir}/params.yaml</b> configuration file<br /><div className='mt-2'><Code>{`port: <port>`}</Code></div></ListItem>
+                            <ListItem>Restart the service after changing the port:<br /><div className='mt-2'><Code>{`systemctl restart sslbot.service`}</Code></div></ListItem>
+                        </List>
                     </div>
                     <div>
                         <h3 className="mb-5 text-xl font-bold text-black dark:text-white flex gap-2 items-center">
-                            <HiMiniKey className='text-blue-700' />Step 4: Generate Token
+                            <HiMiniKey className='text-blue-700' />Step 5: Generate Token
                         </h3>
-                        <Code>{`/opt/sslbot generate-token`}</Code>
+                        <Code>{`${workDir}/sslbot generate-token`}</Code>
                         <p className="font-medium mt-2 mb-2">
-                            The token will be saved in the file:
+                            The token will be saved in the configuration file:
                         </p>
-                        <Code>{`/opt/sslbot/config/params.yaml`}</Code>
-                    </div>
-                    <div>
-                        <h3 className="mb-5 text-xl font-bold text-black dark:text-white flex gap-2 items-center">
-                            <HiMiniArrowPath className='text-blue-700' />Step 5: Restart the SSLBot
-                        </h3>
-                        <Code>{`systemctl restart sslbot.service`}</Code>
+                        <Code>{`${workDir}/params.yaml`}</Code>
                     </div>
                     <div>
                         <h3 className="mb-5 text-xl font-bold text-black dark:text-white flex gap-2 items-center">

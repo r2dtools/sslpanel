@@ -80,7 +80,7 @@ const CertificateItem: React.FC<CertificateItemProps> = ({ name, storage, certif
                 </div>
                 <div className="w-4/12 flex flex-col gap-1 font-medium">
                     {dnsnames.map((name: string) => <div className='truncate text-black dark:text-white' key={name}>{name}</div>)}
-                    <div className='text-sm truncate'>{`[${fileName}]`}</div>
+                    <div className='text-sm truncate'>{`[${fileName}, ${storage} storage]`}</div>
                 </div>
                 <div className="w-3/12 md:flex md:flex-col gap-1 lg:gap-2 md:items-center lg:flex-row">
                     <span className="font-medium hidden md:block text-black dark:text-white">

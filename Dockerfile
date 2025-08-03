@@ -1,5 +1,5 @@
 # build backend
-FROM golang:1.23-alpine as buildback
+FROM golang:1.24-alpine AS buildback
 
 WORKDIR /app/backend
 

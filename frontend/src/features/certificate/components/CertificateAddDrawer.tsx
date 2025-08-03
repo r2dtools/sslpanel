@@ -4,6 +4,7 @@ import { HiMiniKey } from 'react-icons/hi2';
 import isValidDomain from 'is-valid-domain';
 import isValidFilename from 'valid-filename';
 import { SelfSignedCertificateFormData } from '../types';
+import filenamify from 'filenamify';
 
 type CertificateAddProps = {
     open: boolean;
@@ -43,6 +44,13 @@ const CertificateAddDrawer: React.FC<CertificateAddProps> = ({
     altNames = [...(new Set(altNames))];
 
     const validAltNames = altNames.filter((name: string) => isValidDomain(name));
+
+    const prepareFileName = (certName: string): string => {
+        certName = certName.trim().replace(' ', '_');
+        certName = filenamify(certName, { replacement: '_' });
+
+        return certName
+    }
 
     const certUpload = useRef(null);
 
@@ -93,7 +101,7 @@ const CertificateAddDrawer: React.FC<CertificateAddProps> = ({
         event.preventDefault();
 
         // @ts-ignore
-        const certName = event.target.name.value;
+        const certName = prepareFileName(event.target.name.value as string);
 
         if (certName && !isValidFilename(certName)) {
             setNameErr('Invalid file name');
@@ -113,7 +121,7 @@ const CertificateAddDrawer: React.FC<CertificateAddProps> = ({
         event.preventDefault();
 
         // @ts-ignore
-        const certName = event.target.name.value;
+        const certName = prepareFileName(event.target.name.value as string);
 
         if (certName && !isValidFilename(certName)) {
             setNameErr('Invalid file name');

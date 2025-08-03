@@ -15,6 +15,7 @@
     "dependencies": {
         "@reduxjs/toolkit": "^2.3.0",
         "axios": "^1.7.7",
+        "filenamify": "^6.0.0",
         "flowbite": "^2.5.2",
         "flowbite-react": "^0.10.2",
         "is-valid-domain": "^0.1.6",

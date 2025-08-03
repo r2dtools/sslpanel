@@ -42,11 +42,9 @@ import {
     getSiteCertExpiredDays,
 } from "../../features/certificate/utils";
 import { fetchCertificates, selectCertificates } from "../../features/certificate/certificatesSlice";
+import { isDnsNameSecure } from "../../lib/cert";
 
 const emptyPlaceholder = '----------';
-
-const isDnsNameSecure = (certificateDnsNames: string[], name: string): boolean =>
-    Boolean(certificateDnsNames.find(certificateDnsName => certificateDnsName === name));
 
 const Domain = () => {
     const { name, guid } = useParams();
@@ -92,7 +90,7 @@ const Domain = () => {
     const addresses = (domain?.addresses || []).map(({ host, port }) => `${host}:${port}`);
     const aliases = domain?.aliases || [];
     const certificate = domain?.certificate || null;
-    const certificateDnsNames = certificate?.dnsnames || [];
+    const certificateDnsNames = (certificate?.dnsnames || []).concat(certificate ? [certificate.cn] : []);
     const certificateAliases = certificateDnsNames.filter(certificateDnsName => certificateDnsName !== certificate?.cn)
     const certificateExpireDays = getSiteCertExpiredDays(certificate?.validto);
     const expireDuration = certificateExpireDays && certificateExpireDays > 0 ? moment.duration(certificateExpireDays, 'days').humanize() : null;
@@ -183,7 +181,7 @@ const Domain = () => {
                                             <h3 className="inline-block text-2xl font-medium text-black hover:text-primary dark:text-white">{domain?.servername || emptyPlaceholder}</h3>
                                             <div>
                                                 {
-                                                    domain?.servername && isDnsNameSecure(certificateDnsNames, domain.servername)
+                                                    certificate?.isvalid && domain?.servername && isDnsNameSecure(certificateDnsNames, domain.servername)
                                                         ? <Badge color='success' size='sm' className='inline'>Secure</Badge>
                                                         : <Badge color='failure' size='sm' className='inline'>Insecure</Badge>
                                                 }

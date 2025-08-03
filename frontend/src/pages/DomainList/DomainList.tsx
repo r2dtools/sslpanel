@@ -15,6 +15,7 @@ import empty from '../../images/empty.png';
 import { CERT_ABOUT_TO_EXPIRE_DAYS } from '../../features/certificate/constants';
 import Loader from '../../components/Loader/Loader';
 import { getWebServerIcon } from '../../features/server/utils';
+import { isDnsNameSecure } from '../../lib/cert';
 
 const emptyPlaceholder = '----------';
 
@@ -85,6 +86,7 @@ const DomainList = () => {
                             const organization = (issuer?.organization || []).join(', ');
                             const expireDays = getSiteCertExpiredDays(validTo || null);
                             const expireDuration = expireDays && expireDays > 0 ? moment.duration(expireDays, 'days').humanize() : null;
+                            const isCertValid = cert?.isvalid && isDnsNameSecure(cert?.dnsnames || [], cert.cn)
 
                             return (
                                 <a href='#' key={domain.servername} onClick={(event: React.MouseEvent) => handleDomainClick(event, domain)}>
@@ -97,8 +99,8 @@ const DomainList = () => {
                                         </div>
                                         <div className="w-4/12 md:w-3/12 xl:w-2/12">
                                             {cert ? (
-                                                <Badge color={cert?.isvalid ? 'success' : 'failure'} size='sm' className='inline'>
-                                                    {cert?.isvalid ? 'Valid' : 'Invalid'}
+                                                <Badge color={isCertValid ? 'success' : 'failure'} size='sm' className='inline'>
+                                                    {isCertValid ? 'Valid' : 'Invalid'}
                                                 </Badge>) : emptyPlaceholder
                                             }
                                         </div>

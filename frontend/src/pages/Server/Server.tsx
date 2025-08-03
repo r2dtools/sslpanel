@@ -69,27 +69,24 @@ const Server = () => {
 
     useEffect(() => {
         if (
-            authToken
-            && serverSelectStatus === FetchStatus.Succeeded
+            serverSelectStatus === FetchStatus.Succeeded
             && serverDetailsSelectStatus !== FetchStatus.Pending
         ) {
             dispatch(fetchServerDetails({ guid, token: authToken }));
         }
-    }, [serverSelectStatus, authToken, guid, server?.guid]);
+    }, [serverSelectStatus, guid, server?.guid]);
 
     useEffect(() => {
         if (
-            authToken
-            && serverSelectStatus === FetchStatus.Succeeded
+            serverSelectStatus === FetchStatus.Succeeded
             && certificatesSelectStatus !== FetchStatus.Pending
-            && certificatesSelectStatus !== FetchStatus.Succeeded
         ) {
             dispatch(fetchCertificates({
                 guid,
                 token: authToken,
             }));
         }
-    }, [authToken, server?.guid, guid, serverSelectStatus]);
+    }, [server?.guid, guid, serverSelectStatus]);
 
     const onTokenCopy = () => toast.success('Copied', {
         autoClose: 1000,

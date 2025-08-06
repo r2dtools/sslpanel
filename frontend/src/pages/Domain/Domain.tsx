@@ -1,7 +1,7 @@
 import { Avatar, Badge, Button, Spinner, Tooltip } from "flowbite-react";
 import Breadcrumb from "../../components/Breadcrumb";
 import Loader from "../../components/Loader/Loader";
-import { HiMiniEye, HiMiniLockClosed } from "react-icons/hi2";
+import { HiMiniEye, HiMiniLockClosed, HiXMark } from "react-icons/hi2";
 import { useParams } from 'react-router-dom';
 import { decode } from 'js-base64';
 import Error404 from '../Error404';
@@ -43,6 +43,7 @@ import {
 } from "../../features/certificate/utils";
 import { fetchCertificates, selectCertificates } from "../../features/certificate/certificatesSlice";
 import { isDnsNameSecure } from "../../lib/cert";
+import { HiCheck } from "react-icons/hi";
 
 const emptyPlaceholder = '----------';
 
@@ -178,12 +179,21 @@ const Domain = () => {
                                 <div className="w-full flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                                     <Avatar img={getWebServerIcon(domain?.webserver)} size='lg' rounded className='justify-start'>
                                         <div className="space-y-2 font-medium dark:text-white">
-                                            <h3 className="inline-block text-2xl font-medium text-black hover:text-primary dark:text-white">{domain?.servername || emptyPlaceholder}</h3>
+                                            <div className='flex gap-2 items-center'>
+                                                <h3 className="inline-block text-2xl font-medium text-black hover:text-primary dark:text-white">{domain?.servername || emptyPlaceholder}</h3>
+                                                {
+                                                    domain?.servername ? (
+                                                        isDnsNameSecure(certificateDnsNames, domain.servername)
+                                                            ? <Badge icon={HiCheck} color='success' />
+                                                            : <Badge icon={HiXMark} color='failure' />
+                                                    ) : null
+                                                }
+                                            </div>
                                             <div>
                                                 {
-                                                    certificate?.isvalid && domain?.servername && isDnsNameSecure(certificateDnsNames, domain.servername)
-                                                        ? <Badge color='success' size='sm' className='inline'>Secure</Badge>
-                                                        : <Badge color='failure' size='sm' className='inline'>Insecure</Badge>
+                                                    certificate?.isvalid
+                                                        ? <Badge color='success' size='sm' className='inline'>Valid</Badge>
+                                                        : <Badge color='failure' size='sm' className='inline'>Invalid</Badge>
                                                 }
                                             </div>
                                         </div>
@@ -230,8 +240,9 @@ const Domain = () => {
                                             </div>
                                             <div>
                                                 <dt>Common Name</dt>
-                                                <dd className="font-bold text-black dark:text-white">
-                                                    {certificate?.cn || emptyPlaceholder}
+                                                <dd className="font-bold text-black dark:text-white flex gap-2">
+                                                    <span>{certificate?.cn || emptyPlaceholder}</span>
+
                                                 </dd>
                                             </div>
                                             <div>
@@ -276,12 +287,12 @@ const Domain = () => {
                                                     {
                                                         aliases.length
                                                             ? aliases.map(
-                                                                alias => <div key={alias}>
+                                                                alias => <div key={alias} className='flex gap-2'>
                                                                     <span>{alias}</span>
                                                                     {
                                                                         isDnsNameSecure(certificateDnsNames, alias)
-                                                                            ? <Badge color='success' className='inline ml-2'>Secure</Badge>
-                                                                            : <Badge color='failure' className='inline ml-2'>Insecure</Badge>
+                                                                            ? <Badge icon={HiCheck} color='success' />
+                                                                            : <Badge icon={HiXMark} color='failure' />
                                                                     }
                                                                 </div>
                                                             )

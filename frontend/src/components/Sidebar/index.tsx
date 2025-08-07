@@ -247,6 +247,7 @@ const Sidebar = ({ servers, sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                             >
                                                 <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
                                                     <DropdownMenuItem name='Install SSLBot' url='/documentation/install-sslbot' />
+                                                    <DropdownMenuItem name='Update SSLBot' url='/documentation/update-sslbot' />
                                                 </ul>
                                             </div>
                                             {/* <!-- Dropdown Menu End --> */}

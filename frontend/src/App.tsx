@@ -29,6 +29,7 @@ import Confirm from './pages/Authentication/Confirm';
 import Recover from './pages/Authentication/Recover';
 import Reset from './pages/Authentication/Reset';
 import InstallSslBot from './pages/Help/InstallSslBot';
+import UpdateSslBot from './pages/Help/UpdateSslBot';
 
 function App() {
     const { pathname } = useLocation();
@@ -131,6 +132,12 @@ function App() {
                     title: getPageTitle('Install SSLBot '),
                     name: 'Install SSLBot',
                     component: <InstallSslBot />,
+                },
+                {
+                    path: "/documentation/update-sslbot",
+                    title: getPageTitle('Update SSLBot '),
+                    name: 'Update SSLBot',
+                    component: <UpdateSslBot />,
                 },
             ],
         },

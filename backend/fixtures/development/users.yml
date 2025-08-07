@@ -1,5 +1,5 @@
 - id: 1
-  email: sslpanel@gmail.com
+  email: sslpanel@example.com
   password: $2a$10$HL40V5ZYEMu4asLQIg.OjeDdSqjk203jkYBhRIiwomovdPR34vvD2
   active: 1
   account_id: 1

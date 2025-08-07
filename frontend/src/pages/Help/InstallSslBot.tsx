@@ -40,7 +40,7 @@ const InstallSslBot: React.FC = () => {
                         <Code>{
                             `wget -O sslbot.tar.gz https://github.com/r2dtools/sslbot/releases/latest/download/r2dtools-sslbot.tar.gz \\
 && mkdir -p ${workDir} \\
-&& tar -xzf r2dtools-sslbot.tar.gz -C ${workDir}`
+&& tar -xzf sslbot.tar.gz -C ${workDir}`
                         }</Code>
                         <p className="font-medium mt-2">
                             The agent will be installed to the <span className='font-bold'>{workDir}</span> directory

@@ -66,7 +66,7 @@ To run SSLPanel locally in development mode:
 Visit [http://localhost:5173](http://localhost:5173) to access the application.
 
 > ✅ You can log in with the test account:  
-> **Email:** `sslpanel@gmail.com`  
+> **Email:** `sslpanel@example.com`  
 > **Password:** `1q2w3e4r`
 
 ---

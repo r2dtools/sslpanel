@@ -234,7 +234,7 @@ function App() {
                         ))
                     }
                 </Routes>
-                <ToastContainer theme={colorMode === ColorTheme.Dark ? 'dark' : 'light'} />
+                <ToastContainer theme='colored' />
             </RoutesContext.Provider>
         </AuthContext.Provider>
     );

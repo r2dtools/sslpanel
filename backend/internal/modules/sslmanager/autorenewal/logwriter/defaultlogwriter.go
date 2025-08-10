@@ -9,13 +9,13 @@ type DefaultLogWriter struct {
 	logger logger.Logger
 }
 
-func (s DefaultLogWriter) WriteLog(serverName string, successDomains []string, failedDomains map[string]error) error {
+func (s DefaultLogWriter) WriteLog(serverID uint, successDomains []string, failedDomains map[string]error) error {
 	for _, domainName := range successDomains {
-		s.logger.Info(fmt.Sprintf("successfully renewed certificates, server: %s, domain: %s", serverName, domainName))
+		s.logger.Info(fmt.Sprintf("certificate successfully renewed, server: %d, domain: %s", serverID, domainName))
 	}
 
 	for domainName, err := range failedDomains {
-		s.logger.Error(fmt.Sprintf("renewal failed, server: %s, domain: %s, error: %v", serverName, domainName, err))
+		s.logger.Error(fmt.Sprintf("certificate renewal failed, server: %d, domain: %s, error: %v", serverID, domainName, err))
 	}
 
 	return nil

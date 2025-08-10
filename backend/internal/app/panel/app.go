@@ -6,6 +6,7 @@ import (
 	domainStorage "backend/internal/app/panel/domain/storage"
 	serverStorage "backend/internal/app/panel/server/storage"
 	"backend/internal/modules/sslmanager/autorenewal"
+	"backend/internal/modules/sslmanager/autorenewal/logstorage"
 	"backend/internal/modules/sslmanager/autorenewal/logwriter"
 	"backend/internal/pkg/db"
 	"backend/internal/pkg/logger"
@@ -41,6 +42,7 @@ func GetApp(config *config.Config, logger logger.Logger) (*App, error) {
 		return nil, err
 	}
 
+	renewalLogStorage := logstorage.CreateSqlRenewalLogStorage(database)
 	appServerStorage := serverStorage.NewServerSqlStorage(database)
 	appDomainSettingStorage := domainStorage.NewDomainSettingSqlStorage(database)
 	domainProvider := provider.CreateDomainProvider(appServerStorage, logger)
@@ -50,7 +52,7 @@ func GetApp(config *config.Config, logger logger.Logger) (*App, error) {
 		domainProvider,
 		config,
 		logger,
-		logwriter.CreateDefaultLogWriter(logger),
+		logwriter.CreatePersistentLogWriter(renewalLogStorage),
 	)
 
 	return &App{

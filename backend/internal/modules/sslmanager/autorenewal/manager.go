@@ -17,7 +17,7 @@ import (
 )
 
 type RenewLogWriter interface {
-	WriteLog(serverName string, successDomains []string, failedDomains map[string]error) error
+	WriteLog(serverID uint, successDomains []string, failedDomains map[string]error) error
 }
 
 const (
@@ -25,6 +25,7 @@ const (
 )
 
 type RenewResult struct {
+	ServerID       uint
 	ServerName     string
 	SuccessDomains []string
 	FailedDomains  map[string]error
@@ -88,7 +89,7 @@ func (a AutoRenewalManager) Run(releaser <-chan struct{}) {
 			continue
 		}
 
-		err = a.renewLogWriter.WriteLog(result.ServerName, result.SuccessDomains, result.FailedDomains)
+		err = a.renewLogWriter.WriteLog(result.ServerID, result.SuccessDomains, result.FailedDomains)
 
 		if err != nil {
 			a.logger.Error(fmt.Sprintf("failed to write renew log: %v", err))
@@ -105,6 +106,7 @@ func (a AutoRenewalManager) renewWorker(
 	for server := range servers {
 		domains, err := a.domainProvider.GetServerDomains(server.Guid)
 		result := RenewResult{
+			ServerID:   server.ID,
 			ServerName: server.Name,
 		}
 
@@ -166,7 +168,7 @@ func (a AutoRenewalManager) renewWorker(
 			if len(cert.EmailAddresses) == 0 {
 				emailSetting, err := a.domainSettingStorage.FindByDomain(domainName, server.Guid, "email")
 
-				if err != nil && emailSetting != nil {
+				if err == nil && emailSetting != nil {
 					email = emailSetting.SettingValue
 				}
 			} else {

@@ -166,13 +166,9 @@ func (a AutoRenewalManager) renewWorker(
 			if len(cert.EmailAddresses) == 0 {
 				emailSetting, err := a.domainSettingStorage.FindByDomain(domainName, server.Guid, "email")
 
-				if err != nil || emailSetting == nil || emailSetting.SettingValue == "" {
-					a.logger.Warning(fmt.Sprintf("skip renewal for domain %s: email not found", domainName))
-
-					continue
+				if err != nil && emailSetting != nil {
+					email = emailSetting.SettingValue
 				}
-
-				email = emailSetting.SettingValue
 			} else {
 				email = cert.EmailAddresses[0]
 			}

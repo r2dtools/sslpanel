@@ -448,6 +448,35 @@ func CreateGetStorageCertificatesHandler(cAuth auth.Auth, certService service.Ce
 	}
 }
 
+func CreateGetLatestCertRenewalLogsHandler(cAuth auth.Auth, certService service.CertificateService) func(c *gin.Context) {
+	return func(c *gin.Context) {
+		user := cAuth.GetCurrentUser(c)
+
+		if user == nil {
+			return
+		}
+
+		guid := c.Param("serverId")
+
+		if guid == "" {
+			c.AbortWithError(http.StatusBadRequest, errors.New("invalid server GUID")) // nolint:errcheck
+
+			return
+		}
+
+		request := service.LatestRenewalLogsRequest{Guid: guid}
+		logs, err := certService.FindLatestCertificateRenewalLogs(request)
+
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"logs": logs})
+	}
+}
+
 func CreateRemoveCertificateFromStorageHandler(cAuth auth.Auth, certService service.CertificateService) func(c *gin.Context) {
 	return func(c *gin.Context) {
 		user := cAuth.GetCurrentUser(c)

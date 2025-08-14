@@ -6,6 +6,7 @@ import (
 	domainStorage "backend/internal/app/panel/domain/storage"
 	serverStorage "backend/internal/app/panel/server/storage"
 	"backend/internal/modules/sslmanager/agent"
+	"backend/internal/modules/sslmanager/autorenewal/logstorage"
 	"errors"
 	"fmt"
 	"strings"
@@ -22,6 +23,7 @@ var ErrServerNotFound = errors.New("server not found")
 type CertificateService struct {
 	serverStorage         serverStorage.ServerStorage
 	domainSettingsStorage domainStorage.DomainSettingStorage
+	certRenewalLogStorage logstorage.RenewalLogStorage
 	logger                logger.Logger
 }
 
@@ -250,6 +252,27 @@ func (s CertificateService) CreateSelfSignCertificate(request SelfSignedCertific
 	return cAgent.UploadPemCertificateToStorage(&requestData)
 }
 
+func (s CertificateService) FindLatestCertificateRenewalLogs(request LatestRenewalLogsRequest) ([]RenewalLog, error) {
+	logs := []RenewalLog{}
+	dbLogs, err := s.certRenewalLogStorage.FindLatestLogs(request.Guid)
+
+	if err != nil {
+		return logs, err
+	}
+
+	for _, dbLog := range dbLogs {
+		logs = append(logs, RenewalLog{
+			DomainName: dbLog.DomainName,
+			ServerName: dbLog.Server.Name,
+			ServerGuid: dbLog.Server.Guid,
+			Message:    dbLog.Error,
+			CreatedAt:  dbLog.CreatedAt,
+		})
+	}
+
+	return logs, nil
+}
+
 func (s CertificateService) getCertificateAgent(guid string) (*agent.CertificateAgent, error) {
 	server, err := s.serverStorage.FindByGuid(guid)
 
@@ -279,11 +302,13 @@ func (s CertificateService) getCertificateAgent(guid string) (*agent.Certificate
 func NewCertificateService(
 	serverStorage serverStorage.ServerStorage,
 	domainSettingStorage domainStorage.DomainSettingStorage,
+	certRenewalLogStorage logstorage.RenewalLogStorage,
 	logger logger.Logger,
 ) CertificateService {
 	return CertificateService{
 		serverStorage:         serverStorage,
 		domainSettingsStorage: domainSettingStorage,
+		certRenewalLogStorage: certRenewalLogStorage,
 		logger:                logger,
 	}
 }

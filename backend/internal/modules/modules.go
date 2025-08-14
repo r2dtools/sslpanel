@@ -5,6 +5,7 @@ import (
 	domainStorage "backend/internal/app/panel/domain/storage"
 	serverStorage "backend/internal/app/panel/server/storage"
 	sslManagerModule "backend/internal/modules/sslmanager"
+	"backend/internal/modules/sslmanager/autorenewal/logstorage"
 	"backend/internal/pkg/logger"
 
 	jwt "github.com/appleboy/gin-jwt/v2"
@@ -19,11 +20,19 @@ func InitModulesRouter(
 	cAuth auth.Auth,
 	appServerStorage serverStorage.ServerStorage,
 	appDomainSettingStorage domainStorage.DomainSettingStorage,
+	certRenewalLogStorage logstorage.RenewalLogStorage,
 	logger logger.Logger,
 ) {
 	certificatesGroup := group.Group("certificates")
 	{
 		certificatesGroup.Use(authMiddleware.MiddlewareFunc())
-		sslManagerModule.InitRouter(certificatesGroup, cAuth, appServerStorage, appDomainSettingStorage, logger)
+		sslManagerModule.InitRouter(
+			certificatesGroup,
+			cAuth,
+			appServerStorage,
+			appDomainSettingStorage,
+			certRenewalLogStorage,
+			logger,
+		)
 	}
 }

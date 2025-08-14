@@ -5,6 +5,7 @@ import (
 	domainStorage "backend/internal/app/panel/domain/storage"
 	serverStorage "backend/internal/app/panel/server/storage"
 	certApi "backend/internal/modules/sslmanager/adapters/api"
+	"backend/internal/modules/sslmanager/autorenewal/logstorage"
 	"backend/internal/modules/sslmanager/service"
 	"backend/internal/pkg/logger"
 
@@ -16,9 +17,15 @@ func InitRouter(
 	cAuth auth.Auth,
 	appServerStorage serverStorage.ServerStorage,
 	appDomainSettingStorage domainStorage.DomainSettingStorage,
+	certRenewalLogStorage logstorage.RenewalLogStorage,
 	logger logger.Logger,
 ) {
-	appCertificateService := service.NewCertificateService(appServerStorage, appDomainSettingStorage, logger)
+	appCertificateService := service.NewCertificateService(
+		appServerStorage,
+		appDomainSettingStorage,
+		certRenewalLogStorage,
+		logger,
+	)
 
 	group.POST("/:serverId/domain/:domainName/issue", certApi.CreateIssueCertificateHandler(cAuth, appCertificateService))
 	group.POST("/:serverId/domain/:domainName/assign", certApi.CreateAssignCertificateHandler(cAuth, appCertificateService))
@@ -30,4 +37,5 @@ func InitRouter(
 	group.GET("/:serverId/storage/certificates", certApi.CreateGetStorageCertificatesHandler(cAuth, appCertificateService))
 	group.POST("/:serverId/storage/remove", certApi.CreateRemoveCertificateFromStorageHandler(cAuth, appCertificateService))
 	group.POST("/:serverId/storage/add-self-signed", certApi.CreateAddSelfSignCertificateToStorageHandler(cAuth, appCertificateService))
+	group.GET("/:serverId/renewal/latest-logs", certApi.CreateGetLatestCertRenewalLogsHandler(cAuth, appCertificateService))
 }

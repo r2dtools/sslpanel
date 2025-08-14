@@ -75,3 +75,15 @@ export interface ChangeSettingPayload {
     token: string;
     value: string;
 }
+
+export interface RenewalLogsFetchPayload {
+    guid: string;
+    token: string;
+}
+
+export interface RenewalLog {
+    domainName: string;
+    serverName: string;
+    message: string;
+    createdAt: string;
+}

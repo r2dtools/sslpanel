@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import {
     changeCertbotStatus,
     editServer,
+    fetchCertRenewalLogs,
     fetchServer,
     fetchServerDetails,
     selectChangeCertbotStatusStatus,
@@ -18,6 +19,8 @@ import {
     selectServerDetails,
     selectServerDetailsFetchStatus,
     selectServerFetchStatus,
+    selectServerRenewalLogs,
+    selectServerRenewalLogsFetchStatus,
     selectServerSaveStatus,
     selectServerSettings,
 } from '../../features/server/serverSlice';
@@ -30,6 +33,7 @@ import { ServerSavePayload } from '../../features/server/types';
 import CardStatsLink from '../../components/CardStatsLink';
 import { fetchCertificates, selectCertificates, selectCertificatesFetchStatus } from '../../features/certificate/certificatesSlice';
 import ServerSettings from '../../features/server/components/ServerSettings';
+import RenewalLogs from '../../features/server/components/RenewalLogs';
 
 const emptyPlaceholder = '----------';
 
@@ -50,6 +54,8 @@ const Server = () => {
     const [pinging, setPinging] = useState<boolean>(false);
     const { pathname } = useLocation();
     const changeCertbotStatusStatus = useAppSelector(selectChangeCertbotStatusStatus);
+    const renewalLogs = useAppSelector(selectServerRenewalLogs);
+    const renewalLogdStatus = useAppSelector(selectServerRenewalLogsFetchStatus);
 
     const isLoading = (serverSelectStatus === FetchStatus.Pending || serverDetailsSelectStatus === FetchStatus.Pending) && !pinging;
 
@@ -58,7 +64,7 @@ const Server = () => {
     }
 
     useEffect(() => {
-        if (authToken && serverSelectStatus !== FetchStatus.Pending) {
+        if (serverSelectStatus !== FetchStatus.Pending) {
             dispatch(fetchServer({ guid, token: authToken }));
         }
     }, [authToken, guid]);
@@ -87,6 +93,12 @@ const Server = () => {
             }));
         }
     }, [server?.guid, guid, serverSelectStatus]);
+
+    useEffect(() => {
+        if (renewalLogdStatus !== FetchStatus.Pending) {
+            dispatch(fetchCertRenewalLogs({ guid, token: authToken }));
+        }
+    }, [server?.guid, guid]);
 
     const onTokenCopy = () => toast.success('Copied', {
         autoClose: 1000,
@@ -139,7 +151,7 @@ const Server = () => {
                         <div className="border-b border-stroke px-4 py-5 dark:border-strokedark md:px-6 xl:px-9">
                             <div className="items-center sm:flex">
                                 <div className="w-full flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                                    <Avatar img={getOsIcon(server?.os_code || '')} size='lg' rounded className='justify-start'>
+                                    <Avatar img={getOsIcon(serverDetails?.os_code || server?.os_code || '')} size='lg' rounded className='justify-start'>
                                         <div className="space-y-2 font-medium dark:text-white">
                                             <h3 className="inline-block text-2xl font-medium text-black hover:text-primary dark:text-white">{server?.name || emptyPlaceholder}</h3>
                                             <div>
@@ -256,6 +268,17 @@ const Server = () => {
                                 onCertbotStatusChange={handleCertbotStatusChange}
                             />
                         )
+                    }
+                    {
+                        renewalLogdStatus !== FetchStatus.Idle
+                            ? (
+                                <RenewalLogs
+                                    logs={renewalLogs}
+                                    onRefresh={() => dispatch(fetchCertRenewalLogs({ guid, token: authToken }))}
+                                    loading={renewalLogdStatus === FetchStatus.Pending}
+                                />
+                            )
+                            : null
                     }
                     <ServerEditDrawer
                         open={serverFormOpen}

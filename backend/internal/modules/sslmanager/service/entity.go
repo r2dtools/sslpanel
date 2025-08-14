@@ -1,5 +1,7 @@
 package service
 
+import "time"
+
 type StorageCertificateItem struct {
 	CertName    string      `json:"name"`
 	Storage     string      `json:"storage"`
@@ -94,4 +96,16 @@ type RemoveCertificateFromStorageRequest struct {
 	ServerGuid string
 	CertName   string
 	Storage    string
+}
+
+type LatestRenewalLogsRequest struct {
+	Guid string
+}
+
+type RenewalLog struct {
+	DomainName string    `json:"domainName"`
+	ServerName string    `json:"serverName"`
+	ServerGuid string    `json:"serverGuid"`
+	Message    string    `json:"message"`
+	CreatedAt  time.Time `json:"createdAt"`
 }

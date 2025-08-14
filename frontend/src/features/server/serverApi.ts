@@ -1,5 +1,5 @@
 import api, { configWithAuth, getErrorMessage } from '../../lib/api';
-import { ServerSaveRequest, Server, ServerDetails, ChangeSettingRequest } from './types';
+import { ServerSaveRequest, Server, ServerDetails, ChangeSettingRequest, RenewalLog } from './types';
 
 export const getServersApi = async (token: string) => {
     try {
@@ -63,6 +63,16 @@ export const changeCertbotStatusApi = async (request: ChangeSettingRequest) => {
         const response = await api.post(`/v1/servers/${request.guid}/settings/certbot-status`, data, configWithAuth(request.token));
 
         return response.data.version as string
+    } catch (error) {
+        throw new Error(getErrorMessage(error))
+    }
+};
+
+export const getServerRenewalLogsApi = async (guid: string, token: string) => {
+    try {
+        const response = await api.get(`/v1/modules/certificates/${guid}/renewal/latest-logs`, configWithAuth(token));
+
+        return response.data.logs as RenewalLog[];
     } catch (error) {
         throw new Error(getErrorMessage(error))
     }

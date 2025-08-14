@@ -19,6 +19,7 @@ import (
 	userService "backend/internal/app/panel/user/service"
 	userStorage "backend/internal/app/panel/user/storage"
 	"backend/internal/modules"
+	"backend/internal/modules/sslmanager/autorenewal/logstorage"
 	"backend/internal/pkg/logger"
 	"backend/internal/pkg/notification"
 
@@ -61,6 +62,8 @@ func newEngine(
 
 	appDomainSettingStorage := domainStorage.NewDomainSettingSqlStorage(database)
 	appDomainSevice := domainService.NewDomainService(config, appDomainSettingStorage, appServerStorage, appDomainProvider, logger)
+
+	certRenewalLogStorage := logstorage.CreateSqlRenewalLogStorage(database)
 
 	authMiddleware := authApi.AuthMiddleware(config, appUserStorage)
 
@@ -133,7 +136,16 @@ func newEngine(
 
 		modulesGroup := v1.Group("modules")
 		{
-			modules.InitModulesRouter(modulesGroup, database, authMiddleware, appAuth, appServerStorage, appDomainSettingStorage, logger)
+			modules.InitModulesRouter(
+				modulesGroup,
+				database,
+				authMiddleware,
+				appAuth,
+				appServerStorage,
+				appDomainSettingStorage,
+				certRenewalLogStorage,
+				logger,
+			)
 		}
 	}
 

@@ -2,8 +2,8 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import { RootState } from '../../app/store';
 import { FetchStatus } from '../../app/types';
 import { toast } from 'react-toastify';
-import { changeCertbotStatusApi, editServerApi, getServerApi, getServerDetailsApi } from './serverApi';
-import { ChangeSettingPayload, Server, ServerDetails, ServerFetchPayload, ServerSavePayload, ServerSaveRequest, ServerSettings } from './types';
+import { changeCertbotStatusApi, editServerApi, getServerApi, getServerDetailsApi, getServerRenewalLogsApi } from './serverApi';
+import { ChangeSettingPayload, RenewalLog, RenewalLogsFetchPayload, Server, ServerDetails, ServerFetchPayload, ServerSavePayload, ServerSaveRequest, ServerSettings } from './types';
 import { CERTBOT_STATUS_SETTING } from './constants';
 
 export interface ServerState {
@@ -14,6 +14,8 @@ export interface ServerState {
     serverSaveStatus: FetchStatus;
     serverSettings: ServerSettings | null;
     changeCertbotStatusStatus: FetchStatus;
+    renewalLogs: RenewalLog[];
+    renewalLogsStatus: FetchStatus;
 }
 
 const initialState: ServerState = {
@@ -24,6 +26,8 @@ const initialState: ServerState = {
     serverSaveStatus: FetchStatus.Idle,
     serverSettings: null,
     changeCertbotStatusStatus: FetchStatus.Idle,
+    renewalLogs: [],
+    renewalLogsStatus: FetchStatus.Idle,
 }
 
 export const fetchServer = createAsyncThunk(
@@ -68,6 +72,13 @@ export const changeCertbotStatus = createAsyncThunk(
         };
 
         return await changeCertbotStatusApi(request);
+    },
+);
+
+export const fetchCertRenewalLogs = createAsyncThunk(
+    'server/renewal-logs',
+    async (payload: RenewalLogsFetchPayload) => {
+        return await getServerRenewalLogsApi(payload.guid, payload.token);
     },
 );
 
@@ -145,6 +156,20 @@ export const serverSlice = createSlice({
                 if (action.error.message) {
                     toast.error(action.error.message);
                 }
+            }).addCase(fetchCertRenewalLogs.pending, state => {
+                state.renewalLogsStatus = FetchStatus.Pending;
+            })
+            .addCase(fetchCertRenewalLogs.fulfilled, (state, action) => {
+                state.renewalLogsStatus = FetchStatus.Succeeded;
+                state.renewalLogs = action.payload;
+            })
+            .addCase(fetchCertRenewalLogs.rejected, (state, action) => {
+                state.renewalLogsStatus = FetchStatus.Failed;
+                state.renewalLogs = [];
+
+                if (action.error.message) {
+                    toast.error(action.error.message);
+                }
             });
     },
 });
@@ -156,5 +181,7 @@ export const selectServerSettings = (state: RootState) => state.server.serverSet
 export const selectServerDetailsFetchStatus = (state: RootState) => state.server.serverDetailsStatus;
 export const selectServerSaveStatus = (state: RootState) => state.server.serverSaveStatus;
 export const selectChangeCertbotStatusStatus = (state: RootState) => state.server.changeCertbotStatusStatus;
+export const selectServerRenewalLogs = (state: RootState) => state.server.renewalLogs;
+export const selectServerRenewalLogsFetchStatus = (state: RootState) => state.server.renewalLogsStatus;
 
 export default serverSlice.reducer

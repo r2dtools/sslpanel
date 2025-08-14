@@ -30,6 +30,7 @@ import { ServerSavePayload } from '../../features/server/types';
 import CardStatsLink from '../../components/CardStatsLink';
 import { fetchCertificates, selectCertificates, selectCertificatesFetchStatus } from '../../features/certificate/certificatesSlice';
 import ServerSettings from '../../features/server/components/ServerSettings';
+import RenewalLogs from '../../features/server/components/RenewalLogs';
 
 const emptyPlaceholder = '----------';
 
@@ -257,6 +258,7 @@ const Server = () => {
                             />
                         )
                     }
+                    <RenewalLogs />
                     <ServerEditDrawer
                         open={serverFormOpen}
                         authToken={authToken || ''}

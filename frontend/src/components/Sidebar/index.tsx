@@ -28,6 +28,10 @@ const Sidebar = ({ servers, sidebarOpen, setSidebarOpen }: SidebarProps) => {
         storedSidebarExpanded === null ? false : storedSidebarExpanded === 'true'
     );
 
+    useEffect(() => {
+        setSidebarOpen(false);
+    }, [location]);
+
     // close on click outside
     useEffect(() => {
         const clickHandler = ({ target }: MouseEvent) => {
@@ -126,11 +130,18 @@ const Sidebar = ({ servers, sidebarOpen, setSidebarOpen }: SidebarProps) => {
                                             return (
                                                 <Fragment>
                                                     <NavLink
-                                                        to="#"
+                                                        to="/servers"
                                                         className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${(pathname === '/servers' || pathname.includes('servers')) && 'bg-graydark dark:bg-meta-4'}`}
                                                         onClick={event => {
-                                                            event.preventDefault();
-                                                            sidebarExpanded ? handleClick() : setSidebarExpanded(true);
+                                                            if (pathname === '/servers' || !open) {
+                                                                event.preventDefault();
+
+                                                                if (sidebarExpanded) {
+                                                                    handleClick();
+                                                                } else {
+                                                                    setSidebarExpanded(true);
+                                                                }
+                                                            }
                                                         }}
                                                     >
                                                         <HiOutlineServerStack />
@@ -174,7 +185,7 @@ const Sidebar = ({ servers, sidebarOpen, setSidebarOpen }: SidebarProps) => {
                             <li>
                                 <NavLink
                                     to="/settings"
-                                    className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname.includes('account') && 'bg-graydark dark:bg-meta-4'}`}
+                                    className={`group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${pathname.includes('settings') && 'bg-graydark dark:bg-meta-4'}`}
                                 >
                                     <svg
                                         className="fill-current"

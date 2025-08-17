@@ -109,7 +109,7 @@ export const serverSlice = createSlice({
                 state.serverDetailsStatus = FetchStatus.Succeeded;
 
                 const serverDetails = action.payload;
-                serverDetails.domains = serverDetails.domains.sort((a, b) => a.servername.localeCompare(b.servername));
+                serverDetails.domains = (serverDetails.domains || []).sort((a, b) => a.servername.localeCompare(b.servername));
                 state.serverDetails = serverDetails;
 
                 const settings = serverDetails?.settings;

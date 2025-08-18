@@ -20,14 +20,14 @@ const initialState: ServersState = {
 }
 
 export const fetchServers = createAsyncThunk(
-    'server/list',
+    'servers/list',
     async (token: string) => {
         return await getServersApi(token);
     },
 );
 
 export const addServer = createAsyncThunk(
-    'server/add',
+    'servers/add',
     async (payload: ServerSavePayload) => {
         const request: ServerSaveRequest = {
             name: payload.name,
@@ -44,7 +44,7 @@ export const addServer = createAsyncThunk(
 );
 
 export const editServer = createAsyncThunk(
-    'server/edit',
+    'servers/edit',
     async (payload: ServerSavePayload) => {
         const request: ServerSaveRequest = {
             name: payload.name,
@@ -61,7 +61,7 @@ export const editServer = createAsyncThunk(
 );
 
 export const deleteServer = createAsyncThunk(
-    'server/delete',
+    'servers/delete',
     async (payload: ServerDeletePayload) => {
         await deleteServerApi(payload.id, payload.token);
 

@@ -58,7 +58,6 @@ const ServerEditDrawer: React.FC<ServerEditProps> = ({
         };
 
         onSubmit(saveServerPayload);
-        handleFormClose();
     };
 
     return (

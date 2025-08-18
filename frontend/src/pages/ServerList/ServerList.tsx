@@ -42,6 +42,13 @@ const ServerList = () => {
         }
     }, [authToken]);
 
+    // close drawer on success
+    useEffect(() => {
+        if (serverFormOpen && serverSaveStatus === FetchStatus.Succeeded) {
+            handleServerFormClose();
+        }
+    }, [serverSaveStatus]);
+
     const handleServerFormClose = (): void => {
         setServerFormOpen(false);
         setEditedServer(null);
@@ -52,7 +59,7 @@ const ServerList = () => {
     };
 
     const handleSubmit = async (server: ServerSavePayload) => {
-        server.id ? dispatch(editServer(server)) : dispatch(addServer(server));
+        server.id ? dispatch(editServer(server)) : await dispatch(addServer(server));
     };
 
     const handleDeleteServer = (id: number) => {

@@ -100,6 +100,13 @@ const Server = () => {
         }
     }, [server?.guid, guid]);
 
+    // close drawer on success
+    useEffect(() => {
+        if (serverFormOpen && serverSaveStatus === FetchStatus.Succeeded) {
+            handleServerFormClose();
+        }
+    }, [serverSaveStatus]);
+
     const onTokenCopy = () => toast.success('Copied', {
         autoClose: 1000,
     });

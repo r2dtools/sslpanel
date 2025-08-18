@@ -79,6 +79,7 @@ export const certificatesSlice = createSlice({
             })
             .addCase(fetchCertificates.rejected, (state, action) => {
                 state.certificatesStatus = FetchStatus.Failed;
+                state.certificates = [];
 
                 if (action.error.message) {
                     toast.error(action.error.message);

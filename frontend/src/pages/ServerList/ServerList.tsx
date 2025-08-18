@@ -21,6 +21,7 @@ import empty from '../../images/empty.png';
 import { HiX } from "react-icons/hi";
 import { Link } from 'react-router-dom';
 import { HiMiniExclamationCircle } from 'react-icons/hi2';
+import Error404 from '../Error404';
 
 const ServerList = () => {
     const [serverFormOpen, setServerFormOpen] = useState(false);
@@ -31,8 +32,12 @@ const ServerList = () => {
     const serverSaveStatus = useAppSelector(selectServerSaveStatus);
     const servers = useAppSelector(selectServers);
 
+    if (!authToken) {
+        return <Error404 />
+    }
+
     useEffect(() => {
-        if (authToken && serversSelectStatus !== FetchStatus.Pending) {
+        if (serversSelectStatus !== FetchStatus.Pending) {
             dispatch(fetchServers(authToken));
         }
     }, [authToken]);
@@ -51,7 +56,7 @@ const ServerList = () => {
     };
 
     const handleDeleteServer = (id: number) => {
-        return dispatch(deleteServer({ id, token: authToken || '' }));
+        return dispatch(deleteServer({ id, token: authToken }));
     };
 
     const handleEditServer = (server: Server) => {
@@ -125,7 +130,7 @@ const ServerList = () => {
                 </div>
                 <ServerEditDrawer
                     open={serverFormOpen}
-                    authToken={authToken || ''}
+                    authToken={authToken}
                     loading={serverSaveStatus === FetchStatus.Pending}
                     onSubmit={handleSubmit}
                     onClose={handleServerFormClose}

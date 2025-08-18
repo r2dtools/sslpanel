@@ -282,7 +282,7 @@ const Server = () => {
                     }
                     <ServerEditDrawer
                         open={serverFormOpen}
-                        authToken={authToken || ''}
+                        authToken={authToken}
                         loading={serverSaveStatus === FetchStatus.Pending}
                         onSubmit={handleSubmit}
                         onClose={handleServerFormClose}

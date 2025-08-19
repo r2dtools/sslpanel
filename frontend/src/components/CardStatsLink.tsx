@@ -18,7 +18,7 @@ const CardStatsLink: React.FC<CardStatsLink> = ({ title, total, url, children })
                 </div>
                 <div className="mt-4 flex items-end justify-between">
                     <div>
-                        <h4 className="text-title-md font-bold text-black dark:text-white">
+                        <h4 className="text-xl font-bold text-black dark:text-white">
                             {title}
                         </h4>
                         <span className="text-sm font-medium">{`Total ${total}`}</span>

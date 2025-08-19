@@ -4,30 +4,32 @@
 
 @layer base {
   body {
-    @apply font-satoshi font-normal text-base text-body bg-whiten relative z-1;
+    @apply font-satoshi font-normal text-sm text-body bg-whiten relative z-1;
   }
 }
 
-@layer components {
-}
+@layer components {}
 
 @layer utilities {
+
   /* Chrome, Safari and Opera */
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
 
   .no-scrollbar {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
 }
 
 /* third-party libraries CSS */
 
 .Toastify {
-    --toastify-color-success: theme('colors.success');
-    --toastify-icon-color-success: theme('colors.success');
-    --toastify-color-progress-success: theme('colors.success');
-    --toastify-color-dark: theme('colors.boxdark-2');
+  --toastify-color-success: theme('colors.success');
+  --toastify-icon-color-success: theme('colors.success');
+  --toastify-color-progress-success: theme('colors.success');
+  --toastify-color-dark: theme('colors.boxdark-2');
 }

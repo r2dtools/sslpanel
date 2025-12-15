@@ -28,7 +28,7 @@ type CertificateService struct {
 }
 
 func (s CertificateService) IssueCertificate(request IssueCertificateRequest) (*dto.DomainCertificate, error) {
-	cAgent, err := s.getCertificateAgent(request.ServerGuid)
+	cAgent, err := s.getCertificateAgent(request.ServerGuid, request.AccountID)
 
 	if err != nil {
 		return nil, err
@@ -69,7 +69,7 @@ func (s CertificateService) IssueCertificate(request IssueCertificateRequest) (*
 }
 
 func (s CertificateService) AssignCertificate(request AssignCertificateRequest) (*dto.DomainCertificate, error) {
-	cAgent, err := s.getCertificateAgent(request.ServerGuid)
+	cAgent, err := s.getCertificateAgent(request.ServerGuid, request.AccountID)
 
 	if err != nil {
 		return nil, err
@@ -89,17 +89,14 @@ func (s CertificateService) AssignCertificate(request AssignCertificateRequest) 
 	return domainFactory.CreateCertificate(cert), nil
 }
 
-func (s CertificateService) UploadCertificate(
-	guid string,
-	requestData agentintegration.CertificateUploadRequestData,
-) (*dto.DomainCertificate, error) {
-	cAgent, err := s.getCertificateAgent(guid)
+func (s CertificateService) UploadCertificate(request UploadCertificateRequest) (*dto.DomainCertificate, error) {
+	cAgent, err := s.getCertificateAgent(request.ServerGuid, request.AccountID)
 
 	if err != nil {
 		return nil, err
 	}
 
-	cert, err := cAgent.Upload(&requestData)
+	cert, err := cAgent.Upload(&request.Data)
 
 	if err != nil {
 		return nil, err
@@ -109,7 +106,7 @@ func (s CertificateService) UploadCertificate(
 }
 
 func (s CertificateService) UploadCertificateToStorage(request UploadCertificateToStorageRequest) (*agentintegration.Certificate, error) {
-	cAgent, err := s.getCertificateAgent(request.ServerGuid)
+	cAgent, err := s.getCertificateAgent(request.ServerGuid, request.AccountID)
 
 	if err != nil {
 		return nil, err
@@ -124,7 +121,7 @@ func (s CertificateService) UploadCertificateToStorage(request UploadCertificate
 }
 
 func (s CertificateService) DownloadCertificateFromStorage(request DownloadCertificateRequest) (*agentintegration.CertificateDownloadResponseData, error) {
-	cAgent, err := s.getCertificateAgent(request.ServerGuid)
+	cAgent, err := s.getCertificateAgent(request.ServerGuid, request.AccountID)
 
 	if err != nil {
 		return nil, err
@@ -139,7 +136,7 @@ func (s CertificateService) DownloadCertificateFromStorage(request DownloadCerti
 }
 
 func (s CertificateService) GetStorageCertificates(request CertificatesRequest) ([]StorageCertificateItem, error) {
-	cAgent, err := s.getCertificateAgent(request.Guid)
+	cAgent, err := s.getCertificateAgent(request.Guid, request.AccountID)
 
 	if err != nil {
 		return nil, err
@@ -171,7 +168,7 @@ func (s CertificateService) GetStorageCertificates(request CertificatesRequest) 
 }
 
 func (s CertificateService) RemoveCertificateFromStorage(request RemoveCertificateFromStorageRequest) error {
-	cAgent, err := s.getCertificateAgent(request.ServerGuid)
+	cAgent, err := s.getCertificateAgent(request.ServerGuid, request.AccountID)
 
 	if err != nil {
 		return err
@@ -187,7 +184,7 @@ func (s CertificateService) RemoveCertificateFromStorage(request RemoveCertifica
 
 func (s CertificateService) GetCommonDirStatus(request CommonDirStatusRequest) (CommonDirStatusResponse, error) {
 	var response CommonDirStatusResponse
-	cAgent, err := s.getCertificateAgent(request.ServerGuid)
+	cAgent, err := s.getCertificateAgent(request.ServerGuid, request.AccountID)
 
 	if err != nil {
 		return response, err
@@ -208,7 +205,7 @@ func (s CertificateService) GetCommonDirStatus(request CommonDirStatusRequest) (
 }
 
 func (s CertificateService) ChangeCommonDirStatus(request ChangeCommonDirStatusRequest) error {
-	cAgent, err := s.getCertificateAgent(request.ServerGuid)
+	cAgent, err := s.getCertificateAgent(request.ServerGuid, request.AccountID)
 
 	if err != nil {
 		return err
@@ -222,7 +219,7 @@ func (s CertificateService) ChangeCommonDirStatus(request ChangeCommonDirStatusR
 }
 
 func (s CertificateService) CreateSelfSignCertificate(request SelfSignedCertificateRequest) (*agentintegration.Certificate, error) {
-	cAgent, err := s.getCertificateAgent(request.ServerGuid)
+	cAgent, err := s.getCertificateAgent(request.ServerGuid, request.AccountID)
 
 	if err != nil {
 		return nil, err
@@ -254,6 +251,17 @@ func (s CertificateService) CreateSelfSignCertificate(request SelfSignedCertific
 
 func (s CertificateService) FindLatestCertificateRenewalLogs(request LatestRenewalLogsRequest) ([]RenewalLog, error) {
 	logs := []RenewalLog{}
+
+	server, err := s.serverStorage.FindByGuid(request.Guid)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if server == nil || server.AccountID != uint(request.AccountID) {
+		return nil, ErrServerNotFound
+	}
+
 	dbLogs, err := s.certRenewalLogStorage.FindLatestLogs(request.Guid)
 
 	if err != nil {
@@ -273,14 +281,14 @@ func (s CertificateService) FindLatestCertificateRenewalLogs(request LatestRenew
 	return logs, nil
 }
 
-func (s CertificateService) getCertificateAgent(guid string) (*agent.CertificateAgent, error) {
+func (s CertificateService) getCertificateAgent(guid string, accountID int) (*agent.CertificateAgent, error) {
 	server, err := s.serverStorage.FindByGuid(guid)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if server == nil {
+	if server == nil || server.AccountID != uint(accountID) {
 		return nil, ErrServerNotFound
 	}
 

@@ -62,6 +62,7 @@ func CreateIssueCertificateHandler(cAuth auth.Auth, certService service.Certific
 
 		request.ServerGuid = guid
 		request.DomainName = domainName
+		request.AccountID = user.AccountID
 
 		cert, err := certService.IssueCertificate(request)
 
@@ -123,6 +124,7 @@ func CreateGetCommonDirStatusHandler(cAuth auth.Auth, certService service.Certif
 
 		request.ServerGuid = guid
 		request.DomainName = domainName
+		request.AccountID = user.AccountID
 		response, err := certService.GetCommonDirStatus(request)
 
 		if err != nil {
@@ -183,6 +185,7 @@ func CreateChangeCommonDirStatusHandler(cAuth auth.Auth, certService service.Cer
 
 		request.DomainName = domainName
 		request.ServerGuid = guid
+		request.AccountID = user.AccountID
 		err = certService.ChangeCommonDirStatus(request)
 
 		if err != nil {
@@ -239,6 +242,8 @@ func CreateAssignCertificateHandler(cAuth auth.Auth, certService service.Certifi
 
 		request.ServerGuid = guid
 		request.DomainName = domainName
+		request.AccountID = user.AccountID
+
 		_, err = certService.AssignCertificate(request)
 
 		if err != nil {
@@ -290,7 +295,13 @@ func CreateUploadCertificateHandler(cAuth auth.Auth, certService service.Certifi
 		requestData.ServerName = serverName
 		requestData.WebServer = webServer
 
-		cert, err := certService.UploadCertificate(guid, requestData)
+		request := service.UploadCertificateRequest{
+			ServerGuid: guid,
+			AccountID:  user.AccountID,
+			Data:       requestData,
+		}
+
+		cert, err := certService.UploadCertificate(request)
 
 		if err != nil {
 			if errors.Is(err, service.ErrServerNotFound) {
@@ -345,6 +356,7 @@ func CreateUploadCertificateToStorageHandler(cAuth auth.Auth, certService servic
 			ServerGuid:     guid,
 			CertName:       certName,
 			PemCertificate: string(pemFileBytes),
+			AccountID:      user.AccountID,
 		}
 		_, err = certService.UploadCertificateToStorage(request)
 
@@ -395,6 +407,7 @@ func CreateDownloadCertificateFromStorageHandler(cAuth auth.Auth, certService se
 			ServerGuid: guid,
 			CertName:   requestData.CertName,
 			Storage:    requestData.Storage,
+			AccountID:  user.AccountID,
 		}
 		certData, err := certService.DownloadCertificateFromStorage(request)
 
@@ -431,7 +444,7 @@ func CreateGetStorageCertificatesHandler(cAuth auth.Auth, certService service.Ce
 			return
 		}
 
-		request := service.CertificatesRequest{Guid: guid}
+		request := service.CertificatesRequest{Guid: guid, AccountID: user.AccountID}
 		certs, err := certService.GetStorageCertificates(request)
 
 		if err != nil {
@@ -464,11 +477,15 @@ func CreateGetLatestCertRenewalLogsHandler(cAuth auth.Auth, certService service.
 			return
 		}
 
-		request := service.LatestRenewalLogsRequest{Guid: guid}
+		request := service.LatestRenewalLogsRequest{Guid: guid, AccountID: user.AccountID}
 		logs, err := certService.FindLatestCertificateRenewalLogs(request)
 
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			if errors.Is(err, service.ErrServerNotFound) {
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			}
 
 			return
 		}
@@ -508,6 +525,7 @@ func CreateRemoveCertificateFromStorageHandler(cAuth auth.Auth, certService serv
 			ServerGuid: guid,
 			CertName:   requestData.CertName,
 			Storage:    requestData.Storage,
+			AccountID:  user.AccountID,
 		}
 		err := certService.RemoveCertificateFromStorage(request)
 
@@ -558,6 +576,7 @@ func CreateAddSelfSignCertificateToStorageHandler(cAuth auth.Auth, certService s
 		}
 
 		request.ServerGuid = guid
+		request.AccountID = user.AccountID
 		_, err := certService.CreateSelfSignCertificate(request)
 
 		if err != nil {

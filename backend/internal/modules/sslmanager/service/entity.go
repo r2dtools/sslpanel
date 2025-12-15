@@ -1,6 +1,10 @@
 package service
 
-import "time"
+import (
+	"time"
+
+	"github.com/r2dtools/agentintegration"
+)
 
 type StorageCertificateItem struct {
 	CertName    string      `json:"name"`
@@ -38,6 +42,7 @@ type SelfSignedCertificateRequest struct {
 	Locality     string   `json:"locality"`
 	Organization string   `json:"organization"`
 	AltNames     []string `json:"altNames"`
+	AccountID    int
 }
 
 type IssueCertificateRequest struct {
@@ -49,12 +54,14 @@ type IssueCertificateRequest struct {
 	Subjects         []string          `json:"subjects"`
 	AdditionalParams map[string]string `json:"params"`
 	Assign           bool              `json:"assign"`
+	AccountID        int
 }
 
 type CommonDirStatusRequest struct {
 	ServerGuid string
 	DomainName string
 	WebServer  string `form:"webserver"`
+	AccountID  int
 }
 
 type ChangeCommonDirStatusRequest struct {
@@ -62,10 +69,12 @@ type ChangeCommonDirStatusRequest struct {
 	DomainName string
 	Status     bool   `json:"status"`
 	WebServer  string `json:"webserver"`
+	AccountID  int
 }
 
 type CommonDirStatusResponse struct {
-	Status bool `json:"status"`
+	Status    bool `json:"status"`
+	AccountID int
 }
 
 type AssignCertificateRequest struct {
@@ -74,32 +83,38 @@ type AssignCertificateRequest struct {
 	WebServer  string `json:"webserver"`
 	CertName   string `json:"name"`
 	Storage    string `json:"storage"`
+	AccountID  int
 }
 
 type CertificatesRequest struct {
-	Guid string
+	Guid      string
+	AccountID int
 }
 
 type UploadCertificateToStorageRequest struct {
 	ServerGuid     string
 	CertName       string
 	PemCertificate string
+	AccountID      int
 }
 
 type DownloadCertificateRequest struct {
 	ServerGuid string
 	CertName   string
 	Storage    string
+	AccountID  int
 }
 
 type RemoveCertificateFromStorageRequest struct {
 	ServerGuid string
 	CertName   string
 	Storage    string
+	AccountID  int
 }
 
 type LatestRenewalLogsRequest struct {
-	Guid string
+	Guid      string
+	AccountID int
 }
 
 type RenewalLog struct {
@@ -108,4 +123,10 @@ type RenewalLog struct {
 	ServerGuid string    `json:"serverGuid"`
 	Message    string    `json:"message"`
 	CreatedAt  time.Time `json:"createdAt"`
+}
+
+type UploadCertificateRequest struct {
+	ServerGuid string
+	Data       agentintegration.CertificateUploadRequestData
+	AccountID  int
 }

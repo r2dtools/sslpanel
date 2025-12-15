@@ -95,7 +95,7 @@ func newEngine(
 		accountGroup := v1.Group("accounts")
 		{
 			accountGroup.Use(authMiddleware.MiddlewareFunc())
-			accountGroup.GET("/:id", accountApi.CreateGetAccountByIdHandler(appAccountService))
+			accountGroup.GET("/:id", accountApi.CreateGetAccountByIdHandler(appAuth, appAccountService))
 		}
 
 		authGroup := v1.Group("auth")
@@ -109,7 +109,7 @@ func newEngine(
 			serverGroup.Use(authMiddleware.MiddlewareFunc())
 			serverGroup.GET("", serverApi.CreateFindAccounServersHandler(appAuth, appServerSevice))
 			serverGroup.POST("", serverApi.CreateAddServerHandler(appAuth, appServerSevice))
-			serverGroup.POST("/:serverId", serverApi.CreateUpdateServerHandler(appServerSevice))
+			serverGroup.POST("/:serverId", serverApi.CreateUpdateServerHandler(appAuth, appServerSevice))
 			serverGroup.DELETE("/:serverId", serverApi.CreateRemoveServerHandler(appAuth, appServerSevice))
 			serverGroup.GET("/:serverId", serverApi.CreateGetServerByGuidHandler(appAuth, appServerSevice))
 			serverGroup.GET("/:serverId/details", serverApi.CreateGetServerDetailsByGuidHandler(appAuth, appServerSevice))

@@ -2,6 +2,7 @@ package account
 
 import (
 	accountService "backend/internal/app/panel/account/service"
+	"backend/internal/app/panel/adapters/api/auth"
 	"errors"
 	"net/http"
 	"strconv"
@@ -9,12 +10,24 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func CreateGetAccountByIdHandler(aService accountService.AccountService) func(c *gin.Context) {
+func CreateGetAccountByIdHandler(cAuth auth.Auth, aService accountService.AccountService) func(c *gin.Context) {
 	return func(c *gin.Context) {
+		user := cAuth.GetCurrentUser(c)
+
+		if user == nil {
+			return
+		}
+
 		id, err := strconv.Atoi(c.Param("id"))
 
 		if err != nil {
 			c.AbortWithError(http.StatusBadRequest, errors.New("invalid account ID")) // nolint:errcheck
+
+			return
+		}
+
+		if user.AccountID != id {
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"message": "Access denied"}) // nolint:errcheck
 
 			return
 		}

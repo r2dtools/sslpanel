@@ -42,14 +42,14 @@ func (s ServerService) FindAccountServers(accountID int) ([]Server, error) {
 	return servers, nil
 }
 
-func (s ServerService) GetServerDetailsByGuid(guid string) (*ServerDetails, error) {
-	serverModel, err := s.serverStorage.FindByGuid(guid)
+func (s ServerService) GetServerDetailsByGuid(request GetServerDetailsRequest) (*ServerDetails, error) {
+	serverModel, err := s.serverStorage.FindByGuid(request.ServerGuid)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if serverModel == nil {
+	if serverModel == nil || serverModel.AccountID != uint(request.AccountID) {
 		return nil, ErrServerNotFound
 	}
 
@@ -109,28 +109,28 @@ func (s ServerService) GetServerDetailsByGuid(guid string) (*ServerDetails, erro
 	return &serverDetails, nil
 }
 
-func (s ServerService) FindServerByGuid(guid string) (*Server, error) {
-	serverModel, err := s.serverStorage.FindByGuid(guid)
+func (s ServerService) FindServerByGuid(request FindServerByGuid) (*Server, error) {
+	serverModel, err := s.serverStorage.FindByGuid(request.ServerGuid)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if serverModel == nil {
+	if serverModel == nil || serverModel.AccountID != uint(request.AccountID) {
 		return nil, ErrServerNotFound
 	}
 
 	return createServer(serverModel), nil
 }
 
-func (s ServerService) RemoveServer(id int) error {
-	serverModel, err := s.serverStorage.FindByID(id)
+func (s ServerService) RemoveServer(request RemoveServerRequest) error {
+	serverModel, err := s.serverStorage.FindByID(request.ID)
 
 	if err != nil {
 		return err
 	}
 
-	if serverModel == nil {
+	if serverModel == nil || serverModel.AccountID != uint(request.AccountID) {
 		return ErrServerNotFound
 	}
 
@@ -200,7 +200,7 @@ func (s ServerService) UpdateServer(request UpdateServerRequest) error {
 		return err
 	}
 
-	if serverModel == nil {
+	if serverModel == nil || serverModel.AccountID != uint(request.AccountId) {
 		return ErrServerNotFound
 	}
 
@@ -227,7 +227,7 @@ func (s ServerService) ChangeCertbotStatus(request ChangeCretbotStatusRequest) (
 		return "", err
 	}
 
-	if serverModel == nil {
+	if serverModel == nil || serverModel.AccountID != uint(request.AccountId) {
 		return "", ErrServerNotFound
 	}
 

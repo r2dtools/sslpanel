@@ -53,9 +53,26 @@ type UpdateServerRequest struct {
 	Ipv6Address string `json:"ipv6_address"`
 	AgentPort   int    `json:"agent_port" validate:"nonzero"`
 	Token       string `json:"token" validate:"nonzero"`
+	AccountId   int
+}
+
+type RemoveServerRequest struct {
+	ID        int
+	AccountID int
+}
+
+type GetServerDetailsRequest struct {
+	ServerGuid string
+	AccountID  int
+}
+
+type FindServerByGuid struct {
+	ServerGuid string
+	AccountID  int
 }
 
 type ChangeCretbotStatusRequest struct {
 	ServerGuid string
 	Value      bool `json:"value"`
+	AccountId  int
 }

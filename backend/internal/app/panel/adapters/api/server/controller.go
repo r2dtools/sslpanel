@@ -48,7 +48,11 @@ func CreateGetServerByGuidHandler(cAuth auth.Auth, appServerService serverServic
 			return
 		}
 
-		server, err := appServerService.FindServerByGuid(guid)
+		request := serverService.FindServerByGuid{
+			ServerGuid: guid,
+			AccountID:  user.AccountID,
+		}
+		server, err := appServerService.FindServerByGuid(request)
 
 		if err != nil {
 			if errors.Is(err, serverService.ErrServerNotFound) {
@@ -56,12 +60,6 @@ func CreateGetServerByGuidHandler(cAuth auth.Auth, appServerService serverServic
 			} else {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			}
-
-			return
-		}
-
-		if server == nil {
-			c.AbortWithError(http.StatusNotFound, err) // nolint:errcheck
 
 			return
 		}
@@ -86,7 +84,11 @@ func CreateGetServerDetailsByGuidHandler(cAuth auth.Auth, appServerService serve
 			return
 		}
 
-		server, err := appServerService.GetServerDetailsByGuid(guid)
+		request := serverService.GetServerDetailsRequest{
+			ServerGuid: guid,
+			AccountID:  user.AccountID,
+		}
+		server, err := appServerService.GetServerDetailsByGuid(request)
 
 		if err != nil {
 			if errors.Is(err, serverService.ErrServerNotFound) {
@@ -96,12 +98,6 @@ func CreateGetServerDetailsByGuidHandler(cAuth auth.Auth, appServerService serve
 			} else {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 			}
-
-			return
-		}
-
-		if server == nil {
-			c.AbortWithError(http.StatusNotFound, err) // nolint:errcheck
 
 			return
 		}
@@ -126,7 +122,11 @@ func CreateRemoveServerHandler(cAuth auth.Auth, appServerService serverService.S
 			return
 		}
 
-		err = appServerService.RemoveServer(id)
+		request := serverService.RemoveServerRequest{
+			ID:        id,
+			AccountID: user.AccountID,
+		}
+		err = appServerService.RemoveServer(request)
 
 		if err != nil {
 			if errors.Is(err, serverService.ErrServerNotFound) {
@@ -171,8 +171,14 @@ func CreateAddServerHandler(cAuth auth.Auth, appServerService serverService.Serv
 	}
 }
 
-func CreateUpdateServerHandler(appServerService serverService.ServerService) func(c *gin.Context) {
+func CreateUpdateServerHandler(cAuth auth.Auth, appServerService serverService.ServerService) func(c *gin.Context) {
 	return func(c *gin.Context) {
+		user := cAuth.GetCurrentUser(c)
+
+		if user == nil {
+			return
+		}
+
 		serverID, err := strconv.Atoi(c.Param("serverId"))
 
 		if err != nil {
@@ -190,6 +196,8 @@ func CreateUpdateServerHandler(appServerService serverService.ServerService) fun
 		}
 
 		request.ID = serverID
+		request.AccountId = user.AccountID
+
 		err = validator.Validate(request)
 
 		if err != nil {
@@ -201,7 +209,11 @@ func CreateUpdateServerHandler(appServerService serverService.ServerService) fun
 		err = appServerService.UpdateServer(request)
 
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			if errors.Is(err, serverService.ErrServerNotFound) {
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			}
 		}
 	}
 }
@@ -231,10 +243,11 @@ func CreateChangeCertbotStatusHandler(cAuth auth.Auth, certService serverService
 		}
 
 		request.ServerGuid = guid
+		request.AccountId = user.AccountID
 		version, err := certService.ChangeCertbotStatus(request)
 
 		if err != nil {
-			if errors.Is(err, service.ErrServerNotFound) {
+			if errors.Is(err, serverService.ErrServerNotFound) {
 				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 			} else {
 				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})

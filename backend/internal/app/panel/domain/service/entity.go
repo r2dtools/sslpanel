@@ -10,12 +10,14 @@ type DomainConfigRequest struct {
 	ServerGuid string
 	DomainName string
 	WebServer  string `form:"webserver"`
+	AccountID  int
 }
 
 type DomainRequest struct {
 	ServerGuid string
 	DomainName string
 	WebServer  string `form:"webserver"`
+	AccountID  int
 }
 
 type DomainCertificateRequest struct {
@@ -27,6 +29,7 @@ type DomainCertificateRequest struct {
 type DomainSettingsRequest struct {
 	ServerGuid string
 	DomainName string
+	AccountID  int
 }
 
 type ChangeDomainSettingRequest struct {
@@ -34,4 +37,5 @@ type ChangeDomainSettingRequest struct {
 	DomainName   string
 	SettingName  string `json:"settingname"`
 	SettingValue string `json:"settingvalue"`
+	AccountID    int
 }

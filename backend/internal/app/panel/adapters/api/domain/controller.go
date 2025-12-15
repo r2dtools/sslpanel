@@ -52,6 +52,7 @@ func CreateGetDomainHandler(cAuth auth.Auth, appDomainService domainService.Doma
 
 		request.ServerGuid = guid
 		request.DomainName = string(decodedDomainName)
+		request.AccountID = user.AccountID
 		domain, err := appDomainService.GetDomain(request)
 
 		if err != nil {
@@ -114,6 +115,7 @@ func CreateGetDomainConfigHandler(cAuth auth.Auth, appService domainService.Doma
 
 		request.ServerGuid = guid
 		request.DomainName = string(decodedDomainName)
+		request.AccountID = user.AccountID
 		config, err := appService.GetDomainConfig(request)
 
 		if err != nil {
@@ -166,11 +168,16 @@ func CreateFindDomainSettingsHandler(cAuth auth.Auth, appDomainService domainSer
 		request := domainService.DomainSettingsRequest{
 			DomainName: domainName,
 			ServerGuid: guid,
+			AccountID:  user.AccountID,
 		}
 		settings, err := appDomainService.FindDomainSettings(request)
 
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			if errors.Is(err, domainService.ErrServerNotFound) {
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			}
 
 			return
 		}
@@ -229,13 +236,16 @@ func CreateChangeDomainSettingHandler(cAuth auth.Auth, appDomainService domainSe
 
 		request.DomainName = domainName
 		request.ServerGuid = guid
+		request.AccountID = user.AccountID
 
 		err = appDomainService.ChangeDomainSettings(request)
 
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-
-			return
+			if errors.Is(err, domainService.ErrServerNotFound) {
+				c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			} else {
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			}
 		}
 	}
 }

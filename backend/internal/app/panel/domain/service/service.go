@@ -28,6 +28,17 @@ type DomainService struct {
 
 func (s DomainService) GetDomain(request DomainRequest) (dto.Domain, error) {
 	var rDomain dto.Domain
+
+	serverModel, err := s.serverStorage.FindByGuid(request.ServerGuid)
+
+	if err != nil {
+		return rDomain, err
+	}
+
+	if serverModel == nil || serverModel.AccountID != uint(request.AccountID) {
+		return rDomain, ErrServerNotFound
+	}
+
 	domains, err := s.domainProvider.GetServerDomains(request.ServerGuid)
 
 	if err == provider.ErrServerNotFound {
@@ -52,7 +63,7 @@ func (s DomainService) GetDomainConfig(request DomainConfigRequest) (string, err
 		return "", err
 	}
 
-	if serverModel == nil {
+	if serverModel == nil || serverModel.AccountID != uint(request.AccountID) {
 		return "", ErrServerNotFound
 	}
 
@@ -76,6 +87,17 @@ func (s DomainService) GetDomainConfig(request DomainConfigRequest) (string, err
 
 func (s DomainService) FindDomainSettings(request DomainSettingsRequest) ([]DomainSetting, error) {
 	settings := []DomainSetting{}
+
+	serverModel, err := s.serverStorage.FindByGuid(request.ServerGuid)
+
+	if err != nil {
+		return settings, err
+	}
+
+	if serverModel == nil || serverModel.AccountID != uint(request.AccountID) {
+		return settings, ErrServerNotFound
+	}
+
 	settingModels, err := s.settingStorage.FindAllByDomain(request.DomainName, request.ServerGuid)
 
 	if err != nil {
@@ -90,6 +112,16 @@ func (s DomainService) FindDomainSettings(request DomainSettingsRequest) ([]Doma
 }
 
 func (s DomainService) ChangeDomainSettings(request ChangeDomainSettingRequest) error {
+	serverModel, err := s.serverStorage.FindByGuid(request.ServerGuid)
+
+	if err != nil {
+		return err
+	}
+
+	if serverModel == nil || serverModel.AccountID != uint(request.AccountID) {
+		return ErrServerNotFound
+	}
+
 	settingModel, err := s.settingStorage.FindByDomain(request.DomainName, request.ServerGuid, request.SettingName)
 
 	if err != nil {
